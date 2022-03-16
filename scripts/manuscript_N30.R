@@ -14,6 +14,7 @@ library(rcompanion)
 library(PMCMRplus)
 library(officer)
 library(tidyr)
+library(PairedData)
 
 rm(list = ls())
 
@@ -161,14 +162,24 @@ cart_flex_within_test <- anova_test(data = aov_cart_flex, dv = mean, wid = subje
 get_anova_table(cart_flex_within_test)
 
 
-##### x coordinate vs y coordinate accuracy
+##### x coordinate vs y coordinate accuracy - paired t-test - not sig but not the right test
 
+xy_data <- myData_NO %>%
+  group_by(subject) %>%
+  summarise(
+    x_cm_mean = mean(x_error_cm),
+    y_cm_mean = mean(y_error_cm)
+  )
+t.test(xy_data$x_cm_mean, xy_data$y_cm_mean, paired = TRUE)
 
+xy_data_long <- xy_data %>%
+  gather(error_type, mean_error, x_cm_mean, y_cm_mean)
 
+x_mean <- subset(xy_data_long, error_type == "x_cm_mean", mean_error, drop = TRUE)
+y_mean <- subset(xy_data_long, error_type == "y_cm_mean", mean_error, drop = TRUE)
 
-
-
-
+pd <- paired(x_mean, y_mean)
+plot(pd, type = "profile") + theme_bw()
 
 
 
