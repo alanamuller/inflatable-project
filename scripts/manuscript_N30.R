@@ -101,11 +101,18 @@ aov_data <- myData_NO %>%
   summarize(
     mean = mean(placement_error_cm_log, na.rm = TRUE),
   )
+aov_data <- as_tibble(aov_data)
 
+# these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
 summary(results_2way) # nothing is sig, no main effects, no interaction effect
 
+withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
+                         within = c(walk_noWalk, same_diff))
+get_anova_table(withinTest) # nothing is sig
+
 # how many people took the cart and put items back in the same order?
+# it'll take a little more to figure this out, some people did, some didn't
 
 cart <- myData_NO %>%
   group_by(subject,trial, `cart (took/left/half)`, `objects_put_back_order (same/not_same)`) %>%
@@ -130,12 +137,13 @@ aov_cart_data <- cart_data %>%
   summarize(
     mean = mean(placement_error_cm_log, na.rm = TRUE),
   )
+aov_cart_data <- as_tibble(aov_cart_data)
 
-results_cart <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_cart_data)
-summary(results_cart) # 
-
-
-
+# this 2-way repeated measures anova takes out the incomplete cases
+# only 17 Ss left
+cart_withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
+                              within = c(walk_noWalk, same_diff))
+get_anova_table(cart_withinTest) # not sig but p = 0.08 for walk_noWalk
 
 cor_data <- myData_NO %>%
   drop_na(order_replaced)
@@ -143,7 +151,7 @@ cor_data <- myData_NO %>%
 plot(cor_data$order_removed, cor_data$order_replaced)
 
 
-
+### x coordinate vs y coordinate accuracy
 
 
 
