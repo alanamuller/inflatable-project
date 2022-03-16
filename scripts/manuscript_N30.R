@@ -88,7 +88,7 @@ shapiro.test(myData_NO$placement_error_cm_log)
 
 ################### Parametric Analyses ###################  
 
-### 2-way repeated-measures ANOVA walk view - not sig
+##### 2-way repeated-measures ANOVA walk view - not sig
 
 bxp <- ggboxplot(
   myData_NO, x = "walk_noWalk", y = "placement_error_cm_log", 
@@ -111,7 +111,7 @@ withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff))
 get_anova_table(withinTest) # nothing is sig
 
-# how many people took the cart and put items back in the same order?
+### how many people took the cart and put items back in the same order?
 # it'll take a little more to figure this out, some people did, some didn't
 
 cart <- myData_NO %>%
@@ -124,7 +124,6 @@ cart <- myData_NO %>%
 
 cart_data <- myData_NO %>%
   filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "not_same")
-
 
 bxp <- ggboxplot(
   cart_data, x = "walk_noWalk", y = "placement_error_cm_log", 
@@ -145,13 +144,24 @@ cart_withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
                               within = c(walk_noWalk, same_diff))
 get_anova_table(cart_withinTest) # not sig but p = 0.08 for walk_noWalk
 
-cor_data <- myData_NO %>%
-  drop_na(order_replaced)
+# exclude all object order put back == same (more flexible that analysis above) - not sig
 
-plot(cor_data$order_removed, cor_data$order_replaced)
+cart_flex <- myData_NO %>%
+  filter(`objects_put_back_order (same/not_same)`!= "same")
+
+aov_cart_flex <- cart_flex %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    mean = mean(placement_error_cm_log, na.rm = TRUE)
+  )
+aov_cart_flex <- as_tibble(aov_cart_flex)
+
+cart_flex_within_test <- anova_test(data = aov_cart_flex, dv = mean, wid = subject,
+                                    within = c(walk_noWalk, same_diff))
+get_anova_table(cart_flex_within_test)
 
 
-### x coordinate vs y coordinate accuracy
+##### x coordinate vs y coordinate accuracy
 
 
 
