@@ -66,8 +66,14 @@ hist(myData$placement_error_cm)
 
 # Log transformation to make the placement error data more normal
 
-myData$placement_error_cm_log <- log(myData$placement_error_cm)
+myData$placement_error_cm_log <- log10(myData$placement_error_cm)
 hist(myData$placement_error_cm_log)
+
+myData$placement_error_cm_cuberoot <- (myData$placement_error_cm)^(1/3)
+hist(myData$placement_error_cm_cuberoot)
+shapiro.test(myData$placement_error_cm_cuberoot)
+ggqqplot(myData$placement_error_cm_cuberoot)
+
 
 ### Get rid of outliers past 3 SD of transformed data
 mean_placement_error_cm_log <- mean(myData$placement_error_cm_log, na.rm = TRUE)
@@ -85,6 +91,7 @@ myData_NO <- myData %>%
 hist(myData_NO$placement_error_cm_log)
 ggqqplot(myData_NO$placement_error_cm_log)
 shapiro.test(myData_NO$placement_error_cm_log)
+
 
 
 ################### Parametric Analyses ###################  
@@ -186,3 +193,64 @@ plot(pd, type = "profile") + theme_bw()
 
 
 ################### Non-Parametric Analyses ###################  
+
+### rep measures npar ANOVA - main analysis - all data
+
+library(nparLD)
+
+nparData <- myData %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    median = median(placement_error_cm, na.rm = TRUE),
+  )
+
+
+ex.f2 <- ld.f2(y = nparData$median, 
+               time1 = nparData$walk_noWalk, 
+               time2 = nparData$same_diff,
+               subject = nparData$subject,
+               time1.name = "Movement", 
+               time2.name = "Viewpoint", description = TRUE,
+               time1.order = c("walk", "no walk") ,
+               time2.order = c("same", "diff"))
+
+# ANOVA-type statistic
+ex.f2$ANOVA.test # nothing sig
+
+### rep measures npar ANOVA - excluding "same" for objects_put_back_order
+npar_noSame <- myData %>%
+  filter(`objects_put_back_order (same/not_same)` != "same")
+
+npar_noSameData <- npar_noSame %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    median = median(placement_error_cm)
+  )
+
+npar_n16 <- npar_noSameData %>%
+  filter(subject != 2 & subject != 4 & subject != 6 & subject != 9 & subject != 12 & subject != 15 & subject != 16 
+         & subject != 20 & subject != 23 & subject != 25 & subject != 26 & subject != 27 & subject != 28 & subject != 29)
+
+ex.f2_n16 <- ld.f2(y = npar_n16$median, 
+               time1 = npar_n16$walk_noWalk, 
+               time2 = npar_n16$same_diff,
+               subject = npar_n16$subject,
+               time1.name = "Movement", 
+               time2.name = "Viewpoint", description = TRUE,
+               time1.order = c("walk", "no walk") ,
+               time2.order = c("same", "diff"))
+
+# ANOVA-type statistic
+ex.f2_n16$ANOVA.test
+
+test <- myData %>%
+  group_by(subject, `objects_put_back_order (same/not_same)`) %>%
+  summarize(
+    median = median(placement_error_cm, na.rm = TRUE)
+  )
+
+test <- spread(test, `objects_put_back_order (same/not_same)`, median)
+test <- na.omit(test) # Ss 6, 11, 15, 16, 22, 23, 25, 26 excluded bc they didn't have data for both conditions
+
+# npar paired samples t-test
+wilcox.test(test$not_same, test$same, paired = TRUE)
