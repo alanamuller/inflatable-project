@@ -278,7 +278,7 @@ ggline(friedman_x_table_cm, x = "move_view", y = "median", color = "subject", ti
 # If you have time, do another friedman's test for x and y error
 
 data_xvy <- data_NO[,c("subject", "trial", "wall_side", "object", "object_size", "object_material", "walk_noWalk", "same_diff", "move_view", "x_error_cm", "y_error_cm", "placement_error_cm")]
-datamelt_xvy <- melt(data_xvy, id=c("subject", "trial", "wall_side", "object", "object_size", "object_material", "walk_noWalk", "same_diff", "move_view"), value.name = "Error(cm)", variable_name = "type_error")
+datamelt_xvy <- melt(data_xvy, id=c("subject", "trial", "wall_side", "object", "object_size", "object_material", "walk_noWalk", "same_diff", "move_view"), value.name = "Error(cm)", variable.name = "type_error")
 datamelt_xvy3 <- datamelt_xvy %>%
   filter(type_error == "x_error_cm" | type_error == "y_error_cm")
 
@@ -286,7 +286,7 @@ xyerrorsubject <- datamelt_xvy3 %>%
   group_by(subject, type_error) %>%
   summarize(
     count = n(),
-    median = median(value, na.rm = TRUE)
+    median = median(`Error(cm)`, na.rm = TRUE)
   )
 xyerrorsubject <- as.data.frame(xyerrorsubject)
 
