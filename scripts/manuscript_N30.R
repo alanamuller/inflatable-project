@@ -203,7 +203,6 @@ nparData <- myData %>%
     median = median(placement_error_cm, na.rm = TRUE),
   )
 
-
 ex.f2 <- ld.f2(y = nparData$median, 
                time1 = nparData$walk_noWalk, 
                time2 = nparData$same_diff,
@@ -278,8 +277,18 @@ ggboxplot(abs_xy_graph, x = "type_error", y = "median", add = "jitter",
           xlab = "Type of Error") +
   theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
 
+### get a value for each person
 
-# get a median value for each trial and then for each subject
+subj_xy_data <- myData %>%
+  group_by(subject) %>%
+  summarize(
+    x_cm_median = median(x_error_cm, na.rm = TRUE),
+    y_cm_median = median(y_error_cm, na.rm = TRUE)
+  )
+
+wilcox.test(subj_xy_data$x_cm_median, subj_xy_data$y_cm_median, paired = TRUE) # not sig, p = .05845
+
+### get a median value for each trial and then for each subject
 npar_xy_data <- myData %>%
   group_by(subject, trial) %>%
   summarize(
@@ -329,3 +338,80 @@ ggboxplot(abs_xy_graph, x = "type_error", y = "median", add = "jitter",
 
 plot(abs_xy_data$x_cm_median, abs_xy_data$y_cm_median)
 cor.test(abs_xy_data$x_cm_median, abs_xy_data$y_cm_median, method = "spearman")
+
+### npar rep-measure ANOVA for x values
+
+x_nparData <- myData %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    median = median(x_error_cm, na.rm = TRUE),
+  )
+
+ex.f2_x <- ld.f2(y = x_nparData$median, 
+               time1 = x_nparData$walk_noWalk, 
+               time2 = x_nparData$same_diff,
+               subject = x_nparData$subject,
+               time1.name = "Movement", 
+               time2.name = "Viewpoint", description = TRUE,
+               time1.order = c("walk", "no walk") ,
+               time2.order = c("same", "diff"))
+
+# ANOVA-type statistic
+ex.f2_x$ANOVA.test # nothing sig
+
+# abs value of x error
+abs_x_nparData <- myData %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    median = median(abs_x_error_cm, na.rm = TRUE),
+  )
+
+ex.f2_abs_x <- ld.f2(y = abs_x_nparData$median, 
+                 time1 = abs_x_nparData$walk_noWalk, 
+                 time2 = abs_x_nparData$same_diff,
+                 subject = abs_x_nparData$subject,
+                 time1.name = "Movement", 
+                 time2.name = "Viewpoint", description = TRUE,
+                 time1.order = c("walk", "no walk") ,
+                 time2.order = c("same", "diff"))
+
+# ANOVA-type statistic
+ex.f2_abs_x$ANOVA.test # nothing sig
+
+### npar rep-measure ANOVA for y values
+y_nparData <- myData %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    median = median(y_error_cm, na.rm = TRUE),
+  )
+
+ex.f2_y <- ld.f2(y = y_nparData$median, 
+                 time1 = y_nparData$walk_noWalk, 
+                 time2 = y_nparData$same_diff,
+                 subject = y_nparData$subject,
+                 time1.name = "Movement", 
+                 time2.name = "Viewpoint", description = TRUE,
+                 time1.order = c("walk", "no walk") ,
+                 time2.order = c("same", "diff"))
+
+# ANOVA-type statistic
+ex.f2_y$ANOVA.test # movement main effect is sig, p = .0282
+
+# abs value of y error
+abs_y_nparData <- myData %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    median = median(abs_y_error_cm, na.rm = TRUE),
+  )
+
+ex.f2_abs_y <- ld.f2(y = abs_y_nparData$median, 
+                     time1 = abs_y_nparData$walk_noWalk, 
+                     time2 = abs_y_nparData$same_diff,
+                     subject = abs_y_nparData$subject,
+                     time1.name = "Movement", 
+                     time2.name = "Viewpoint", description = TRUE,
+                     time1.order = c("walk", "no walk") ,
+                     time2.order = c("same", "diff"))
+
+# ANOVA-type statistic
+ex.f2_abs_y$ANOVA.test # nothing sig
