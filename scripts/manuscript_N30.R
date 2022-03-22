@@ -189,10 +189,9 @@ pd <- paired(x_mean, y_mean)
 plot(pd, type = "profile") + theme_bw()
 
 
-
-
-
 ################### Non-Parametric Analyses ###################  
+myData$abs_x_error_cm <- abs(myData$x_error_cm)
+myData$abs_y_error_cm <- abs(myData$y_error_cm)
 
 ### rep measures npar ANOVA - main analysis - all data
 
@@ -243,14 +242,90 @@ ex.f2_n16 <- ld.f2(y = npar_n16$median,
 # ANOVA-type statistic
 ex.f2_n16$ANOVA.test
 
-test <- myData %>%
+# objects put back order: same vs not same for each subject - npar paired t-test
+sameVnotSame <- myData %>%
   group_by(subject, `objects_put_back_order (same/not_same)`) %>%
   summarize(
     median = median(placement_error_cm, na.rm = TRUE)
   )
 
-test <- spread(test, `objects_put_back_order (same/not_same)`, median)
-test <- na.omit(test) # Ss 6, 11, 15, 16, 22, 23, 25, 26 excluded bc they didn't have data for both conditions
+sameVnotSame <- spread(sameVnotSame, `objects_put_back_order (same/not_same)`, median)
+sameVnotSame <- na.omit(sameVnotSame) # Ss 6, 11, 15, 16, 22, 23, 25, 26 excluded bc they didn't have data for both conditions
 
-# npar paired samples t-test
-wilcox.test(test$not_same, test$same, paired = TRUE)
+# actual test: npar paired samples t-test
+wilcox.test(sameVnotSame$not_same, sameVnotSame$same, paired = TRUE)
+
+### horizontal vs vertical placement error (x and y values)
+
+# most broad test: all x_error vs all y_error, paired
+wilcox.test(myData$x_error_cm, myData$y_error_cm, paired = TRUE) # p = .003, but I don't think this is the right grouping
+
+xy_graph <- myData %>%
+  select(c("x_error_cm", "y_error_cm"))
+xy_graph <- gather(xy_graph, key = "type_error", value = "median", 1:2)
+ggboxplot(xy_graph, x = "type_error", y = "median", add = "jitter",
+          color = "type_error", ylab = "Placement Error (cm)", 
+          xlab = "Type of Error") +
+  theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
+
+wilcox.test(myData$abs_x_error_cm, myData$abs_y_error_cm, paired = TRUE) # p < .001 much much less e-11
+
+abs_xy_graph <- myData %>%
+  select(c("abs_x_error_cm", "abs_y_error_cm"))
+abs_xy_graph <- gather(abs_xy_graph, key = "type_error", value = "median", 1:2)
+ggboxplot(abs_xy_graph, x = "type_error", y = "median", add = "jitter",
+          color = "type_error", ylab = "Placement Error (cm)", 
+          xlab = "Type of Error") +
+  theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
+
+
+# get a median value for each trial and then for each subject
+npar_xy_data <- myData %>%
+  group_by(subject, trial) %>%
+  summarize(
+    x_cm_median = median(x_error_cm, na.rm = TRUE),
+    y_cm_median = median(y_error_cm, na.rm = TRUE)
+  )
+
+npar_xy_data <- npar_xy_data %>%
+  group_by(subject) %>%
+  summarize(
+    x_cm_median = median(x_cm_median, na.rm = TRUE), 
+    y_cm_median = median(y_cm_median, na.rm = TRUE)
+  )
+
+wilcox.test(npar_xy_data$x_cm_median, npar_xy_data$y_cm_median, paired = TRUE) # not sig, p = .1294
+
+npar_xy_graph <- gather(npar_xy_data, key = "type_error", value = "median", "x_cm_median":"y_cm_median")
+ggboxplot(npar_xy_graph, x = "type_error", y = "median", add = "jitter",
+          color = "type_error", ylab = "Placement Error (cm)", 
+          xlab = "Type of Error") +
+  theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
+
+# using the absolute value of x_error_cm and y_error_cm
+
+abs_xy_data <- myData %>%
+  group_by(subject, trial) %>%
+  summarize(
+    x_cm_median = median(abs_x_error_cm, na.rm = TRUE),
+    y_cm_median = median(abs_y_error_cm, na.rm = TRUE)
+  )
+
+abs_xy_data <- abs_xy_data %>%
+  group_by(subject) %>%
+  summarize(
+    x_cm_median = median(x_cm_median, na.rm = TRUE), 
+    y_cm_median = median(y_cm_median, na.rm = TRUE)
+  )
+
+wilcox.test(abs_xy_data$x_cm_median, abs_xy_data$y_cm_median, paired = TRUE) # not sig, p = .1519
+
+abs_xy_graph <- gather(abs_xy_data, key = "type_error", value = "median", "x_cm_median":"y_cm_median")
+ggboxplot(abs_xy_graph, x = "type_error", y = "median", add = "jitter",
+          color = "type_error", ylab = "Placement Error (cm)", 
+          xlab = "Type of Error") +
+  theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
+
+
+plot(abs_xy_data$x_cm_median, abs_xy_data$y_cm_median)
+cor.test(abs_xy_data$x_cm_median, abs_xy_data$y_cm_median, method = "spearman")
