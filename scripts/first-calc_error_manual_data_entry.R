@@ -58,6 +58,10 @@ myData$x_error_cm <- myData$x_error*0.3907
 myData$y_error_cm <- myData$y_error*0.3905
 myData$placement_error_cm <- sqrt ( (myData$x_error_cm^2) + (myData$y_error_cm^2) )
 
+# absolute x and y error
+myData$abs_x_error_cm <- abs(myData$x_error_cm)
+myData$abs_y_error_cm <- abs(myData$y_error_cm)
+
 # Save file
 write.csv(myData, "E:/Nav_1stYr_project_data/nav_room_error_data_s004.csv", row.names = FALSE)
 
