@@ -199,7 +199,6 @@ myData$abs_x_error_cm <- abs(myData$x_error_cm)
 myData$abs_y_error_cm <- abs(myData$y_error_cm)
 
 ### rep measures npar ANOVA - main analysis - all data
-
 library(nparLD)
 
 # data grouped by subject, movement condition, and viewpoint condition
@@ -222,6 +221,7 @@ ex.f2 <- ld.f2(y = nparData$median,
 ex.f2$ANOVA.test # nothing sig
 
 ### rep measures npar ANOVA - excluding "same" for objects_put_back_order
+### analysis represents people that did not simply retrace their steps
 npar_noSame <- myData %>%
   filter(`objects_put_back_order (same/not_same)` != "same")
 
@@ -261,7 +261,7 @@ sameVnotSame <- na.omit(sameVnotSame) # Ss 6, 11, 15, 16, 22, 23, 25, 26 exclude
 # actual test: npar paired samples t-test
 wilcox.test(sameVnotSame$not_same, sameVnotSame$same, paired = TRUE) # p = .8987
 
-### horizontal vs vertical placement error (x and y values)
+##### horizontal vs vertical placement error (x and y values)
 
 # most broad test: all x_error vs all y_error, paired
 wilcox.test(myData$x_error_cm, myData$y_error_cm, paired = TRUE) # p = .003, but I don't think this is the right grouping
@@ -274,15 +274,9 @@ ggboxplot(xy_graph, x = "type_error", y = "median", add = "jitter",
           xlab = "Type of Error") +
   theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
 
-wilcox.test(myData$abs_x_error_cm, myData$abs_y_error_cm, paired = TRUE) # p < .001 much much less e-11
-
-abs_xy_graph <- myData %>%
-  select(c("abs_x_error_cm", "abs_y_error_cm"))
-abs_xy_graph <- gather(abs_xy_graph, key = "type_error", value = "median", 1:2)
-ggboxplot(abs_xy_graph, x = "type_error", y = "median", add = "jitter",
-          color = "type_error", ylab = "Placement Error (cm)", 
-          xlab = "Type of Error") +
-  theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
+wilcox.test(myData$x_error_cm, myData$y_error_cm, paired = TRUE) # p < .003
+median(myData$x_error_cm, na.rm = TRUE) # -0.3907
+median(myData$y_error_cm, na.rm = TRUE) # 1.1715
 
 ### get a value for each person
 
@@ -318,8 +312,22 @@ ggboxplot(npar_xy_graph, x = "type_error", y = "median", add = "jitter",
           xlab = "Type of Error") +
   theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
 
-# using the absolute value of x_error_cm and y_error_cm
+### using the absolute value of x_error_cm and y_error_cm
 
+# most broad test: all abs_x_error vs all abs_y_error, paired
+wilcox.test(myData$abs_x_error_cm, myData$abs_y_error_cm, paired = TRUE) # p < .001
+median(myData$abs_x_error_cm, na.rm = TRUE) # 11.3303
+median(myData$abs_y_error_cm, na.rm = TRUE) # 10.5435
+
+abs_xy_graph <- myData %>%
+  select(c("abs_x_error_cm", "abs_y_error_cm"))
+abs_xy_graph <- gather(abs_xy_graph, key = "type_error", value = "median", 1:2)
+ggboxplot(abs_xy_graph, x = "type_error", y = "median", add = "jitter",
+          color = "type_error", ylab = "Placement Error (cm)", 
+          xlab = "Type of Error") +
+  theme(axis.title = element_text(size = 16), axis.text = element_text(size = 14), legend.position = "none")
+
+# get a median for each trial and then for each subject
 abs_xy_data <- myData %>%
   group_by(subject, trial) %>%
   summarize(
