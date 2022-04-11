@@ -31,4 +31,13 @@ group_by(label) %>%
 ggplot(myData, aes(x = label)) +
   geom_bar() + theme_classic()
 
-       
+# get table of counts for each event with consecutive codes
+z <- myData$label
+zd <- as.data.frame(z)
+pairs <- data.frame(head(zd, -1), tail(zd, -1))
+names(pairs)[1] <- "first"
+names(pairs)[2] <- "second"
+table(pairs)
+
+
+    
