@@ -61,58 +61,95 @@ myData$x_error_cm <- as.numeric(myData$x_error_cm)
 myData$y_error_cm <- as.numeric(myData$y_error_cm)
 myData$placement_error_cm <- as.numeric(myData$placement_error_cm)
 
+# make abs value columns for x_error_cm and y_error_cm
+myData$abs_x_error_cm <- abs(myData$x_error_cm)
+myData$abs_y_error_cm <- abs(myData$y_error_cm)
+
 # Make sure the data looks ok now before proceeding
 str(myData)
 
 # Placement error (cm) is skewed to the right
 hist(myData$placement_error_cm)
 
-### Data transformations - they were not successful at making the data normal
+### Data transformations - they were not successful at making the data normal but log is the best
 
 # Log transformation to make the placement error data more normal
 myData$placement_error_cm_log <- log10(myData$placement_error_cm)
 hist(myData$placement_error_cm_log)
+shapiro.test(myData$placement_error_cm_log) # still not normal
+ggqqplot(myData$placement_error_cm_log)
 
 myData$placement_error_cm_cuberoot <- (myData$placement_error_cm)^(1/3)
 hist(myData$placement_error_cm_cuberoot)
-shapiro.test(myData$placement_error_cm_cuberoot) # still not normal
+shapiro.test(myData$placement_error_cm_cuberoot) # still not normal, log is better
 ggqqplot(myData$placement_error_cm_cuberoot)
 
-### Get rid of outliers past 3 SD of transformed data
+### Get rid of outliers of placement_error_cm past 3 SD of transformed data
 mean_placement_error_cm_log <- mean(myData$placement_error_cm_log, na.rm = TRUE)
 sd_placement_error_cm_log <- sd(myData$placement_error_cm_log, na.rm = TRUE)
 
-# 23 outliers identified beyond 3 SD away from the mean
-outliers <- myData %>%
-  filter(placement_error_cm_log > mean_placement_error_cm_log + (3*sd_placement_error_cm_log))
+# 13 outliers identified 3 SD away from the mean
+outliers_placement_error_cm <- myData %>%
+  filter(placement_error_cm_log > mean_placement_error_cm_log + (3*sd_placement_error_cm_log) | 
+         placement_error_cm_log < mean_placement_error_cm_log - (3*sd_placement_error_cm_log))
 
 # Make a dataset with No Outliers (NO for short) and there are also no more NAs in placement_error_cm_log
-myData_NO <- myData %>%
-  filter(placement_error_cm_log < mean_placement_error_cm_log + (3*sd_placement_error_cm_log))
+myData_NO <- myData %>% 
+  filter(placement_error_cm_log < mean_placement_error_cm_log + (3*sd_placement_error_cm_log), 
+           placement_error_cm_log > mean_placement_error_cm_log - (3*sd_placement_error_cm_log) )
 
-# Check normality assumption - still not normal
+# Check normality assumption on NO data - still not normal but looks better
 hist(myData_NO$placement_error_cm_log)
 ggqqplot(myData_NO$placement_error_cm_log)
-shapiro.test(myData_NO$placement_error_cm_log)
+shapiro.test(myData_NO$placement_error_cm_log) # p = 1.228e-06
+
+### Get rid of outliers from abs value of x_error_cm
+mean_x_error_cm <- mean(myData$abs_x_error_cm, na.rm = TRUE)
+sd_x_error_cm <- sd(myData$abs_x_error_cm, na.rm = TRUE)
+
+# 34 outliers found
+outliers_x_error_cm <- myData %>%
+  filter(abs_x_error_cm > mean_x_error_cm + (3*sd_x_error_cm) | 
+         abs_x_error_cm < mean_x_error_cm - (3*sd_x_error_cm))
+
+# Make a dataset without outliers for x_error_cm
+myData_NO_x <- myData %>%
+  filter(abs_x_error_cm < mean_x_error_cm + (3*sd_x_error_cm), 
+         abs_x_error_cm > mean_x_error_cm - (3*sd_x_error_cm))
+
+### Get rid of outliers from abs value of y_error_cm
+mean_y_error_cm <- mean(myData$abs_y_error_cm, na.rm = TRUE)
+sd_y_error_cm <- sd(myData$abs_y_error_cm, na.rm = TRUE)
+
+# 48 outliers found
+outliers_y_error_cm <- myData %>%
+  filter(abs_y_error_cm > mean_y_error_cm + (3*sd_y_error_cm) | 
+           abs_y_error_cm < mean_y_error_cm - (3*sd_y_error_cm))
+
+# Make a dataset without outliers for x_error_cm
+myData_NO_y <- myData %>%
+  filter(abs_y_error_cm < mean_y_error_cm + (3*sd_y_error_cm), 
+           abs_y_error_cm > mean_y_error_cm - (3*sd_y_error_cm))
 
 
 ################### Parametric Analyses ###################  
-##### not used because I can't get the data looking normal
 
 ##### 2-way repeated-measures ANOVA walk view - not sig
-
-bxp <- ggboxplot(
-  myData_NO, x = "walk_noWalk", y = "placement_error_cm_log", 
-  color = "same_diff"
-)
-bxp
-
 aov_data <- myData_NO %>%
   group_by(subject, walk_noWalk, same_diff) %>%
   summarize(
     mean = mean(placement_error_cm_log, na.rm = TRUE),
   )
 aov_data <- as_tibble(aov_data)
+
+bxp <- ggboxplot(
+  aov_data, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", 
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same"))
+bxp
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -122,8 +159,8 @@ withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff))
 get_anova_table(withinTest) # nothing is sig
 
-### how many people took the cart and put items back in the same order?
-# it'll take a little more to figure this out, some people did, some didn't
+### exclude trials when people took the cart AND put back in the same order and halfs
+### all other trials can stay, just don't want people retracing their steps
 
 cart <- myData_NO %>%
   group_by(subject,trial, `cart (took/left/half)`, `objects_put_back_order (same/not_same)`) %>%
@@ -133,14 +170,31 @@ cart <- myData_NO %>%
     sd = sd(placement_error_cm_log)
   )
 
-cart_data <- myData_NO %>%
+# make groups of each pair of conditions to see how many of each there are
+cart_took_same <- myData_NO %>%
+  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "same")
+
+cart_took_notSame <- myData_NO %>%
+  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "not_same")
+
+cart_left_same <- myData_NO %>%
+  filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "same")
+
+cart_left_notSame <- myData_NO %>%
   filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "not_same")
 
-bxp <- ggboxplot(
-  cart_data, x = "walk_noWalk", y = "placement_error_cm_log", 
-  color = "same_diff"
-)
-bxp
+cart_half_same <- myData_NO %>%
+  filter(`cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "same")
+
+cart_half_notSame <- myData_NO %>%
+  filter(`cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "not_same")
+
+# put the data together that I want (took, not same; left, not same; left, same)
+cart_data <- myData_NO %>%
+  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "not_same" |
+         `cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "not_same" |
+         `cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "same" |
+         `cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "not_same")
 
 aov_cart_data <- cart_data %>%
   group_by(subject, walk_noWalk, same_diff) %>%
@@ -149,39 +203,74 @@ aov_cart_data <- cart_data %>%
   )
 aov_cart_data <- as_tibble(aov_cart_data)
 
+bxp <- ggboxplot(
+  aov_cart_data, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", 
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same"))
+bxp
+
 # this 2-way repeated measures anova takes out the incomplete cases
-# only 17 Ss left
 cart_withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
                               within = c(walk_noWalk, same_diff))
 get_anova_table(cart_withinTest) # not sig but p = 0.08 for walk_noWalk
 
-# exclude all object order put back == same (more flexible that analysis above) - not sig
 
-cart_flex <- myData_NO %>%
-  filter(`objects_put_back_order (same/not_same)`!= "same")
-
-aov_cart_flex <- cart_flex %>%
+### 2-way ANOVA with abs x error
+aov_x_data <- myData_NO_x %>%
   group_by(subject, walk_noWalk, same_diff) %>%
   summarize(
-    mean = mean(placement_error_cm_log, na.rm = TRUE)
+    mean = mean(abs_x_error_cm, na.rm = TRUE),
   )
-aov_cart_flex <- as_tibble(aov_cart_flex)
+aov_x_data <- as_tibble(aov_x_data)
 
-cart_flex_within_test <- anova_test(data = aov_cart_flex, dv = mean, wid = subject,
-                                    within = c(walk_noWalk, same_diff))
-get_anova_table(cart_flex_within_test)
+bxp <- ggboxplot(
+  aov_x_data, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", 
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same"))
+bxp
+
+# 2x2 repeated measures ANOVA - not sig
+results_x_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_x_data)
+summary(results_x_2way) # nothing is sig, no main effects, no interaction effect
+
+### 2-way ANOVA with abs y error
+aov_y_data <- myData_NO_y %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    mean = mean(abs_y_error_cm, na.rm = TRUE),
+  )
+aov_y_data <- as_tibble(aov_y_data)
+
+bxp <- ggboxplot(
+  aov_y_data, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", 
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same"))
+bxp
+
+# 2x2 repeated measures ANOVA - not sig
+results_y_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_y_data)
+summary(results_y_2way) # nothing is sig, no main effects, no interaction effect
 
 
-##### x coordinate vs y coordinate accuracy - paired t-test - not sig but not the right test
-
-xy_data <- myData_NO %>%
+##### abs value of x coordinate vs y coordinate accuracy - paired t-test
+xy_data <- myData %>%
   group_by(subject) %>%
   summarise(
-    x_cm_mean = mean(x_error_cm),
-    y_cm_mean = mean(y_error_cm)
+    x_cm_mean = mean(abs(x_error_cm), na.rm = TRUE),
+    y_cm_mean = mean(abs(y_error_cm), na.rm = TRUE)
   )
-t.test(xy_data$x_cm_mean, xy_data$y_cm_mean, paired = TRUE)
+t.test(xy_data$x_cm_mean, xy_data$y_cm_mean, paired = TRUE) # p = 8.023e-07
 
+# for the graph
 xy_data_long <- xy_data %>%
   gather(error_type, mean_error, x_cm_mean, y_cm_mean)
 
@@ -189,7 +278,48 @@ x_mean <- subset(xy_data_long, error_type == "x_cm_mean", mean_error, drop = TRU
 y_mean <- subset(xy_data_long, error_type == "y_cm_mean", mean_error, drop = TRUE)
 
 pd <- paired(x_mean, y_mean)
-plot(pd, type = "profile") + theme_bw()
+plot(pd, type = "profile") + theme_bw() + ylab("Mean Error (cm)") + 
+  scale_x_discrete(breaks=c("x_mean", "y_mean"), labels=c("Horizontal (x values)", "Vertical (y values)"))
+
+mean(xy_data$x_cm_mean) # 22.15
+sd(xy_data$x_cm_mean) # 8.30
+
+mean(xy_data$y_cm_mean) # 15.61
+sd(xy_data$y_cm_mean) # 4.72
+
+# I don't think this is the way to scale it. Doesn't make sense.
+xy_data$x_cm_mean_scaled <- xy_data$x_cm_mean/6
+xy_data$y_cm_mean_scaled <- xy_data$y_cm_mean/2.5
+
+t.test(xy_data$x_cm_mean_scaled, xy_data$y_cm_mean_scaled, paired = TRUE)
+
+##### Landmark and placement accuracy
+
+landmark_data <- myData_NO %>%
+  select(c("subject", "next_to_landmark", "placement_error_cm_log"))
+
+landmark_ttest <- landmark_data %>%
+  group_by(subject, next_to_landmark) %>%
+  summarise(
+    mean = mean(placement_error_cm_log, na.rm = TRUE)
+  )
+
+landmark_ttest_long <- spread(landmark_ttest, key = next_to_landmark, value = mean)
+
+t.test(landmark_ttest_long$y, landmark_ttest_long$n, paired = TRUE) # sig, p = .002
+
+yes_mean <- subset(landmark_ttest, next_to_landmark == "y", mean, drop = TRUE)
+no_mean <- subset(landmark_ttest, next_to_landmark == "n", mean, drop = TRUE)
+
+pd <- paired(yes_mean, no_mean)
+plot(pd, type = "profile") + theme_bw() + ylab("Mean Error (cm)") + 
+  scale_x_discrete(breaks=c("yes_mean", "no_mean"), labels=c("Next to landmark", "Not next to landmark"))
+
+mean(landmark_ttest_long$y) # 1.26
+sd(landmark_ttest_long$y) # 0.20
+
+mean(landmark_ttest_long$n) # 1.33
+sd(landmark_ttest_long$n) # 0.13
 
 
 ################### Non-Parametric Analyses ###################  
@@ -430,3 +560,4 @@ ex.f2_abs_y <- ld.f2(y = abs_y_nparData$median,
 
 # ANOVA-type statistic
 ex.f2_abs_y$ANOVA.test # nothing sig
+
