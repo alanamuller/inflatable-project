@@ -149,7 +149,9 @@ bxp <- ggboxplot(
   legend = "right", legend.title = "Viewpoint") + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same"))
+jpeg("movement_viewpoint_anova.jpeg", width = 3.5, height = 3, units = 'in', res = 300)
 bxp
+dev.off()
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -256,6 +258,7 @@ bxp <- ggboxplot(
   scale_color_discrete(labels = c("Different", "Same"))
 bxp
 
+
 # 2x2 repeated measures ANOVA - not sig
 results_y_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_y_data)
 summary(results_y_2way) # nothing is sig, no main effects, no interaction effect
@@ -278,8 +281,11 @@ x_mean <- subset(xy_data_long, error_type == "x_cm_mean", mean_error, drop = TRU
 y_mean <- subset(xy_data_long, error_type == "y_cm_mean", mean_error, drop = TRUE)
 
 pd <- paired(x_mean, y_mean)
-plot(pd, type = "profile") + theme_bw() + ylab("Mean Error (cm)") + 
+
+jpeg("horizonal_vertical_values.jpeg", width = 3, height = 3, units = 'in', res = 300)
+plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (cm)") + 
   scale_x_discrete(breaks=c("x_mean", "y_mean"), labels=c("Horizontal (x values)", "Vertical (y values)"))
+dev.off()
 
 mean(xy_data$x_cm_mean) # 22.15
 sd(xy_data$x_cm_mean) # 8.30
@@ -312,8 +318,11 @@ yes_mean <- subset(landmark_ttest, next_to_landmark == "y", mean, drop = TRUE)
 no_mean <- subset(landmark_ttest, next_to_landmark == "n", mean, drop = TRUE)
 
 pd <- paired(yes_mean, no_mean)
-plot(pd, type = "profile") + theme_bw() + ylab("Mean Error (cm)") + 
+
+jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
+plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (cm)") + 
   scale_x_discrete(breaks=c("yes_mean", "no_mean"), labels=c("Next to landmark", "Not next to landmark"))
+dev.off()
 
 mean(landmark_ttest_long$y) # 1.26
 sd(landmark_ttest_long$y) # 0.20
