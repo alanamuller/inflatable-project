@@ -870,19 +870,24 @@ write.csv(data_NO, "C:/Users/Updates/Desktop/data_NO.csv", row.names = FALSE)
 ggscatter(data_NO, x = "Total_duration_of_fixations", y = "placement_error_cm", add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 4000, label.sep = "\n"), xlab = "Total duration of fixations", ylab = "Placement Error (cm)") # sig
 
+# filter out 0 duration of fixations and too long total fixation time
 duration_filter <- data_NO %>%
-  filter(data_NO$Total_duration_of_fixations < 2100)
+  filter(data_NO$Total_duration_of_fixations < 2100 & Total_duration_of_fixations != 0)
 
+jpeg("eye_total_duration.jpeg", width = 4, height = 3, units = 'in', res = 300)
 ggscatter(duration_filter, x = "Total_duration_of_fixations", y = "placement_error_cm", add = "reg.line", conf.int = TRUE, size = 1,
           cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 1500, label.y = 120, label.sep = "\n"), xlab = "Total duration of fixations", ylab = "Placement Error (cm)") # sig
+dev.off()
 
 ggscatter(data_NO, x = "Number_of_fixations", y = "placement_error_cm", add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 12, label.sep = "\n"), xlab = "Number of fixations", ylab = "Placement Error (cm)") # sig
 fixation_filter <- data_NO %>%
   filter(data_NO$Number_of_fixations < 11 & data_NO$Number_of_fixations > 0)
+
+jpeg("eye_fixation_number.jpeg", width = 4, height = 3, units = 'in', res = 300)
 ggscatter(fixation_filter, x = "Number_of_fixations", y = "placement_error_cm", add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 7, label.y = 120, label.sep = "\n"), xlab = "Number of fixations", ylab = "Placement Error (cm)") # sig
-
+dev.off()
 
 
 # non parametric test for number of fixation: fixated or not

@@ -103,33 +103,37 @@ hist(myData_NO$placement_error_cm_log)
 ggqqplot(myData_NO$placement_error_cm_log)
 shapiro.test(myData_NO$placement_error_cm_log) # p = 1.228e-06
 
-### Get rid of outliers from abs value of x_error_cm
-mean_x_error_cm <- mean(myData$abs_x_error_cm, na.rm = TRUE)
-sd_x_error_cm <- sd(myData$abs_x_error_cm, na.rm = TRUE)
+### Transform abs value of x_error_cm and y_error_cm
+myData$abs_x_error_cm_log <- log10(myData$abs_x_error_cm+1)
+myData$abs_y_error_cm_log <- log10(myData$abs_y_error_cm+1)
 
-# 34 outliers found
-outliers_x_error_cm <- myData %>%
-  filter(abs_x_error_cm > mean_x_error_cm + (3*sd_x_error_cm) | 
-         abs_x_error_cm < mean_x_error_cm - (3*sd_x_error_cm))
+# Get rid of outliers from abs value of x_error_cm
+mean_x_error_cm_log <- mean(myData$abs_x_error_cm_log, na.rm = TRUE)
+sd_x_error_cm_log <- sd(myData$abs_x_error_cm_log, na.rm = TRUE)
+
+# 2 outliers found
+outliers_x_error_cm_log <- myData %>%
+  filter(abs_x_error_cm_log > mean_x_error_cm_log + (3*sd_x_error_cm_log) | 
+         abs_x_error_cm_log < mean_x_error_cm_log - (3*sd_x_error_cm_log))
 
 # Make a dataset without outliers for x_error_cm
 myData_NO_x <- myData %>%
-  filter(abs_x_error_cm < mean_x_error_cm + (3*sd_x_error_cm), 
-         abs_x_error_cm > mean_x_error_cm - (3*sd_x_error_cm))
+  filter(abs_x_error_cm_log < mean_x_error_cm_log + (3*sd_x_error_cm_log), 
+         abs_x_error_cm_log > mean_x_error_cm_log - (3*sd_x_error_cm_log))
 
 ### Get rid of outliers from abs value of y_error_cm
-mean_y_error_cm <- mean(myData$abs_y_error_cm, na.rm = TRUE)
-sd_y_error_cm <- sd(myData$abs_y_error_cm, na.rm = TRUE)
+mean_y_error_cm_log <- mean(myData$abs_y_error_cm_log, na.rm = TRUE)
+sd_y_error_cm_log <- sd(myData$abs_y_error_cm_log, na.rm = TRUE)
 
-# 48 outliers found
-outliers_y_error_cm <- myData %>%
-  filter(abs_y_error_cm > mean_y_error_cm + (3*sd_y_error_cm) | 
-           abs_y_error_cm < mean_y_error_cm - (3*sd_y_error_cm))
+# 0 outliers found
+outliers_y_error_cm_log <- myData %>%
+  filter(abs_y_error_cm_log > mean_y_error_cm_log + (3*sd_y_error_cm_log) | 
+           abs_y_error_cm_log < mean_y_error_cm_log - (3*sd_y_error_cm_log))
 
 # Make a dataset without outliers for x_error_cm
 myData_NO_y <- myData %>%
-  filter(abs_y_error_cm < mean_y_error_cm + (3*sd_y_error_cm), 
-           abs_y_error_cm > mean_y_error_cm - (3*sd_y_error_cm))
+  filter(abs_y_error_cm_log < mean_y_error_cm_log + (3*sd_y_error_cm_log), 
+           abs_y_error_cm_log > mean_y_error_cm_log - (3*sd_y_error_cm_log))
 
 
 ################### Parametric Analyses ###################  
@@ -149,9 +153,9 @@ bxp <- ggboxplot(
   legend = "right", legend.title = "Viewpoint") + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same"))
-jpeg("movement_viewpoint_anova.jpeg", width = 3.5, height = 3, units = 'in', res = 300)
+#jpeg("movement_viewpoint_anova.jpeg", width = 3.5, height = 3, units = 'in', res = 300)
 bxp
-dev.off()
+#dev.off()
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -224,7 +228,7 @@ get_anova_table(cart_withinTest) # not sig but p = 0.08 for walk_noWalk
 aov_x_data <- myData_NO_x %>%
   group_by(subject, walk_noWalk, same_diff) %>%
   summarize(
-    mean = mean(abs_x_error_cm, na.rm = TRUE),
+    mean = mean(abs_x_error_cm_log, na.rm = TRUE),
   )
 aov_x_data <- as_tibble(aov_x_data)
 
@@ -245,7 +249,7 @@ summary(results_x_2way) # nothing is sig, no main effects, no interaction effect
 aov_y_data <- myData_NO_y %>%
   group_by(subject, walk_noWalk, same_diff) %>%
   summarize(
-    mean = mean(abs_y_error_cm, na.rm = TRUE),
+    mean = mean(abs_y_error_cm_log, na.rm = TRUE),
   )
 aov_y_data <- as_tibble(aov_y_data)
 
@@ -259,19 +263,19 @@ bxp <- ggboxplot(
 bxp
 
 
-# 2x2 repeated measures ANOVA - not sig
+# 2x2 repeated measures ANOVA - only movement condition was sig p = 0.046 but very small numerical diff and wasn't there for non log transformed data
 results_y_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_y_data)
-summary(results_y_2way) # nothing is sig, no main effects, no interaction effect
+summary(results_y_2way) # movement sig p = 0.046
 
 
 ##### abs value of x coordinate vs y coordinate accuracy - paired t-test
 xy_data <- myData %>%
   group_by(subject) %>%
   summarise(
-    x_cm_mean = mean(abs(x_error_cm), na.rm = TRUE),
-    y_cm_mean = mean(abs(y_error_cm), na.rm = TRUE)
+    x_cm_mean = mean((abs_x_error_cm_log), na.rm = TRUE),
+    y_cm_mean = mean((abs_y_error_cm_log), na.rm = TRUE)
   )
-t.test(xy_data$x_cm_mean, xy_data$y_cm_mean, paired = TRUE) # p = 8.023e-07
+t.test(xy_data$x_cm_mean, xy_data$y_cm_mean, paired = TRUE) # p = .001178
 
 # for the graph
 xy_data_long <- xy_data %>%
@@ -282,16 +286,24 @@ y_mean <- subset(xy_data_long, error_type == "y_cm_mean", mean_error, drop = TRU
 
 pd <- paired(x_mean, y_mean)
 
-jpeg("horizonal_vertical_values.jpeg", width = 3, height = 3, units = 'in', res = 300)
+#jpeg("horizonal_vertical_values.jpeg", width = 3, height = 3, units = 'in', res = 300)
 plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (cm)") + 
   scale_x_discrete(breaks=c("x_mean", "y_mean"), labels=c("Horizontal (x values)", "Vertical (y values)"))
-dev.off()
+#dev.off()
 
-mean(xy_data$x_cm_mean) # 22.15
-sd(xy_data$x_cm_mean) # 8.30
+mean(xy_data$x_cm_mean) # 1.10
+sd(xy_data$x_cm_mean) # 0.15
 
-mean(xy_data$y_cm_mean) # 15.61
-sd(xy_data$y_cm_mean) # 4.72
+mean(xy_data$y_cm_mean) # 1.04
+sd(xy_data$y_cm_mean) # 0.12
+
+# untransformed
+(10^mean(xy_data$x_cm_mean))-1 # 11.51
+(10^sd(xy_data$x_cm_mean))-1 # 0.43
+
+(10^mean(xy_data$y_cm_mean))-1 # 9.85
+(10^sd(xy_data$y_cm_mean))-1 # 0.31
+
 
 # I don't think this is the way to scale it. Doesn't make sense.
 xy_data$x_cm_mean_scaled <- xy_data$x_cm_mean/6
@@ -319,10 +331,10 @@ no_mean <- subset(landmark_ttest, next_to_landmark == "n", mean, drop = TRUE)
 
 pd <- paired(yes_mean, no_mean)
 
-jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
+#jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
 plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (cm)") + 
   scale_x_discrete(breaks=c("yes_mean", "no_mean"), labels=c("Next to landmark", "Not next to landmark"))
-dev.off()
+#dev.off()
 
 mean(landmark_ttest_long$y) # 1.26
 sd(landmark_ttest_long$y) # 0.20
@@ -330,6 +342,12 @@ sd(landmark_ttest_long$y) # 0.20
 mean(landmark_ttest_long$n) # 1.33
 sd(landmark_ttest_long$n) # 0.13
 
+# untransformed
+(10^mean(landmark_ttest_long$y)) # 18.27
+(10^sd(landmark_ttest_long$y)) # 1.57
+
+(10^mean(landmark_ttest_long$n)) # 21.54
+(10^sd(landmark_ttest_long$n)) # 1.36
 
 ################### Non-Parametric Analyses ###################  
 
@@ -570,3 +588,32 @@ ex.f2_abs_y <- ld.f2(y = abs_y_nparData$median,
 # ANOVA-type statistic
 ex.f2_abs_y$ANOVA.test # nothing sig
 
+################### Preliminary Eye Tracking Data ####################
+
+
+# placement_error_cm
+ggscatter(myData_NO, x = "Total_duration_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 4000, label.sep = "\n"), 
+          xlab = "Total duration of fixations", ylab = "Placement Error (log cm)") # sig
+
+# filter out 0 duration of fixations and too long total fixation time
+duration_filter <- myData_NO %>%
+  filter(myData_NO$Total_duration_of_fixations < 4000 & Total_duration_of_fixations != 0)
+
+#jpeg("eye_total_duration.jpeg", width = 4, height = 3, units = 'in', res = 300)
+ggscatter(duration_filter, x = "Total_duration_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE, size = 1,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 3050, label.sep = "\n"), 
+          xlab = "Total duration of fixations", ylab = "Placement Error (log cm)") # sig
+#dev.off()
+
+ggscatter(myData_NO, x = "Number_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 10, label.sep = "\n"), 
+          xlab = "Number of fixations", ylab = "Placement Error (log cm)") # sig
+fixation_filter <- myData_NO %>%
+  filter(myData_NO$Number_of_fixations < 11 & myData_NO$Number_of_fixations > 0)
+
+#("eye_fixation_number.jpeg", width = 4, height = 3, units = 'in', res = 300)
+ggscatter(fixation_filter, x = "Number_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 7.5, label.y = 2.3, label.sep = "\n"), 
+          xlab = "Number of fixations", ylab = "Placement Error (log cm)") # sig
+#dev.off()
