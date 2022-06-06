@@ -600,11 +600,11 @@ ggscatter(myData_NO, x = "Total_duration_of_fixations", y = "placement_error_cm_
 duration_filter <- myData_NO %>%
   filter(myData_NO$Total_duration_of_fixations < 4000 & Total_duration_of_fixations != 0)
 
-#jpeg("eye_total_duration.jpeg", width = 4, height = 3, units = 'in', res = 300)
+jpeg("eye_total_duration.jpeg", width = 4, height = 3, units = 'in', res = 300)
 ggscatter(duration_filter, x = "Total_duration_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE, size = 1,
           cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 3050, label.sep = "\n"), 
           xlab = "Total duration of fixations", ylab = "Placement Error (log cm)") # sig
-#dev.off()
+dev.off()
 
 ggscatter(myData_NO, x = "Number_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 10, label.sep = "\n"), 
@@ -612,8 +612,8 @@ ggscatter(myData_NO, x = "Number_of_fixations", y = "placement_error_cm_log", ad
 fixation_filter <- myData_NO %>%
   filter(myData_NO$Number_of_fixations < 11 & myData_NO$Number_of_fixations > 0)
 
-#("eye_fixation_number.jpeg", width = 4, height = 3, units = 'in', res = 300)
+jpeg("eye_fixation_number.jpeg", width = 4, height = 3, units = 'in', res = 300)
 ggscatter(fixation_filter, x = "Number_of_fixations", y = "placement_error_cm_log", add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 7.5, label.y = 2.3, label.sep = "\n"), 
           xlab = "Number of fixations", ylab = "Placement Error (log cm)") # sig
-#dev.off()
+dev.off()
