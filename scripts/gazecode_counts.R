@@ -1,70 +1,121 @@
-
 # load libraries
 library(readxl)
 library(tidyr)
 library(tidyverse)
 
+rm(list = ls())
+
 # import data
-rawData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/Recording025__01.xlsx")
+rawData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/Recording025__01_updated.xlsx")
 
 # make a copy to work with
 myData <- rawData
 myData <- as.data.frame(myData)
 myData$label <- as.factor(myData$label)
-
-# filter out the label 0's which mean fixations weren't coded (represents dead time)
-myData <- myData %>%
-  filter(label != 0)
-
-# make table of counts for each label category
-  # 1 = landmark, 2 = door, 3 = same object
-  # 4 = diff object same wall, 5 = other
-  # 6 = diff object diff wall, 7 = cart
-  # 8 = chosen object, 9 = first object
-label_counts <- myData %>%
-group_by(label) %>%
-  summarise(
-    count = n(),
-  )
+myData$videoTime <- myData$`fix start (ms)`/1000
 
 # histogram of label categories
 ggplot(myData, aes(x = label)) +
-  geom_bar() + theme_classic()
+  geom_bar() + theme_classic() + 
+  scale_x_discrete(breaks=c("1", "2", "3", "4", "5", "6", "7", "8", "9"), 
+                   labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO"))
 
-# get table of counts for each event with consecutive codes
-z <- myData$label
-zd <- as.data.frame(z)
-pairs <- data.frame(head(zd, -1), tail(zd, -1))
-names(pairs)[1] <- "first" # rename first column
-names(pairs)[2] <- "second" # rename second column
-pairs_table <- table(pairs) # save the table
-pairs_table <- pairs_table[-1,-1] # remove the first row and column
 
-# add counts for each category
+### Make counting/pair counting function
+category_counts <- function(subjectNum,trialNum,startSec,endSec) {
+  funcData <- myData %>%
+    filter(videoTime >= startSec & videoTime <= endSec) # filter data to only important time frames
   
-# 9-1, 3-1, 8-1, 4-1, 6-1, 9-2, 3-2, 8-2, 4-2, 6-2
-obj_to_lm <- sum(pairs_table[9,1],pairs_table[3,1],pairs_table[8,1],pairs_table[4,1],pairs_table[6,1],
-                 pairs_table[9,2],pairs_table[3,2],pairs_table[8,2],pairs_table[4,2],pairs_table[6,2])
+  myData <- myData %>%
+    filter(label != 0) # filter out the label 0's (fixations weren't coded, aka dead time)
+  
+  # make table of counts for each label category
+  # 1 = landmark, 2 = door, 3 = same object
+  # 4 = diff object same wall, 5 = wall
+  # 6 = diff object diff wall, 7 = cart
+  # 8 = other, 9 = chosen object
+  
+  label_counts <- funcData %>%
+    group_by(label) %>%
+    summarise(
+      count = n(),
+    )
+  
+  # get table of counts for each event with consecutive codes
+  z <- funcData$label
+  zd <- as.data.frame(z)
+  pairs <- data.frame(head(zd, -1), tail(zd, -1))
+  names(pairs)[1] <- "first" # rename first column
+  names(pairs)[2] <- "second" # rename second column
+  pairs_table <- table(pairs) # save the table
+  pairs_table <- pairs_table[-1,-1] # remove the first row and column
+  
+  # add counts for each category
+  
+  # Object --> Landmark 
+  # 9-1, 3-1, 4-1, 6-1, 9-2, 3-2, 4-2, 6-2
+  obj_to_lm <- sum(pairs_table[9,1],pairs_table[3,1],pairs_table[4,1],pairs_table[6,1],
+                   pairs_table[9,2],pairs_table[3,2],pairs_table[4,2],pairs_table[6,2])
+  
+  # Landmark --> Object
+  # 1-9, 1-3, 1-4, 1-6, 2-9, 2-3, 2-4, 2-6
+  lm_to_obj <- sum(pairs_table[1,9],pairs_table[1,3],pairs_table[1,4],pairs_table[1,6],
+                   pairs_table[2,9],pairs_table[2,3],pairs_table[2,4],pairs_table[2,6])
+  
+  # Object --> Same Object
+  # 9-3, 4-3, 6-3, 3-3
+  obj_to_so <- sum(pairs_table[9,3],pairs_table[4,3],pairs_table[6,3],pairs_table[3,3])
+  
+  # Object --> Diff Object
+  # 9-4, 9-6, 3-4, 3-6, 3-9, 4-4, 4-6, 6-4, 6-6
+  obj_to_diffObj <- sum(pairs_table[9,4],pairs_table[9,6],
+                        pairs_table[3,4],pairs_table[3,6],pairs_table[3,9],
+                        pairs_table[4,4],pairs_table[4,6],
+                        pairs_table[6,4],pairs_table[6,6])
+  
+  # Landmark --> Landmark
+  # 1-1, 2-2, 1-2, 2-1
+  lm_to_lm <- sum(pairs_table[1,1],pairs_table[2,2],pairs_table[1,2],pairs_table[2,1])
+  
+  # dataframe of values
+  newTable <<- data.frame(subject = subjectNum, trial = trialNum, landmarks = sum(label_counts$count[1], 
+                       label_counts$count[2]), same_object = label_counts$count[3],
+                       DOSW = label_counts$count[4], other = label_counts$count[5], DODW = label_counts$count[6],
+                       obj_to_lm = obj_to_lm, lm_to_obj = lm_to_obj, obj_to_so = obj_to_so, 
+                       obj_to_diffObj = obj_to_diffObj,
+                       lm_to_lm = lm_to_lm)
+  print("Table saved to global environment")
+}
 
-# 1-9, 1-3, 1-8, 1-4, 1-6, 2-9, 2-3, 2-8, 2-4, 2-6
-lm_to_obj <- sum(pairs_table[1,9],pairs_table[1,3],pairs_table[1,8],pairs_table[1,4],pairs_table[1,6],
-                 pairs_table[2,9],pairs_table[2,3],pairs_table[2,8],pairs_table[2,4],pairs_table[2,6])
 
-# 9-3, 8-3, 4-3, 6-3
-obj_to_so <- sum(pairs_table[9,3],pairs_table[8,3],pairs_table[4,3],pairs_table[6,3])
+category_counts(2,1,115,125)
+trial_1 <- newTable
 
-# 9-4, 9-6, 8-1, 8-6, 3-4, 3-6, 4-4, 4-6, 6-4, 6-6
-obj_to_diffObj <- sum(pairs_table[9,4],pairs_table[9,6],pairs_table[8,1],pairs_table[8,6],
-                      pairs_table[3,4],pairs_table[3,6],pairs_table[4,4],pairs_table[4,6],
-                      pairs_table[6,4],pairs_table[6,6])
+category_counts(2,2,130,550)
+trial_2 <- newTable
 
-# 1-1, 2-2, 1-2, 2-1
-lm_to_lm <- sum(pairs_table[1,1],pairs_table[2,2],pairs_table[1,2],pairs_table[2,1])
+category_counts(2,3,1000,1500)
+trial_3 <- newTable
 
-# dataframe of values
-values <- data.frame(landmarks = sum(label_counts$count[1], label_counts$count[2]), same_object = label_counts$count[3],
-                     DOSW = label_counts$count[4], other = label_counts$count[5], DODW = label_counts$count[6],
-                     obj_to_lm = obj_to_lm, lm_to_obj = lm_to_obj, obj_to_so = obj_to_so, obj_to_diffObj = obj_to_diffObj,
-                     lm_to_lm = lm_to_lm)
+category_counts(2,4,130,550)
+trial_4 <- newTable
 
-    
+category_counts(2,5,130,550)
+trial_5 <- newTable
+
+category_counts(2,6,130,550)
+trial_6 <- newTable
+
+category_counts(2,7,130,550)
+trial_7 <- newTable
+
+category_counts(2,8,130,550)
+trial_8 <- newTable
+
+category_counts(2,9,130,550)
+trial_9 <- newTable
+
+category_counts(2,10,130,550)
+trial_10 <- newTable
+
+subject2table <- rbind(trial_1,trial_2,trial_3,trial_4,trial_5,trial_6,trial_7,trial_8,trial_9,trial_10)
