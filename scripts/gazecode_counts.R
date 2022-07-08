@@ -22,7 +22,7 @@ ggplot(myData, aes(x = label)) +
 
 
 ### Make counting/pair counting function
-category_counts <- function(subjectNum,trialNum,startSec,endSec) {
+category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   funcData <- myData %>%
     filter(videoTime >= startSec & videoTime <= endSec) # filter data to only important time frames
   
@@ -78,7 +78,7 @@ category_counts <- function(subjectNum,trialNum,startSec,endSec) {
   lm_to_lm <- sum(pairs_table[1,1],pairs_table[2,2],pairs_table[1,2],pairs_table[2,1])
   
   # dataframe of values
-  newTable <<- data.frame(subject = subjectNum, trial = trialNum, landmarks = sum(label_counts$count[1], 
+  newTable <<- data.frame(subject = subjectNum, trial = trialNum, trialType = trial_type, landmarks = sum(label_counts$count[1], 
                        label_counts$count[2]), same_object = label_counts$count[3],
                        DOSW = label_counts$count[4], other = label_counts$count[5], DODW = label_counts$count[6],
                        obj_to_lm = obj_to_lm, lm_to_obj = lm_to_obj, obj_to_so = obj_to_so, 
@@ -88,34 +88,78 @@ category_counts <- function(subjectNum,trialNum,startSec,endSec) {
 }
 
 
-category_counts(2,1,115,125)
-trial_1 <- newTable
+category_counts(2,1,"study",115,125)
+trial_1_study <- newTable
 
-category_counts(2,2,130,550)
-trial_2 <- newTable
+category_counts(2,1,"retrieval",115,125)
+trial_1_retrieval <- newTable
 
-category_counts(2,3,1000,1500)
-trial_3 <- newTable
+category_counts(2,2,"study",130,550)
+trial_2_study <- newTable
 
-category_counts(2,4,130,550)
-trial_4 <- newTable
+category_counts(2,2,"retrieval",130,550)
+trial_2_retrieval <- newTable
 
-category_counts(2,5,130,550)
-trial_5 <- newTable
+category_counts(2,3,"study",1000,1500)
+trial_3_study <- newTable
 
-category_counts(2,6,130,550)
-trial_6 <- newTable
+category_counts(2,3,"retrieval",1000,1500)
+trial_3_retrieval <- newTable
 
-category_counts(2,7,130,550)
-trial_7 <- newTable
+category_counts(2,4,"study",130,550)
+trial_4_study <- newTable
 
-category_counts(2,8,130,550)
-trial_8 <- newTable
+category_counts(2,4,"retrieval",130,550)
+trial_4_retrieval <- newTable
 
-category_counts(2,9,130,550)
-trial_9 <- newTable
+category_counts(2,5,"study",130,550)
+trial_5_study <- newTable
 
-category_counts(2,10,130,550)
-trial_10 <- newTable
+category_counts(2,5,"retrieval",130,550)
+trial_5_retrieval <- newTable
 
-subject2table <- rbind(trial_1,trial_2,trial_3,trial_4,trial_5,trial_6,trial_7,trial_8,trial_9,trial_10)
+category_counts(2,6,"study",130,550)
+trial_6_study <- newTable
+
+category_counts(2,6,"retrieval",130,550)
+trial_6_retrieval <- newTable
+
+category_counts(2,7,"study",130,550)
+trial_7_study <- newTable
+
+category_counts(2,7,"retrieval",130,550)
+trial_7_retrieval <- newTable
+
+category_counts(2,8,"study",130,550)
+trial_8_study <- newTable
+
+category_counts(2,8,"retrieval",130,550)
+trial_8_retrieval <- newTable
+
+category_counts(2,9,"study",130,550)
+trial_9_study <- newTable
+
+category_counts(2,9,"retrieval",130,550)
+trial_9_retrieval <- newTable
+
+category_counts(2,10,"study",130,550)
+trial_10_study <- newTable
+
+category_counts(2,10,"retrieval",130,550)
+trial_10_retrieval <- newTable
+
+
+subject2table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
+                       trial_3_study,trial_3_retrieval,trial_4_study,trial_4_retrieval,
+                       trial_5_study,trial_5_retrieval,trial_6_study,trial_6_retrieval,
+                       trial_7_study,trial_7_retrieval,trial_8_study,trial_8_retrieval,
+                       trial_9_study,trial_9_retrieval,trial_10_study,trial_10_retrieval,)
+
+
+
+
+
+
+
+
+
