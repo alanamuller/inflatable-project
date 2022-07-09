@@ -88,64 +88,64 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
 }
 
 
-category_counts(2,1,"study",115,125)
+category_counts(2,1,"study",98,131)
 trial_1_study <- newTable
 
-category_counts(2,1,"retrieval",115,125)
+category_counts(2,1,"retrieval",245,409)
 trial_1_retrieval <- newTable
 
-category_counts(2,2,"study",130,550)
+category_counts(2,2,"study",629,660)
 trial_2_study <- newTable
 
-category_counts(2,2,"retrieval",130,550)
+category_counts(2,2,"retrieval",747,858)
 trial_2_retrieval <- newTable
 
-category_counts(2,3,"study",1000,1500)
+category_counts(2,3,"study",1168,1201)
 trial_3_study <- newTable
 
-category_counts(2,3,"retrieval",1000,1500)
+category_counts(2,3,"retrieval",1339,1477)
 trial_3_retrieval <- newTable
 
-category_counts(2,4,"study",130,550)
+category_counts(2,4,"study",1667,1701)
 trial_4_study <- newTable
 
-category_counts(2,4,"retrieval",130,550)
+category_counts(2,4,"retrieval",1797,1918)
 trial_4_retrieval <- newTable
 
-category_counts(2,5,"study",130,550)
+category_counts(2,5,"study",2086,1218)
 trial_5_study <- newTable
 
-category_counts(2,5,"retrieval",130,550)
+category_counts(2,5,"retrieval",2223,2349)
 trial_5_retrieval <- newTable
 
-category_counts(2,6,"study",130,550)
+category_counts(2,6,"study",74,110)
 trial_6_study <- newTable
 
-category_counts(2,6,"retrieval",130,550)
+category_counts(2,6,"retrieval",224,350)
 trial_6_retrieval <- newTable
 
-category_counts(2,7,"study",130,550)
+category_counts(2,7,"study",505,543)
 trial_7_study <- newTable
 
-category_counts(2,7,"retrieval",130,550)
+category_counts(2,7,"retrieval",623,757)
 trial_7_retrieval <- newTable
 
-category_counts(2,8,"study",130,550)
+category_counts(2,8,"study",938,974)
 trial_8_study <- newTable
 
-category_counts(2,8,"retrieval",130,550)
+category_counts(2,8,"retrieval",1069,1170)
 trial_8_retrieval <- newTable
 
-category_counts(2,9,"study",130,550)
+category_counts(2,9,"study",1350,1383)
 trial_9_study <- newTable
 
-category_counts(2,9,"retrieval",130,550)
+category_counts(2,9,"retrieval",1479,1587)
 trial_9_retrieval <- newTable
 
-category_counts(2,10,"study",130,550)
+category_counts(2,10,"study",1758,1792)
 trial_10_study <- newTable
 
-category_counts(2,10,"retrieval",130,550)
+category_counts(2,10,"retrieval",1863,1955)
 trial_10_retrieval <- newTable
 
 
