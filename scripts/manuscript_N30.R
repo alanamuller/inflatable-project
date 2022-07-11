@@ -1,6 +1,6 @@
 # Data file used for the manuscript results section
 # Alana Muller
-# amuller@email.arizona.edu
+# amuller@arizona.edu
 # 2022-03-23
 
 library(ggplot2)
