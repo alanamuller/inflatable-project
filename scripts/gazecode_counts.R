@@ -5,21 +5,24 @@ library(tidyverse)
 
 rm(list = ls())
 
-# import data
-rawData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/Recording025__01_updated.xlsx")
+# subject number
+subjnum <- 2
+
+##### import data part 1
+rawData_part1 <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/s002_part1_data.xlsx")
 
 # make a copy to work with
-myData <- rawData
+myData <- rawData_part1
 myData <- as.data.frame(myData)
 myData$label <- as.factor(myData$label)
 myData$videoTime <- myData$`fix start (ms)`/1000
 
 # histogram of label categories
-ggplot(myData, aes(x = label)) +
+hist_part1 <- ggplot(myData, aes(x = label)) +
   geom_bar() + theme_classic() + 
   scale_x_discrete(breaks=c("1", "2", "3", "4", "5", "6", "7", "8", "9"), 
-                   labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO"))
-
+                   labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO")) +
+  ggtitle("Trials 1-5") + theme(plot.title = element_text(hjust = 0.5))
 
 ### Make counting/pair counting function
 category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
@@ -87,71 +90,90 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   print("Table saved to global environment")
 }
 
-
-category_counts(2,1,"study",98,131)
+category_counts(subjnum,1,"study",98,131)
 trial_1_study <- newTable
 
-category_counts(2,1,"retrieval",245,409)
+category_counts(subjnum,1,"retrieval",245,409)
 trial_1_retrieval <- newTable
 
-category_counts(2,2,"study",629,660)
+category_counts(subjnum,2,"study",629,660)
 trial_2_study <- newTable
 
-category_counts(2,2,"retrieval",747,858)
+category_counts(subjnum,2,"retrieval",747,858)
 trial_2_retrieval <- newTable
 
-category_counts(2,3,"study",1168,1201)
+category_counts(subjnum,3,"study",1168,1201)
 trial_3_study <- newTable
 
-category_counts(2,3,"retrieval",1339,1477)
+category_counts(subjnum,3,"retrieval",1339,1477)
 trial_3_retrieval <- newTable
 
-category_counts(2,4,"study",1667,1701)
+category_counts(subjnum,4,"study",1667,1701)
 trial_4_study <- newTable
 
-category_counts(2,4,"retrieval",1797,1918)
+category_counts(subjnum,4,"retrieval",1797,1918)
 trial_4_retrieval <- newTable
 
-category_counts(2,5,"study",2086,1218)
+category_counts(subjnum,5,"study",2084,2118)
 trial_5_study <- newTable
 
-category_counts(2,5,"retrieval",2223,2349)
+category_counts(subjnum,5,"retrieval",2223,2349)
 trial_5_retrieval <- newTable
 
-category_counts(2,6,"study",74,110)
+##### import data for part 2
+rawData_part2 <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/s002_part2_data.xlsx")
+
+# make a copy to work with
+myData <- rawData_part2
+myData <- as.data.frame(myData)
+myData$label <- as.factor(myData$label)
+myData$videoTime <- myData$`fix start (ms)`/1000
+
+# histogram of label categories
+hist_part2 <- ggplot(myData, aes(x = label)) +
+  geom_bar() + theme_classic() + 
+  scale_x_discrete(breaks=c("1", "2", "3", "4", "5", "6", "7", "8", "9"), 
+                   labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO")) +
+  ggtitle("Trials 6-10") + theme(plot.title = element_text(hjust = 0.5))
+
+# finish category counts
+category_counts(subjnum,6,"study",74,110)
 trial_6_study <- newTable
 
-category_counts(2,6,"retrieval",224,350)
+category_counts(subjnum,6,"retrieval",224,350)
 trial_6_retrieval <- newTable
 
-category_counts(2,7,"study",505,543)
+category_counts(subjnum,7,"study",505,543)
 trial_7_study <- newTable
 
-category_counts(2,7,"retrieval",623,757)
+category_counts(subjnum,7,"retrieval",623,757)
 trial_7_retrieval <- newTable
 
-category_counts(2,8,"study",938,974)
+category_counts(subjnum,8,"study",938,974)
 trial_8_study <- newTable
 
-category_counts(2,8,"retrieval",1069,1170)
+category_counts(subjnum,8,"retrieval",1069,1170)
 trial_8_retrieval <- newTable
 
-category_counts(2,9,"study",1350,1383)
+category_counts(subjnum,9,"study",1350,1383)
 trial_9_study <- newTable
 
-category_counts(2,9,"retrieval",1479,1587)
+category_counts(subjnum,9,"retrieval",1479,1587)
 trial_9_retrieval <- newTable
 
-category_counts(2,10,"study",1758,1792)
+category_counts(subjnum,10,"study",1758,1792)
 trial_10_study <- newTable
 
-category_counts(2,10,"retrieval",1863,1955)
+category_counts(subjnum,10,"retrieval",1863,1955)
 trial_10_retrieval <- newTable
 
 
-subject2table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
+subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
                        trial_3_study,trial_3_retrieval,trial_4_study,trial_4_retrieval,
                        trial_5_study,trial_5_retrieval,trial_6_study,trial_6_retrieval,
                        trial_7_study,trial_7_retrieval,trial_8_study,trial_8_retrieval,
-                       trial_9_study,trial_9_retrieval,trial_10_study,trial_10_retrieval,)
+                       trial_9_study,trial_9_retrieval,trial_10_study,trial_10_retrieval)
 
+sink("subject_002_gazeCodeCounts.xlsx")
+subject_table
+sink()
