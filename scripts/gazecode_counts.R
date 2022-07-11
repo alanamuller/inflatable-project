@@ -4,6 +4,7 @@ library(tidyr)
 library(tidyverse)
 
 rm(list = ls())
+setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
 
 # subject number
 subjnum <- 2
@@ -174,6 +175,6 @@ subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_ret
                        trial_7_study,trial_7_retrieval,trial_8_study,trial_8_retrieval,
                        trial_9_study,trial_9_retrieval,trial_10_study,trial_10_retrieval)
 
-sink("subject_002_gazeCodeCounts.xlsx")
-subject_table
+sink("subject_002_gazeCodeCounts.csv")
+write.csv(subject_table, row.names = FALSE)
 sink()
