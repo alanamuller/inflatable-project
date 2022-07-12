@@ -168,7 +168,6 @@ trial_10_study <- newTable
 category_counts(subjnum,10,"retrieval",1863,1955)
 trial_10_retrieval <- newTable
 
-
 subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
                        trial_3_study,trial_3_retrieval,trial_4_study,trial_4_retrieval,
                        trial_5_study,trial_5_retrieval,trial_6_study,trial_6_retrieval,
