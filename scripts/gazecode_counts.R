@@ -4,13 +4,20 @@ library(tidyr)
 library(tidyverse)
 
 rm(list = ls())
-setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
+
+# E is the drive on my work PC, D is the drive on my laptop, change accordingly
+setwd("D:/Nav_1stYr_project_data/GazeCode data")
 
 # subject number
-subjnum <- 2
+subjnum <- 4
+
+data_part1 <- "D:/Nav_1stYr_project_data/GazeCode data/s004_part1_data.xlsx"
+data_part2 <- "D:/Nav_1stYr_project_data/GazeCode data/s004_part2_data.xlsx"
+
+data_part3 <- "D:/Nav_1stYr_project_data/GazeCode data/s004_part3_data.xlsx"
 
 ##### import data part 1
-rawData_part1 <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/s002_part1_data.xlsx")
+rawData_part1 <- read_excel(data_part1)
 
 # make a copy to work with
 myData <- rawData_part1
@@ -91,38 +98,38 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   print("Table saved to global environment")
 }
 
-category_counts(subjnum,1,"study",98,131)
+category_counts(subjnum,1,"study",206,	240)
 trial_1_study <- newTable
 
-category_counts(subjnum,1,"retrieval",245,409)
+category_counts(subjnum,1,"retrieval",353,	493)
 trial_1_retrieval <- newTable
 
-category_counts(subjnum,2,"study",629,660)
+category_counts(subjnum,2,"study",762,	795)
 trial_2_study <- newTable
 
-category_counts(subjnum,2,"retrieval",747,858)
+category_counts(subjnum,2,"retrieval",927,	1083)
 trial_2_retrieval <- newTable
 
-category_counts(subjnum,3,"study",1168,1201)
+category_counts(subjnum,3,"study",1284,	1318)
 trial_3_study <- newTable
 
-category_counts(subjnum,3,"retrieval",1339,1477)
+category_counts(subjnum,3,"retrieval",1432,	1570)
 trial_3_retrieval <- newTable
 
-category_counts(subjnum,4,"study",1667,1701)
+category_counts(subjnum,4,"study",1780,	1814)
 trial_4_study <- newTable
 
-category_counts(subjnum,4,"retrieval",1797,1918)
+category_counts(subjnum,4,"retrieval",1912,	2029)
 trial_4_retrieval <- newTable
 
-category_counts(subjnum,5,"study",2084,2118)
+category_counts(subjnum,5,"study",2238,	2272)
 trial_5_study <- newTable
 
-category_counts(subjnum,5,"retrieval",2223,2349)
+category_counts(subjnum,5,"retrieval",2373,	2576)
 trial_5_retrieval <- newTable
 
 ##### import data for part 2
-rawData_part2 <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/s002_part2_data.xlsx")
+rawData_part2 <- read_excel(data_part2)
 
 # make a copy to work with
 myData <- rawData_part2
@@ -138,34 +145,45 @@ hist_part2 <- ggplot(myData, aes(x = label)) +
   ggtitle("Trials 6-10") + theme(plot.title = element_text(hjust = 0.5))
 
 # finish category counts
-category_counts(subjnum,6,"study",74,110)
+category_counts(subjnum,6,"study",150,	183)
 trial_6_study <- newTable
 
-category_counts(subjnum,6,"retrieval",224,350)
+category_counts(subjnum,6,"retrieval",273	,417)
 trial_6_retrieval <- newTable
 
-category_counts(subjnum,7,"study",505,543)
+category_counts(subjnum,7,"study",587	,619)
 trial_7_study <- newTable
 
-category_counts(subjnum,7,"retrieval",623,757)
+category_counts(subjnum,7,"retrieval",713	,912)
 trial_7_retrieval <- newTable
 
-category_counts(subjnum,8,"study",938,974)
+category_counts(subjnum,8,"study",1132,	1167)
 trial_8_study <- newTable
 
-category_counts(subjnum,8,"retrieval",1069,1170)
+category_counts(subjnum,8,"retrieval",1274,	1427)
 trial_8_retrieval <- newTable
 
-category_counts(subjnum,9,"study",1350,1383)
+category_counts(subjnum,9,"study",1691,	1724)
 trial_9_study <- newTable
 
-category_counts(subjnum,9,"retrieval",1479,1587)
+category_counts(subjnum,9,"retrieval",1854,	2088)
 trial_9_retrieval <- newTable
 
-category_counts(subjnum,10,"study",1758,1792)
+
+##### import data part 3
+rawData_part3 <- read_excel(data_part3)
+
+# make a copy to work with
+myData <- rawData_part3
+myData <- as.data.frame(myData)
+myData$label <- as.factor(myData$label)
+myData$videoTime <- myData$`fix start (ms)`/1000
+
+
+category_counts(subjnum,10,"study",28,	62)
 trial_10_study <- newTable
 
-category_counts(subjnum,10,"retrieval",1863,1955)
+category_counts(subjnum,10,"retrieval",151,	317)
 trial_10_retrieval <- newTable
 
 subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
@@ -185,7 +203,10 @@ subject_table_wide <- reshape(subject_table, direction = "wide",
                                            "r.obj_to_so", "r.obj_to_diffObj", "r.lm_to_lm", "r.timeStart", "r.timeEnd", "r.duration")
 )
 
-sink("subject_002_gazeCodeCounts.csv")
+# E is the drive on my work PC, D is the drive on my laptop, change accordingly
+setwd("D:/Nav_1stYr_project_data/GazeCode data/R_outputs")
+
+sink("subject_004_gazeCodeCounts.csv")
 write.csv(subject_table_wide, row.names = FALSE)
 sink()
 
