@@ -9,12 +9,12 @@ rm(list = ls())
 setwd("D:/Nav_1stYr_project_data/GazeCode data")
 
 # subject number
-subjnum <- 4
+subjnum <- 6
 
-data_part1 <- "D:/Nav_1stYr_project_data/GazeCode data/s004_part1_data.xlsx"
-data_part2 <- "D:/Nav_1stYr_project_data/GazeCode data/s004_part2_data.xlsx"
+data_part1 <- "D:/Nav_1stYr_project_data/GazeCode data/s006_part1_data.xlsx"
+data_part2 <- "D:/Nav_1stYr_project_data/GazeCode data/s006_part2_data.xlsx"
 
-data_part3 <- "D:/Nav_1stYr_project_data/GazeCode data/s004_part3_data.xlsx"
+#data_part3 <- "D:/Nav_1stYr_project_data/GazeCode data/s031_part3_data.xlsx"
 
 ##### import data part 1
 rawData_part1 <- read_excel(data_part1)
@@ -31,6 +31,7 @@ hist_part1 <- ggplot(myData, aes(x = label)) +
   scale_x_discrete(breaks=c("1", "2", "3", "4", "5", "6", "7", "8", "9"), 
                    labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO")) +
   ggtitle("Trials 1-5") + theme(plot.title = element_text(hjust = 0.5))
+
 
 ### Make counting/pair counting function
 category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
@@ -98,35 +99,37 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   print("Table saved to global environment")
 }
 
-category_counts(subjnum,1,"study",206,	240)
+
+category_counts(subjnum,1,"study",0,	0)
 trial_1_study <- newTable
 
-category_counts(subjnum,1,"retrieval",353,	493)
+category_counts(subjnum,1,"retrieval",140,	265)
 trial_1_retrieval <- newTable
 
-category_counts(subjnum,2,"study",762,	795)
+category_counts(subjnum,2,"study",500,	533)
 trial_2_study <- newTable
 
-category_counts(subjnum,2,"retrieval",927,	1083)
+category_counts(subjnum,2,"retrieval",678,	801)
 trial_2_retrieval <- newTable
 
-category_counts(subjnum,3,"study",1284,	1318)
+category_counts(subjnum,3,"study",1055,	1088)
 trial_3_study <- newTable
 
-category_counts(subjnum,3,"retrieval",1432,	1570)
+category_counts(subjnum,3,"retrieval",1174,	1252)
 trial_3_retrieval <- newTable
 
-category_counts(subjnum,4,"study",1780,	1814)
+category_counts(subjnum,4,"study",1400,	1433)
 trial_4_study <- newTable
 
-category_counts(subjnum,4,"retrieval",1912,	2029)
+category_counts(subjnum,4,"retrieval",1580,	1728)
 trial_4_retrieval <- newTable
 
-category_counts(subjnum,5,"study",2238,	2272)
+category_counts(subjnum,5,"study",1887,	1920)
 trial_5_study <- newTable
 
-category_counts(subjnum,5,"retrieval",2373,	2576)
+category_counts(subjnum,5,"retrieval",2055,	2154)
 trial_5_retrieval <- newTable
+
 
 ##### import data for part 2
 rawData_part2 <- read_excel(data_part2)
@@ -144,46 +147,36 @@ hist_part2 <- ggplot(myData, aes(x = label)) +
                    labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO")) +
   ggtitle("Trials 6-10") + theme(plot.title = element_text(hjust = 0.5))
 
+
 # finish category counts
-category_counts(subjnum,6,"study",150,	183)
+category_counts(subjnum,6,"study",67,	100)
 trial_6_study <- newTable
 
-category_counts(subjnum,6,"retrieval",273	,417)
+category_counts(subjnum,6,"retrieval",231,	367)
 trial_6_retrieval <- newTable
 
-category_counts(subjnum,7,"study",587	,619)
+category_counts(subjnum,7,"study",523,	557)
 trial_7_study <- newTable
 
-category_counts(subjnum,7,"retrieval",713	,912)
+category_counts(subjnum,7,"retrieval",648,	751)
 trial_7_retrieval <- newTable
 
-category_counts(subjnum,8,"study",1132,	1167)
+category_counts(subjnum,8,"study",918,	949)
 trial_8_study <- newTable
 
-category_counts(subjnum,8,"retrieval",1274,	1427)
+category_counts(subjnum,8,"retrieval",1053,	1164)
 trial_8_retrieval <- newTable
 
-category_counts(subjnum,9,"study",1691,	1724)
+category_counts(subjnum,9,"study",1353,	1385)
 trial_9_study <- newTable
 
-category_counts(subjnum,9,"retrieval",1854,	2088)
+category_counts(subjnum,9,"retrieval",1513,	1612)
 trial_9_retrieval <- newTable
 
-
-##### import data part 3
-rawData_part3 <- read_excel(data_part3)
-
-# make a copy to work with
-myData <- rawData_part3
-myData <- as.data.frame(myData)
-myData$label <- as.factor(myData$label)
-myData$videoTime <- myData$`fix start (ms)`/1000
-
-
-category_counts(subjnum,10,"study",28,	62)
+category_counts(subjnum,10,"study",1791	,1822)
 trial_10_study <- newTable
 
-category_counts(subjnum,10,"retrieval",151,	317)
+category_counts(subjnum,10,"retrieval",1904,	2009)
 trial_10_retrieval <- newTable
 
 subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
@@ -206,7 +199,18 @@ subject_table_wide <- reshape(subject_table, direction = "wide",
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
 setwd("D:/Nav_1stYr_project_data/GazeCode data/R_outputs")
 
-sink("subject_004_gazeCodeCounts.csv")
+sink("subject_006_gazeCodeCounts.csv")
 write.csv(subject_table_wide, row.names = FALSE)
 sink()
 
+
+
+
+##### import data part 3
+#rawData_part3 <- read_excel(data_part3)
+
+## make a copy to work with
+#myData <- rawData_part3
+#myData <- as.data.frame(myData)
+#myData$label <- as.factor(myData$label)
+#myData$videoTime <- myData$`fix start (ms)`/1000
