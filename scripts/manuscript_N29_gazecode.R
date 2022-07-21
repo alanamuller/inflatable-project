@@ -5,8 +5,11 @@
 
 rm(list = ls())
 
+library(readxl)
 library(ggplot2)
 library(ggpubr)
+library(dplyr)
+library(tidyverse)
 
 # work computer uses E but laptop uses D, change accordingly
 setwd("D:/Nav_1stYr_project_data/GazeCode data")
@@ -122,6 +125,10 @@ ggpaired(subject_df, cond1 = "s.lm_to_obj_norm_log", cond2 = "r.lm_to_obj_norm_l
 ggpaired(subject_df, cond1 = "s.obj_to_so_norm_log", cond2 = "r.obj_to_so_norm_log")
 ggpaired(subject_df, cond1 = "s.obj_to_diffObj_norm_log", cond2 = "r.obj_to_diffObj_norm_log")
 ggpaired(subject_df, cond1 = "s.lm_to_lm_norm_log", cond2 = "r.lm_to_lm_norm_log")
+
+
+
+
 
 
 
