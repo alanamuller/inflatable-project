@@ -290,7 +290,7 @@ big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.s
                 r.obj_to_lm_norm_log + r.lm_to_obj_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
                 Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
 summary(big_reg_norm)
-
+ 
 
 
 
