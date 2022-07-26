@@ -14,10 +14,10 @@ library(rstatix)
 library(car)
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data")
+setwd("D:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
+inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -268,10 +268,37 @@ cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm
 
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
-
+# only r.DODW sig
 only_sig_stuff_reg <- lm(formula = placement_error_cm_log ~ s.obj_to_so + r.same_object + r.DODW + r.obj_to_so + 
                  Total_duration_of_fixations + Average_duration_of_fixations + Peak_velocity_of_exit_saccade, data = subject_df)
 summary(only_sig_stuff_reg)
 
-big_reg <- lm(formula = placement_error_cm_log ~ s.landmarks + s.same_object, data = subject_df)
+only_sig_stuff_reg_norm <- lm(formula = placement_error_cm_log ~ s.obj_to_so_norm_log + r.DODW_norm_log + r.obj_to_so_norm_log + 
+                           Total_duration_of_fixations + Average_duration_of_fixations + Peak_velocity_of_exit_saccade, data = subject_df)
+summary(only_sig_stuff_reg_norm)
+
+big_reg <- lm(formula = placement_error_cm_log ~ s.landmarks + s.same_object + s.DOSW + s.other + s.DODW +
+                s.obj_to_lm + s.lm_to_obj + s.obj_to_so + s.obj_to_diffObj + s.lm_to_lm +
+                r.landmarks + r.same_object + r.DOSW + r.other + r.DODW +
+                r.obj_to_lm + r.lm_to_obj + r.obj_to_so + r.obj_to_diffObj + r.lm_to_lm +
+                Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
+summary(big_reg)
+
+big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.same_object_norm_log + s.DOSW_norm_log + s.other_norm_log + s.DODW_norm_log +
+                s.obj_to_lm_norm_log + s.lm_to_obj_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
+                r.landmarks_norm_log + r.same_object_norm_log + r.DOSW_norm_log + r.other_norm_log + r.DODW_norm_log +
+                r.obj_to_lm_norm_log + r.lm_to_obj_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
+                Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
+summary(big_reg_norm)
+
+
+
+
+
+
+
+
+
+
+
 
