@@ -11,12 +11,13 @@ library(ggpubr)
 library(dplyr)
 library(tidyverse)
 library(rstatix)
+library(car)
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("D:/Nav_1stYr_project_data/GazeCode data")
+setwd("E:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
+inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -26,6 +27,9 @@ i <- c(1:55)
 myData [ , i] <- apply(myData, 2, function(x) as.numeric(x))
 myData$subject <- as.factor(myData$subject)
 myData$trial <- as.factor(myData$trial)
+myData$placement_error_cm_log <- log(myData$placement_error_cm+1)
+myData$abs_x_error_cm_log <- log(myData$abs_x_error_cm+1)
+myData$abs_y_error_cm_log <- log(myData$abs_y_error_cm+1)
 str(myData)
 
 myData$s.landmarks_norm <- myData$s.landmarks/myData$s.duration
@@ -95,7 +99,35 @@ subject_df <- myData %>%
     r.lm_to_obj_norm_log = mean(r.lm_to_obj_norm_log, na.rm = TRUE),
     r.obj_to_so_norm_log = mean(r.obj_to_so_norm_log, na.rm = TRUE),
     r.obj_to_diffObj_norm_log = mean(r.obj_to_diffObj_norm_log, na.rm = TRUE),
-    r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE)
+    r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE), 
+    placement_error_cm_log = mean(placement_error_cm_log),
+    abs_x_error_cm_log = mean(abs_x_error_cm_log),
+    abs_y_error_cm_log = mean(abs_y_error_cm_log),
+    s.landmarks = mean(s.landmarks, na.rm = TRUE),
+    s.same_object = mean(s.same_object, na.rm = TRUE),
+    s.DOSW = mean(s.DOSW, na.rm = TRUE),
+    s.other = mean(s.other, na.rm = TRUE),
+    s.DODW = mean(s.DODW, na.rm = TRUE),
+    s.obj_to_lm = mean(s.obj_to_lm, na.rm = TRUE),
+    s.lm_to_obj = mean(s.lm_to_obj, na.rm = TRUE),
+    s.obj_to_so = mean(s.obj_to_so, na.rm = TRUE),
+    s.obj_to_diffObj = mean(s.obj_to_diffObj, na.rm = TRUE),
+    s.lm_to_lm = mean(s.lm_to_lm, na.rm = TRUE),
+    r.landmarks = mean(r.landmarks, na.rm = TRUE),
+    r.same_object = mean(r.same_object, na.rm = TRUE),
+    r.DOSW = mean(r.DOSW, na.rm = TRUE),
+    r.other = mean(r.other, na.rm = TRUE),
+    r.DODW = mean(r.DODW, na.rm = TRUE),
+    r.obj_to_lm = mean(r.obj_to_lm, na.rm = TRUE),
+    r.lm_to_obj = mean(r.lm_to_obj, na.rm = TRUE),
+    r.obj_to_so = mean(r.obj_to_so, na.rm = TRUE),
+    r.obj_to_diffObj = mean(r.obj_to_diffObj, na.rm = TRUE),
+    r.lm_to_lm = mean(r.lm_to_lm, na.rm = TRUE),
+    Total_duration_of_fixations = mean(Total_duration_of_fixations),
+    Average_duration_of_fixations = mean(Average_duration_of_fixations),
+    Number_of_fixations = mean(Number_of_fixations), 
+    Peak_velocity_of_entry_saccade = mean(Peak_velocity_of_entry_saccade),
+    Peak_velocity_of_exit_saccade = mean(Peak_velocity_of_exit_saccade)
   )
 
 subject_counts_df <- myData %>%
@@ -120,7 +152,10 @@ subject_counts_df <- myData %>%
     r.lm_to_obj = mean(r.lm_to_obj, na.rm = TRUE),
     r.obj_to_so = mean(r.obj_to_so, na.rm = TRUE),
     r.obj_to_diffObj = mean(r.obj_to_diffObj, na.rm = TRUE),
-    r.lm_to_lm = mean(r.lm_to_lm, na.rm = TRUE)
+    r.lm_to_lm = mean(r.lm_to_lm, na.rm = TRUE),
+    placement_error_cm_log = mean(placement_error_cm_log),
+    abs_x_error_cm_log = mean(abs_x_error_cm_log),
+    abs_y_error_cm_log = mean(abs_y_error_cm_log)
   )
 
 subject_counts_long <- subject_counts_df %>%
@@ -131,7 +166,7 @@ subject_counts_long <- subject_counts_df %>%
   convert_as_factor(subject,trial)
   
   
-### test study against test in each category
+### test study against test in each category # all sig expect when specified as not sig
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
 mean(subject_df$s.landmarks_norm_log, na.rm = TRUE)
 mean(subject_df$r.landmarks_norm_log, na.rm = TRUE)
@@ -144,7 +179,7 @@ t.test(subject_df$s.obj_to_lm_norm_log , subject_df$r.obj_to_lm_norm_log , paire
 t.test(subject_df$s.lm_to_obj_norm_log , subject_df$r.lm_to_obj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # not sig
+t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # p = .06586
 
 
 ggpaired(subject_df, cond1 = "s.landmarks_norm_log", cond2 = "r.landmarks_norm_log")
@@ -159,8 +194,8 @@ ggpaired(subject_df, cond1 = "s.obj_to_diffObj_norm_log", cond2 = "r.obj_to_diff
 ggpaired(subject_df, cond1 = "s.lm_to_lm_norm_log", cond2 = "r.lm_to_lm_norm_log")
 
 # comparisons with numbers study/retrieval phase
-t.test(subject_counts_df$s.landmarks, subject_df$s.same_object, paired = TRUE, alternative = "two.sided")
-ggpaired(subject_df, cond1 = "s.landmarks", cond2 = "s.same_object")
+t.test(subject_counts_df$s.landmarks, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
+ggpaired(subject_counts_df, cond1 = "s.landmarks", cond2 = "s.same_object")
 
 subject_counts_long %>%
   group_by(trial) %>%
@@ -170,7 +205,7 @@ bxp <- ggboxplot(subject_counts_long, x = "trial", y = "means", add = "point")
 bxp
 
 res.aov <- anova_test(data = subject_counts_long, dv = means, wid = subject, within = trial)
-get_anova_table(res.aov)
+get_anova_table(res.aov) # sig
 
 pwc <- subject_counts_long %>%
   pairwise_t_test(
@@ -180,7 +215,63 @@ pwc <- subject_counts_long %>%
 pwc
 
 # correlations with performance
+cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+plot(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log)
+
+cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$s.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+
+cor.test(subject_df$r.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # p = .07048
+cor.test(subject_df$r.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor
+cor.test(subject_df$r.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
+cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
+cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$r.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+
+cor.test(subject_counts_df$s.landmarks, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.same_object, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.DOSW, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.other, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.DODW, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.obj_to_lm, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.lm_to_obj, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.obj_to_so, subject_counts_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_counts_df$s.obj_to_diffObj, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$s.lm_to_lm, subject_counts_df$placement_error_cm_log, method = "pearson")
+
+cor.test(subject_counts_df$r.landmarks, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$r.same_object, subject_counts_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_counts_df$r.DOSW, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$r.other, subject_counts_df$placement_error_cm_log, method = "pearson") 
+cor.test(subject_counts_df$r.DODW, subject_counts_df$placement_error_cm_log, method = "pearson") # sig pos cor
+cor.test(subject_counts_df$r.obj_to_lm, subject_counts_df$placement_error_cm_log, method = "pearson") 
+cor.test(subject_counts_df$r.lm_to_obj, subject_counts_df$placement_error_cm_log, method = "pearson") 
+cor.test(subject_counts_df$r.obj_to_so, subject_counts_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_counts_df$r.obj_to_diffObj, subject_counts_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_counts_df$r.lm_to_lm, subject_counts_df$placement_error_cm_log, method = "pearson")
+
+cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$Number_of_fixations, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$Peak_velocity_of_entry_saccade, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor
+
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
 
+only_sig_stuff_reg <- lm(formula = placement_error_cm_log ~ s.obj_to_so + r.same_object + r.DODW + r.obj_to_so + 
+                 Total_duration_of_fixations + Average_duration_of_fixations + Peak_velocity_of_exit_saccade, data = subject_df)
+summary(only_sig_stuff_reg)
+
+big_reg <- lm(formula = placement_error_cm_log ~ s.landmarks + s.same_object, data = subject_df)
 
