@@ -14,10 +14,10 @@ library(rstatix)
 library(car)
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("D:/Nav_1stYr_project_data/GazeCode data")
+setwd("E:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
+inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -225,6 +225,7 @@ cor.test(subject_df$s.DODW_norm_log, subject_df$placement_error_cm_log, method =
 cor.test(subject_df$s.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+plot(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$s.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
@@ -232,6 +233,7 @@ cor.test(subject_df$r.same_object_norm_log, subject_df$placement_error_cm_log, m
 cor.test(subject_df$r.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor
+plot(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$r.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
 cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
 cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
@@ -246,11 +248,13 @@ cor.test(subject_counts_df$s.DODW, subject_counts_df$placement_error_cm_log, met
 cor.test(subject_counts_df$s.obj_to_lm, subject_counts_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_counts_df$s.lm_to_obj, subject_counts_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_counts_df$s.obj_to_so, subject_counts_df$placement_error_cm_log, method = "pearson") # sig neg cor
+plot(subject_df$s.obj_to_so, subject_df$placement_error_cm_log)
 cor.test(subject_counts_df$s.obj_to_diffObj, subject_counts_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_counts_df$s.lm_to_lm, subject_counts_df$placement_error_cm_log, method = "pearson")
 
 cor.test(subject_counts_df$r.landmarks, subject_counts_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_counts_df$r.same_object, subject_counts_df$placement_error_cm_log, method = "pearson") # sig neg cor
+plot(subject_df$r.same_object, subject_df$placement_error_cm_log)
 cor.test(subject_counts_df$r.DOSW, subject_counts_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_counts_df$r.other, subject_counts_df$placement_error_cm_log, method = "pearson") 
 cor.test(subject_counts_df$r.DODW, subject_counts_df$placement_error_cm_log, method = "pearson") # sig pos cor
@@ -265,6 +269,7 @@ cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm
 cor.test(subject_df$Number_of_fixations, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$Peak_velocity_of_entry_saccade, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor
+plot(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log)
 
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
