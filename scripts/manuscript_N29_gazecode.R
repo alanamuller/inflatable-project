@@ -80,6 +80,26 @@ myData$r.lm_to_lm_norm_log <- log(myData$r.lm_to_lm_norm+1)
 subject_df <- myData %>%
   group_by(subject) %>%
   summarize(
+    s.landmarks_norm = mean(s.landmarks_norm, na.rm = TRUE),
+    s.same_object_norm = mean(s.same_object_norm, na.rm = TRUE),
+    s.DOSW_norm = mean(s.DOSW_norm, na.rm = TRUE),
+    s.other_norm = mean(s.other_norm, na.rm = TRUE),
+    s.DODW_norm = mean(s.DODW_norm, na.rm = TRUE),
+    s.obj_to_lm_norm = mean(s.obj_to_lm_norm, na.rm = TRUE),
+    s.lm_to_obj_norm = mean(s.lm_to_obj_norm, na.rm = TRUE),
+    s.obj_to_so_norm = mean(s.obj_to_so_norm, na.rm = TRUE),
+    s.obj_to_diffObj_norm = mean(s.obj_to_diffObj_norm, na.rm = TRUE),
+    s.lm_to_lm_norm = mean(s.lm_to_lm_norm, na.rm = TRUE),
+    r.landmarks_norm = mean(r.landmarks_norm, na.rm = TRUE),
+    r.same_object_norm = mean(r.same_object_norm, na.rm = TRUE),
+    r.DOSW_norm = mean(r.DOSW_norm, na.rm = TRUE),
+    r.other_norm = mean(r.other_norm, na.rm = TRUE),
+    r.DODW_norm = mean(r.DODW_norm, na.rm = TRUE),
+    r.obj_to_lm_norm = mean(r.obj_to_lm_norm, na.rm = TRUE),
+    r.lm_to_obj_norm = mean(r.lm_to_obj_norm, na.rm = TRUE),
+    r.obj_to_so_norm = mean(r.obj_to_so_norm, na.rm = TRUE),
+    r.obj_to_diffObj_norm = mean(r.obj_to_diffObj_norm, na.rm = TRUE),
+    r.lm_to_lm_norm = mean(r.lm_to_lm_norm, na.rm = TRUE),
     s.landmarks_norm_log = mean(s.landmarks_norm_log, na.rm = TRUE),
     s.same_object_norm_log = mean(s.same_object_norm_log, na.rm = TRUE),
     s.DOSW_norm_log = mean(s.DOSW_norm_log, na.rm = TRUE),
@@ -166,6 +186,30 @@ subject_counts_long <- subject_counts_df %>%
   convert_as_factor(subject,trial)
   
   
+### check for skew - significant values noted, otherwise not significant
+
+shapiro.test(subject_df$s.landmarks_norm) # p = .0459
+shapiro.test(subject_df$s.same_object_norm_log)
+shapiro.test(subject_df$s.DOSW_norm_log)
+shapiro.test(subject_df$s.other_norm_log)
+shapiro.test(subject_df$s.DODW_norm_log)
+shapiro.test(subject_df$s.obj_to_lm_norm_log)
+shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .0111
+shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .002969
+shapiro.test(subject_df$s.obj_to_diffObj_norm_log)
+shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .005719
+
+shapiro.test(subject_df$r.landmarks_norm)
+shapiro.test(subject_df$r.same_object_norm_log)
+shapiro.test(subject_df$r.DOSW_norm_log)
+shapiro.test(subject_df$r.other_norm_log)
+shapiro.test(subject_df$r.DODW_norm_log)
+shapiro.test(subject_df$r.obj_to_lm_norm_log)
+shapiro.test(subject_df$r.lm_to_obj_norm_log)
+shapiro.test(subject_df$r.obj_to_so_norm_log)
+shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # p = .03037
+shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .04724
+
 ### test study against test in each category # all sig expect when specified as not sig
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
 mean(subject_df$s.landmarks_norm_log, na.rm = TRUE)
@@ -181,7 +225,6 @@ t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paire
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # p = .06586
 
-
 ggpaired(subject_df, cond1 = "s.landmarks_norm_log", cond2 = "r.landmarks_norm_log")
 ggpaired(subject_df, cond1 = "s.same_object_norm_log", cond2 = "r.same_object_norm_log" )
 ggpaired(subject_df, cond1 = "s.DOSW_norm_log", cond2 = "r.DOSW_norm_log")
@@ -194,8 +237,8 @@ ggpaired(subject_df, cond1 = "s.obj_to_diffObj_norm_log", cond2 = "r.obj_to_diff
 ggpaired(subject_df, cond1 = "s.lm_to_lm_norm_log", cond2 = "r.lm_to_lm_norm_log")
 
 # comparisons with numbers study/retrieval phase
-t.test(subject_counts_df$s.landmarks, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
-ggpaired(subject_counts_df, cond1 = "s.landmarks", cond2 = "s.same_object")
+t.test(subject_df$s.landmarks_norm_log, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
+ggpaired(subject_df, cond1 = "s.landmarks", cond2 = "s.same_object")
 
 subject_counts_long %>%
   group_by(trial) %>%
