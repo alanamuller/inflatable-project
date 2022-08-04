@@ -212,9 +212,6 @@ shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .04724
 
 ### test study against test in each category # all sig expect when specified as not sig
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
-mean(subject_df$s.landmarks_norm_log, na.rm = TRUE)
-mean(subject_df$r.landmarks_norm_log, na.rm = TRUE)
-
 t.test(subject_df$s.same_object_norm_log, subject_df$r.same_object_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.DOSW_norm_log , subject_df$r.DOSW_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.other_norm_log , subject_df$r.other_norm_log , paired = TRUE, alternative = "two.sided")
@@ -235,6 +232,36 @@ ggpaired(subject_df, cond1 = "s.lm_to_obj_norm_log", cond2 = "r.lm_to_obj_norm_l
 ggpaired(subject_df, cond1 = "s.obj_to_so_norm_log", cond2 = "r.obj_to_so_norm_log")
 ggpaired(subject_df, cond1 = "s.obj_to_diffObj_norm_log", cond2 = "r.obj_to_diffObj_norm_log")
 ggpaired(subject_df, cond1 = "s.lm_to_lm_norm_log", cond2 = "r.lm_to_lm_norm_log")
+
+
+mean_and_sd <- function(data, ttestvalue1, ttestvalue2) {
+  numbers1 <- eval(parse(text = paste(data,"$",ttestvalue1)))
+  numbers2 <- eval(parse(text = paste(data,"$",ttestvalue2)))
+  
+  cats <- data.frame(matrix(ncol = 2, nrow = 2))
+  x <- c("Mean", "SD")
+  colnames(cats) <- x
+  
+  y <- c(ttestvalue1,ttestvalue2)
+  rownames(cats) <- y
+  
+  cats[1,1] <- mean(numbers1, na.rm = TRUE)
+  cats[1,2] <- sd(numbers1, na.rm = TRUE)
+  cats[2,1] <- mean(numbers2, na.rm = TRUE)
+  cats[2,2] <- sd(numbers2, na.rm = TRUE)
+  
+  return(cats)
+}
+
+mean_and_sd("subject_df", "s.landmarks_norm_log", "r.landmarks_norm_log")
+mean_and_sd(subject_df$s.same_object_norm_log, subject_df$r.same_object_norm_log)
+mean_and_sd(subject_df$s.DOSW_norm_log, subject_df$r.DOSW_norm_log)
+mean_and_sd(subject_df$s.DODW_norm_log, subject_df$r.DODW_norm_log)
+mean_and_sd(subject_df$s.other_norm_log, subject_df$r.other_norm_log)
+mean_and_sd(subject_df$s.obj_to_lm_norm_log, subject_df$r.obj_to_lm_norm_log)
+mean_and_sd(subject_df$s.lm_to_obj_norm_log, subject_df$r.lm_to_obj_norm_log)
+mean_and_sd(subject_df$s.obj_to_diffObj_norm_log, subject_df$r.obj_to_diffObj_norm_log)
+mean_and_sd(subject_df$s.lm_to_lm_norm_log, subject_df$r.lm_to_lm_norm_log)
 
 # comparisons with numbers study/retrieval phase
 t.test(subject_df$s.landmarks_norm_log, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
