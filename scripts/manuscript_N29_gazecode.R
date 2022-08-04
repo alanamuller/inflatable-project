@@ -150,41 +150,80 @@ subject_df <- myData %>%
     Peak_velocity_of_exit_saccade = mean(Peak_velocity_of_exit_saccade)
   )
 
-subject_counts_df <- myData %>%
+study_subject_norm_df <- myData %>%
   group_by(subject) %>%
   summarize(
-    s.landmarks = mean(s.landmarks, na.rm = TRUE),
-    s.same_object = mean(s.same_object, na.rm = TRUE),
-    s.DOSW = mean(s.DOSW, na.rm = TRUE),
-    s.other = mean(s.other, na.rm = TRUE),
-    s.DODW = mean(s.DODW, na.rm = TRUE),
-    s.obj_to_lm = mean(s.obj_to_lm, na.rm = TRUE),
-    s.lm_to_obj = mean(s.lm_to_obj, na.rm = TRUE),
-    s.obj_to_so = mean(s.obj_to_so, na.rm = TRUE),
-    s.obj_to_diffObj = mean(s.obj_to_diffObj, na.rm = TRUE),
-    s.lm_to_lm = mean(s.lm_to_lm, na.rm = TRUE),
-    r.landmarks = mean(r.landmarks, na.rm = TRUE),
-    r.same_object = mean(r.same_object, na.rm = TRUE),
-    r.DOSW = mean(r.DOSW, na.rm = TRUE),
-    r.other = mean(r.other, na.rm = TRUE),
-    r.DODW = mean(r.DODW, na.rm = TRUE),
-    r.obj_to_lm = mean(r.obj_to_lm, na.rm = TRUE),
-    r.lm_to_obj = mean(r.lm_to_obj, na.rm = TRUE),
-    r.obj_to_so = mean(r.obj_to_so, na.rm = TRUE),
-    r.obj_to_diffObj = mean(r.obj_to_diffObj, na.rm = TRUE),
-    r.lm_to_lm = mean(r.lm_to_lm, na.rm = TRUE),
+    s.landmarks_norm = mean(s.landmarks_norm, na.rm = TRUE),
+    s.same_object_norm = mean(s.same_object_norm, na.rm = TRUE),
+    s.DOSW_norm = mean(s.DOSW_norm, na.rm = TRUE),
+    s.other_norm = mean(s.other_norm, na.rm = TRUE),
+    s.DODW_norm = mean(s.DODW_norm, na.rm = TRUE),
+    s.obj_to_lm_norm = mean(s.obj_to_lm_norm, na.rm = TRUE),
+    s.lm_to_obj_norm = mean(s.lm_to_obj_norm, na.rm = TRUE),
+    s.obj_to_so_norm = mean(s.obj_to_so_norm, na.rm = TRUE),
+    s.obj_to_diffObj_norm = mean(s.obj_to_diffObj_norm, na.rm = TRUE),
+    s.lm_to_lm_norm = mean(s.lm_to_lm_norm, na.rm = TRUE),
+    s.landmarks_norm_log = mean(s.landmarks_norm_log, na.rm = TRUE),
+    s.same_object_norm_log = mean(s.same_object_norm_log, na.rm = TRUE),
+    s.DOSW_norm_log = mean(s.DOSW_norm_log, na.rm = TRUE),
+    s.other_norm_log = mean(s.other_norm_log, na.rm = TRUE),
+    s.DODW_norm_log = mean(s.DODW_norm_log, na.rm = TRUE),
+    s.obj_to_lm_norm_log = mean(s.obj_to_lm_norm_log, na.rm = TRUE),
+    s.lm_to_obj_norm_log = mean(s.lm_to_obj_norm_log, na.rm = TRUE),
+    s.obj_to_so_norm_log = mean(s.obj_to_so_norm_log, na.rm = TRUE),
+    s.obj_to_diffObj_norm_log = mean(s.obj_to_diffObj_norm_log, na.rm = TRUE),
+    s.lm_to_lm_norm_log = mean(s.lm_to_lm_norm_log, na.rm = TRUE),
+   placement_error_cm_log = mean(placement_error_cm_log),
+    abs_x_error_cm_log = mean(abs_x_error_cm_log),
+    abs_y_error_cm_log = mean(abs_y_error_cm_log)
+  )
+
+retrieval_subject_norm_df <- myData %>%
+  group_by(subject) %>%
+  summarize(
+    r.landmarks_norm = mean(r.landmarks_norm, na.rm = TRUE),
+    r.same_object_norm = mean(r.same_object_norm, na.rm = TRUE),
+    r.DOSW_norm = mean(r.DOSW_norm, na.rm = TRUE),
+    r.other_norm = mean(r.other_norm, na.rm = TRUE),
+    r.DODW_norm = mean(r.DODW_norm, na.rm = TRUE),
+    r.obj_to_lm_norm = mean(r.obj_to_lm_norm, na.rm = TRUE),
+    r.lm_to_obj_norm = mean(r.lm_to_obj_norm, na.rm = TRUE),
+    r.obj_to_so_norm = mean(r.obj_to_so_norm, na.rm = TRUE),
+    r.obj_to_diffObj_norm = mean(r.obj_to_diffObj_norm, na.rm = TRUE),
+    r.lm_to_lm_norm = mean(r.lm_to_lm_norm, na.rm = TRUE),
+    r.landmarks_norm_log = mean(r.landmarks_norm_log, na.rm = TRUE),
+    r.same_object_norm_log = mean(r.same_object_norm_log, na.rm = TRUE),
+    r.DOSW_norm_log = mean(r.DOSW_norm_log, na.rm = TRUE),
+    r.other_norm_log = mean(r.other_norm_log, na.rm = TRUE),
+    r.DODW_norm_log = mean(r.DODW_norm_log, na.rm = TRUE),
+    r.obj_to_lm_norm_log = mean(r.obj_to_lm_norm_log, na.rm = TRUE),
+    r.lm_to_obj_norm_log = mean(r.lm_to_obj_norm_log, na.rm = TRUE),
+    r.obj_to_so_norm_log = mean(r.obj_to_so_norm_log, na.rm = TRUE),
+    r.obj_to_diffObj_norm_log = mean(r.obj_to_diffObj_norm_log, na.rm = TRUE),
+    r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE), 
     placement_error_cm_log = mean(placement_error_cm_log),
     abs_x_error_cm_log = mean(abs_x_error_cm_log),
     abs_y_error_cm_log = mean(abs_y_error_cm_log)
   )
 
-subject_counts_long <- subject_counts_df %>%
-  gather(key = "trial", value = "means", s.landmarks, s.same_object, s.DOSW, s.other,
-         s.DODW, s.obj_to_lm, s.lm_to_obj, s.obj_to_so, s.obj_to_diffObj, s.lm_to_lm,
-         r.landmarks, r.same_object, r.DOSW, r.other, r.DODW, r.obj_to_lm, r.lm_to_obj,
-         r.obj_to_so, r.obj_to_diffObj, r.lm_to_lm) %>%
+study_subject_norm_long <- study_subject_norm_df %>%
+  gather(key = "trial", value = "norm_fixation_mean", s.landmarks_norm, s.same_object_norm, s.DOSW_norm, s.other_norm,
+         s.DODW_norm, s.obj_to_lm_norm, s.lm_to_obj_norm, s.obj_to_so_norm, s.obj_to_diffObj_norm, s.lm_to_lm_norm,
+         s.landmarks_norm_log, s.same_object_norm_log, s.DOSW_norm_log, s.other_norm_log,
+         s.DODW_norm_log, s.obj_to_lm_norm_log, s.lm_to_obj_norm_log, s.obj_to_so_norm_log, 
+         s.obj_to_diffObj_norm_log, s.lm_to_lm_norm_log) %>%
   convert_as_factor(subject,trial)
   
+retrieval_subject_norm_long <- retrieval_subject_norm_df %>%
+  gather(key = "trial", value = "norm_fixation_mean", r.landmarks_norm, r.same_object_norm, r.DOSW_norm, r.other_norm,
+         r.DODW_norm, r.obj_to_lm_norm, r.lm_to_obj_norm, r.obj_to_so_norm, r.obj_to_diffObj_norm, r.lm_to_lm_norm,
+         r.landmarks_norm_log, r.same_object_norm_log, r.DOSW_norm_log, r.other_norm_log,
+         r.DODW_norm_log, r.obj_to_lm_norm_log, r.lm_to_obj_norm_log, r.obj_to_so_norm_log, 
+         r.obj_to_diffObj_norm_log, r.lm_to_lm_norm_log) %>%
+  convert_as_factor(subject,trial)
+
+
+
   
 ### check for skew - significant values noted, otherwise not significant
 
@@ -254,18 +293,26 @@ mean_and_sd <- function(data, ttestvalue1, ttestvalue2) {
 }
 
 mean_and_sd("subject_df", "s.landmarks_norm_log", "r.landmarks_norm_log")
-mean_and_sd(subject_df$s.same_object_norm_log, subject_df$r.same_object_norm_log)
-mean_and_sd(subject_df$s.DOSW_norm_log, subject_df$r.DOSW_norm_log)
-mean_and_sd(subject_df$s.DODW_norm_log, subject_df$r.DODW_norm_log)
-mean_and_sd(subject_df$s.other_norm_log, subject_df$r.other_norm_log)
-mean_and_sd(subject_df$s.obj_to_lm_norm_log, subject_df$r.obj_to_lm_norm_log)
-mean_and_sd(subject_df$s.lm_to_obj_norm_log, subject_df$r.lm_to_obj_norm_log)
-mean_and_sd(subject_df$s.obj_to_diffObj_norm_log, subject_df$r.obj_to_diffObj_norm_log)
-mean_and_sd(subject_df$s.lm_to_lm_norm_log, subject_df$r.lm_to_lm_norm_log)
+mean_and_sd("subject_df", "s.same_object_norm_log", "r.same_object_norm_log")
+mean_and_sd("subject_df", "s.DOSW_norm_log", "r.DOSW_norm_log")
+mean_and_sd("subject_df", "s.DODW_norm_log", "r.DODW_norm_log")
+mean_and_sd("subject_df", "s.other_norm_log", "r.other_norm_log")
+mean_and_sd("subject_df", "s.obj_to_lm_norm_log", "r.obj_to_lm_norm_log")
+mean_and_sd("subject_df", "s.lm_to_obj_norm_log", "r.lm_to_obj_norm_log")
+mean_and_sd("subject_df", "s.obj_to_diffObj_norm_log", "r.obj_to_diffObj_norm_log")
+mean_and_sd("subject_df", "s.lm_to_lm_norm_log", "r.lm_to_lm_norm_log")
 
-# comparisons with numbers study/retrieval phase
+# comparisons with fixation numbers in each category in the study phase
 t.test(subject_df$s.landmarks_norm_log, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
 ggpaired(subject_df, cond1 = "s.landmarks", cond2 = "s.same_object")
+
+subject_df %>%
+  group_by(trial) %>%
+  get_summary_stats(means, type = "mean_sd")
+
+
+
+
 
 subject_counts_long %>%
   group_by(trial) %>%
