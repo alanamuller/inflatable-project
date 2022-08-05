@@ -206,6 +206,7 @@ retrieval_subject_norm_df <- myData %>%
     abs_y_error_cm_log = mean(abs_y_error_cm_log)
   )
 
+# put the data in long format
 study_subject_norm_long <- study_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", s.landmarks_norm, s.same_object_norm, s.DOSW_norm, s.other_norm,
          s.DODW_norm, s.obj_to_lm_norm, s.lm_to_obj_norm, s.obj_to_so_norm, s.obj_to_diffObj_norm, s.lm_to_lm_norm,
@@ -222,9 +223,13 @@ retrieval_subject_norm_long <- retrieval_subject_norm_df %>%
          r.obj_to_diffObj_norm_log, r.lm_to_lm_norm_log) %>%
   convert_as_factor(subject,trial)
 
+# filter data into norm and norm_log values
+study_only_norm_long <- study_subject_norm_long[1:300,]
+study_only_norm_log_long <- study_subject_norm_long[301:600,]
 
+retrieval_only_norm_long <- retrieval_subject_norm_long[1:300,]
+retreival_only_norm_log_long <- retrieval_subject_norm_long[301:600,]
 
-  
 ### check for skew - significant values noted, otherwise not significant
 
 shapiro.test(subject_df$s.landmarks_norm) # p = .0459
@@ -272,7 +277,6 @@ ggpaired(subject_df, cond1 = "s.obj_to_so_norm_log", cond2 = "r.obj_to_so_norm_l
 ggpaired(subject_df, cond1 = "s.obj_to_diffObj_norm_log", cond2 = "r.obj_to_diffObj_norm_log")
 ggpaired(subject_df, cond1 = "s.lm_to_lm_norm_log", cond2 = "r.lm_to_lm_norm_log")
 
-
 mean_and_sd <- function(data, ttestvalue1, ttestvalue2) {
   numbers1 <- eval(parse(text = paste(data,"$",ttestvalue1)))
   numbers2 <- eval(parse(text = paste(data,"$",ttestvalue2)))
@@ -306,23 +310,53 @@ mean_and_sd("subject_df", "s.lm_to_lm_norm_log", "r.lm_to_lm_norm_log")
 t.test(subject_df$s.landmarks_norm_log, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
 ggpaired(subject_df, cond1 = "s.landmarks", cond2 = "s.same_object")
 
-subject_df %>%
-  group_by(trial) %>%
-  get_summary_stats(means, type = "mean_sd")
+# make a boxplot of just the study categories - norm values
+study_bxp <- ggboxplot(study_only_norm_long, x = "trial", y = "norm_fixation_mean", add = "point", 
+                       title = "Normalized Fixation Number per Category during Study", 
+                       xlab = "", ylab = "Mean of Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+study_bxp
+
+# make a boxplot of just the study categories - norm log values
+study_log_bxp <- ggboxplot(study_only_norm_log_long, x = "trial", y = "norm_fixation_mean", add = "point", 
+                       title = "Log Normalized Fixation Number per Category during Study", 
+                       xlab = "", ylab = "Mean of Log Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+study_log_bxp # same pattern as just normalized
+
+# make a boxplot of just the retrieval categories - norm values
+retrieval_bxp <- ggboxplot(retrieval_only_norm_long, x = "trial", y = "norm_fixation_mean", add = "point", 
+                       title = "Normalized Fixation Number per Category during Retrieval", 
+                       xlab = "", ylab = "Mean of Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+retrieval_bxp
+
+# make a boxplot of just the retrieval categories - norm log values
+retrieval_log_bxp <- ggboxplot(retreival_only_norm_log_long, x = "trial", y = "norm_fixation_mean", add = "point", 
+                           title = "Log Normalized Fixation Number per Category during Retrieval", 
+                           xlab = "", ylab = "Mean of Log Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+retrieval_log_bxp
 
 
 
+study_norm_aov <- anova_test(data = study_only_norm_long, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(study_norm_aov) # sig
 
+study_norm_pwc <- pairwise.t.test(study_only_norm_long$norm_fixation_mean, study_only_norm_long$trial, p.adj = "bonferroni")
+study_norm_pwc
 
-subject_counts_long %>%
-  group_by(trial) %>%
-  get_summary_stats(means, type = "mean_sd")
+study_norm_log_aov <- anova_test(data = study_only_norm_log_long, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(study_norm_log_aov) # sig
 
-bxp <- ggboxplot(subject_counts_long, x = "trial", y = "means", add = "point")
-bxp
+retrieval_norm_aov <- anova_test(data = retrieval_only_norm_long, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(retrieval_norm_aov) # sig
 
-res.aov <- anova_test(data = subject_counts_long, dv = means, wid = subject, within = trial)
-get_anova_table(res.aov) # sig
+retrieval_norm_pwc <- pairwise.t.test(retrieval_only_norm_long$norm_fixation_mean, retrieval_only_norm_long$trial, p.adj = "bonferroni")
+retrieval_norm_pwc
+
+retrieval_norm_log_aov <- anova_test(data = retreival_only_norm_log_long, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(retrieval_norm_log_aov) # sig
 
 pwc <- subject_counts_long %>%
   pairwise_t_test(
