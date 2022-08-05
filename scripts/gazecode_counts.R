@@ -188,18 +188,22 @@ subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_ret
 subject_table_wide <- reshape(subject_table, direction = "wide",
                               idvar = c("subject", "trial"),
                               timevar = "trialType",
-                              v.names = c("landmarks", "same_object", "DOSW", "other", "DODW", "obj_to_lm", "lm_to_obj",
+                              v.names = c("landmarks", "same_object", "DOSW", "wall", "DODW","cart", "other", "obj_to_lm", "lm_to_obj",
                                            "obj_to_so", "obj_to_diffObj", "lm_to_lm", "timeStart", "timeEnd", "duration"),
-                              varying = c("s.landmarks", "s.same_object", "s.DOSW", "s.other", "s.DODW", "s.obj_to_lm", "s.lm_to_obj", 
+                              varying = c("s.landmarks", "s.same_object", "s.DOSW", "s.wall", "s.DODW","s.cart", "s.other", "s.obj_to_lm", "s.lm_to_obj", 
                                           "s.obj_to_so", "s.obj_to_diffObj", "s.lm_to_lm", "s.timeStart", "s.timeEnd", "s.duration",
-                                          "r.landmarks", "r.same_object", "r.DOSW", "r.other", "r.DODW", "r.obj_to_lm", "r.lm_to_obj",
+                                          "r.landmarks", "r.same_object", "r.DOSW", "r.wall", "r.DODW","r.cart", "r.other", "r.obj_to_lm", "r.lm_to_obj",
                                            "r.obj_to_so", "r.obj_to_diffObj", "r.lm_to_lm", "r.timeStart", "r.timeEnd", "r.duration")
 )
 
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("D:/Nav_1stYr_project_data/GazeCode data/R_outputs")
+setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
 
 sink("subject_006_gazeCodeCounts.csv")
+write.csv(subject_table, row.names = FALSE)
+cat("\n")
+cat("\n")
+cat("\n")
 write.csv(subject_table_wide, row.names = FALSE)
 sink()
 
