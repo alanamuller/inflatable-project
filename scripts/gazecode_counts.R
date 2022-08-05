@@ -6,13 +6,13 @@ library(tidyverse)
 rm(list = ls())
 
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("D:/Nav_1stYr_project_data/GazeCode data")
+setwd("E:/Nav_1stYr_project_data/GazeCode data")
 
 # subject number
 subjnum <- 6
 
-data_part1 <- "D:/Nav_1stYr_project_data/GazeCode data/s006_part1_data.xlsx"
-data_part2 <- "D:/Nav_1stYr_project_data/GazeCode data/s006_part2_data.xlsx"
+data_part1 <- "E:/Nav_1stYr_project_data/GazeCode data/s006_part1_data.xlsx"
+data_part2 <- "E:/Nav_1stYr_project_data/GazeCode data/s006_part2_data.xlsx"
 
 #data_part3 <- "D:/Nav_1stYr_project_data/GazeCode data/s031_part3_data.xlsx"
 
@@ -31,7 +31,7 @@ hist_part1 <- ggplot(myData, aes(x = label)) +
   scale_x_discrete(breaks=c("1", "2", "3", "4", "5", "6", "7", "8", "9"), 
                    labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO")) +
   ggtitle("Trials 1-5") + theme(plot.title = element_text(hjust = 0.5))
-
+hist_part1
 
 ### Make counting/pair counting function
 category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
@@ -91,8 +91,8 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   
   # dataframe of values
   newTable <<- data.frame(subject = subjectNum, trial = trialNum, trialType = trial_type, landmarks = sum(label_counts$count[1], 
-                       label_counts$count[2]), same_object = label_counts$count[3],
-                       DOSW = label_counts$count[4], other = label_counts$count[5], DODW = label_counts$count[6],
+                       label_counts$count[2]), same_object = label_counts$count[3],DOSW = label_counts$count[4], 
+                       wall = label_counts$count[5], DODW = label_counts$count[6], cart = label_counts$count[7], other = label_counts$count[8],
                        obj_to_lm = obj_to_lm, lm_to_obj = lm_to_obj, obj_to_so = obj_to_so, 
                        obj_to_diffObj = obj_to_diffObj, lm_to_lm = lm_to_lm, 
                        timeStart = startSec, timeEnd = endSec, duration = endSec - startSec)
