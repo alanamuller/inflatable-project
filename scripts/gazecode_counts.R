@@ -6,13 +6,13 @@ library(tidyverse)
 rm(list = ls())
 
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data")
+setwd("D:/Nav_1stYr_project_data/GazeCode data")
 
 # subject number
-subjnum <- 6
+subjnum <- 3
 
-data_part1 <- "E:/Nav_1stYr_project_data/GazeCode data/s006_part1_data.xlsx"
-data_part2 <- "E:/Nav_1stYr_project_data/GazeCode data/s006_part2_data.xlsx"
+data_part1 <- "D:/Nav_1stYr_project_data/GazeCode data/s003_part1_data.xlsx"
+data_part2 <- "D:/Nav_1stYr_project_data/GazeCode data/s003_part2_data.xlsx"
 
 #data_part3 <- "D:/Nav_1stYr_project_data/GazeCode data/s031_part3_data.xlsx"
 
@@ -100,34 +100,34 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
 }
 
 
-category_counts(subjnum,1,"study",0,	0)
+category_counts(subjnum,1,"study",116,	150)
 trial_1_study <- newTable
 
-category_counts(subjnum,1,"retrieval",140,	265)
+category_counts(subjnum,1,"retrieval",276	,446)
 trial_1_retrieval <- newTable
 
-category_counts(subjnum,2,"study",500,	533)
+category_counts(subjnum,2,"study",757,	790)
 trial_2_study <- newTable
 
-category_counts(subjnum,2,"retrieval",678,	801)
+category_counts(subjnum,2,"retrieval",919	,1052)
 trial_2_retrieval <- newTable
 
-category_counts(subjnum,3,"study",1055,	1088)
+category_counts(subjnum,3,"study",1234,	1266)
 trial_3_study <- newTable
 
-category_counts(subjnum,3,"retrieval",1174,	1252)
+category_counts(subjnum,3,"retrieval",1342,	1460)
 trial_3_retrieval <- newTable
 
-category_counts(subjnum,4,"study",1400,	1433)
+category_counts(subjnum,4,"study",1625,	1659)
 trial_4_study <- newTable
 
-category_counts(subjnum,4,"retrieval",1580,	1728)
+category_counts(subjnum,4,"retrieval",1821,	1951)
 trial_4_retrieval <- newTable
 
-category_counts(subjnum,5,"study",1887,	1920)
+category_counts(subjnum,5,"study",2123,	2159)
 trial_5_study <- newTable
 
-category_counts(subjnum,5,"retrieval",2055,	2154)
+category_counts(subjnum,5,"retrieval",2257,	2390)
 trial_5_retrieval <- newTable
 
 
@@ -146,37 +146,37 @@ hist_part2 <- ggplot(myData, aes(x = label)) +
   scale_x_discrete(breaks=c("1", "2", "3", "4", "5", "6", "7", "8", "9"), 
                    labels=c("LM", "Door", "SO", "DOSW", "Wall", "DODW", "Cart", "Other", "CO")) +
   ggtitle("Trials 6-10") + theme(plot.title = element_text(hjust = 0.5))
-
+hist_part2
 
 # finish category counts
-category_counts(subjnum,6,"study",67,	100)
+category_counts(subjnum,6,"study",53	,86)
 trial_6_study <- newTable
 
-category_counts(subjnum,6,"retrieval",231,	367)
+category_counts(subjnum,6,"retrieval",186,	303)
 trial_6_retrieval <- newTable
 
-category_counts(subjnum,7,"study",523,	557)
+category_counts(subjnum,7,"study",461	,496)
 trial_7_study <- newTable
 
-category_counts(subjnum,7,"retrieval",648,	751)
+category_counts(subjnum,7,"retrieval",580,	704)
 trial_7_retrieval <- newTable
 
-category_counts(subjnum,8,"study",918,	949)
+category_counts(subjnum,8,"study",885	,918)
 trial_8_study <- newTable
 
-category_counts(subjnum,8,"retrieval",1053,	1164)
+category_counts(subjnum,8,"retrieval",1025,	1184)
 trial_8_retrieval <- newTable
 
-category_counts(subjnum,9,"study",1353,	1385)
+category_counts(subjnum,9,"study",1401,	1433)
 trial_9_study <- newTable
 
-category_counts(subjnum,9,"retrieval",1513,	1612)
+category_counts(subjnum,9,"retrieval",1561,	1694)
 trial_9_retrieval <- newTable
 
-category_counts(subjnum,10,"study",1791	,1822)
+category_counts(subjnum,10,"study",1864,	1897)
 trial_10_study <- newTable
 
-category_counts(subjnum,10,"retrieval",1904,	2009)
+category_counts(subjnum,10,"retrieval",1976,	2133)
 trial_10_retrieval <- newTable
 
 subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
@@ -197,9 +197,9 @@ subject_table_wide <- reshape(subject_table, direction = "wide",
 )
 
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
+setwd("D:/Nav_1stYr_project_data/GazeCode data/R_outputs")
 
-sink("subject_006_gazeCodeCounts.csv")
+sink("subject_003_gazeCodeCounts.csv")
 write.csv(subject_table, row.names = FALSE)
 cat("\n")
 cat("\n")
