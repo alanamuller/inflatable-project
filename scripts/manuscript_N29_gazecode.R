@@ -3,8 +3,10 @@
 # amuller@arizona.edu
 # 2022-07-11
 
+# start fresh so we don't get weird errors
 rm(list = ls())
 
+# import library stuff
 library(readxl)
 library(ggplot2)
 library(ggpubr)
@@ -21,17 +23,22 @@ inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manus
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
+# make a copy so there is also a clean copy (inputData)
 myData <- inputData
 
+# make all the rows their correct data type (numeric or factor)
 i <- c(1:59)
 myData [ , i] <- apply(myData, 2, function(x) as.numeric(x))
 myData$subject <- as.factor(myData$subject)
 myData$trial <- as.factor(myData$trial)
+
+# create new columns for placement error, x error, and y error log transformed
 myData$placement_error_cm_log <- log(myData$placement_error_cm+1)
 myData$abs_x_error_cm_log <- log(myData$abs_x_error_cm+1)
 myData$abs_y_error_cm_log <- log(myData$abs_y_error_cm+1)
 str(myData)
 
+# create normalized values by dividing study fixation count by study duration (in seconds)
 myData$s.landmarks_norm <- myData$s.landmarks/myData$s.duration
 myData$s.same_object_norm <- myData$s.same_object/myData$s.duration
 myData$s.DOSW_norm <- myData$s.DOSW/myData$s.duration
@@ -45,6 +52,7 @@ myData$s.obj_to_so_norm <- myData$s.obj_to_so/myData$s.duration
 myData$s.obj_to_diffObj_norm <- myData$s.obj_to_diffObj/myData$s.duration
 myData$s.lm_to_lm_norm <- myData$s.lm_to_lm/myData$s.duration
 
+# create normalized values by dividing retrieval fixation count by retrieval duration (in seconds)
 myData$r.landmarks_norm <- myData$r.landmarks/myData$r.duration
 myData$r.same_object_norm <- myData$r.same_object/myData$r.duration
 myData$r.DOSW_norm <- myData$r.DOSW/myData$r.duration
@@ -58,6 +66,7 @@ myData$r.obj_to_so_norm <- myData$r.obj_to_so/myData$r.duration
 myData$r.obj_to_diffObj_norm <- myData$r.obj_to_diffObj/myData$r.duration
 myData$r.lm_to_lm_norm <- myData$r.lm_to_lm/myData$r.duration
 
+# create log transformed values by for skewed categories (but spoiler alert: they are not all skewed)
 myData$s.landmarks_norm_log <- log(myData$s.landmarks_norm+1)
 myData$s.same_object_norm_log <- log(myData$s.same_object_norm+1)
 myData$s.DOSW_norm_log <- log(myData$s.DOSW_norm+1)
@@ -84,7 +93,7 @@ myData$r.obj_to_so_norm_log <- log(myData$r.obj_to_so_norm+1)
 myData$r.obj_to_diffObj_norm_log <- log(myData$r.obj_to_diffObj_norm+1)
 myData$r.lm_to_lm_norm_log <- log(myData$r.lm_to_lm_norm+1)
 
-# create a dataset that groups by subject
+# create a dataset that groups fixation counts, normed fixations, and log fixations by subject
 subject_df <- myData %>%
   group_by(subject) %>%
   summarize(
@@ -170,6 +179,7 @@ subject_df <- myData %>%
     Peak_velocity_of_exit_saccade = mean(Peak_velocity_of_exit_saccade)
   )
 
+# create dataset for study normed and logged values by subject
 study_subject_norm_df <- myData %>%
   group_by(subject) %>%
   summarize(
@@ -205,6 +215,7 @@ study_subject_norm_df <- myData %>%
     abs_y_error_cm_log = mean(abs_y_error_cm_log)
   )
 
+# create dataset for retrieval normed and logged values by subject
 retrieval_subject_norm_df <- myData %>%
   group_by(subject) %>%
   summarize(
@@ -240,7 +251,7 @@ retrieval_subject_norm_df <- myData %>%
     abs_y_error_cm_log = mean(abs_y_error_cm_log)
   )
 
-# put the data in long format
+# put the study subject grouped data in long format
 study_subject_norm_long <- study_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", s.landmarks_norm, s.same_object_norm, s.DOSW_norm, s.wall_norm, s.DODW_norm, s.cart_norm, s.other_norm,
          s.obj_to_lm_norm, s.lm_to_obj_norm, s.obj_to_so_norm, s.obj_to_diffObj_norm, s.lm_to_lm_norm,
@@ -249,6 +260,7 @@ study_subject_norm_long <- study_subject_norm_df %>%
          s.obj_to_lm_norm_log, s.lm_to_obj_norm_log, s.obj_to_so_norm_log, s.obj_to_diffObj_norm_log, s.lm_to_lm_norm_log) %>%
   convert_as_factor(subject,trial)
   
+# put the retrieval subject grouped data in long format
 retrieval_subject_norm_long <- retrieval_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", r.landmarks_norm, r.same_object_norm, r.DOSW_norm, r.wall_norm, r.DODW_norm, r.cart_norm, r.other_norm,
          r.obj_to_lm_norm, r.lm_to_obj_norm, r.obj_to_so_norm, r.obj_to_diffObj_norm, r.lm_to_lm_norm,
@@ -265,7 +277,6 @@ retrieval_only_norm_long <- retrieval_subject_norm_long[1:361,]
 retreival_only_norm_log_long <- retrieval_subject_norm_long[362:720,]
 
 ### check for skew - significant values noted, otherwise not significant
-
 shapiro.test(subject_df$s.landmarks_norm) # p = .0459
 shapiro.test(subject_df$s.same_object_norm_log)
 shapiro.test(subject_df$s.DOSW_norm_log)
@@ -338,6 +349,7 @@ mean_and_sd <- function(data, ttestvalue1, ttestvalue2) {
   return(cats)
 }
 
+# get mean and sd for making a table
 mean_and_sd("subject_df", "s.landmarks_norm_log", "r.landmarks_norm_log")
 mean_and_sd("subject_df", "s.same_object_norm_log", "r.same_object_norm_log")
 mean_and_sd("subject_df", "s.DOSW_norm_log", "r.DOSW_norm_log")
