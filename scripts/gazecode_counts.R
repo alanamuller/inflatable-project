@@ -38,7 +38,7 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   funcData <- myData %>%
     filter(videoTime >= startSec & videoTime <= endSec) # filter data to only important time frames
   
-  myData <- myData %>%
+  funcData <- funcData %>%
     filter(label != 0) # filter out the label 0's (fixations weren't coded, aka dead time)
   
   # make table of counts for each label category

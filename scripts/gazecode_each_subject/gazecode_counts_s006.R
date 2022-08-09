@@ -6,13 +6,13 @@ library(tidyverse)
 rm(list = ls())
 
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data")
+setwd("D:/Nav_1stYr_project_data/GazeCode data")
 
 # subject number
 subjnum <- 6
 
-data_part1 <- "E:/Nav_1stYr_project_data/GazeCode data/s006_part1_data.xlsx"
-data_part2 <- "E:/Nav_1stYr_project_data/GazeCode data/s006_part2_data.xlsx"
+data_part1 <- "D:/Nav_1stYr_project_data/GazeCode data/s006_part1_data.xlsx"
+data_part2 <- "D:/Nav_1stYr_project_data/GazeCode data/s006_part2_data.xlsx"
 
 ##### import data part 1
 rawData_part1 <- read_excel(data_part1)
@@ -36,7 +36,7 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   funcData <- myData %>%
     filter(videoTime >= startSec & videoTime <= endSec) # filter data to only important time frames
   
-  myData <- myData %>%
+  funcData <- funcData %>%
     filter(label != 0) # filter out the label 0's (fixations weren't coded, aka dead time)
   
   # make table of counts for each label category
@@ -45,11 +45,29 @@ category_counts <- function(subjectNum,trialNum,trial_type,startSec,endSec) {
   # 6 = diff object diff wall, 7 = cart
   # 8 = other, 9 = chosen object
   
-  label_counts <- funcData %>%
-    group_by(label) %>%
-    summarise(
-      count = n(),
-    )
+  label_counts <- data.frame(matrix(NA, nrow = 9, ncol = 2))
+  x <- c("label", "count")
+  colnames(label_counts) <- x
+  
+  label_counts[1,1] <- 1
+  label_counts[2,1] <- 2
+  label_counts[3,1] <- 3
+  label_counts[4,1] <- 4
+  label_counts[5,1] <- 5
+  label_counts[6,1] <- 6
+  label_counts[7,1] <- 7
+  label_counts[8,1] <- 8
+  label_counts[9,1] <- 9
+  
+  label_counts[1,2] <- sum(funcData$label == 1)
+  label_counts[2,2] <- sum(funcData$label == 2)
+  label_counts[3,2] <- sum(funcData$label == 3)
+  label_counts[4,2] <- sum(funcData$label == 4)
+  label_counts[5,2] <- sum(funcData$label == 5)
+  label_counts[6,2] <- sum(funcData$label == 6)
+  label_counts[7,2] <- sum(funcData$label == 7)
+  label_counts[8,2] <- sum(funcData$label == 8)
+  label_counts[9,2] <- sum(funcData$label == 9)
   
   # get table of counts for each event with consecutive codes
   z <- funcData$label
@@ -194,7 +212,7 @@ subject_table_wide <- reshape(subject_table, direction = "wide",
 )
 
 # E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
+setwd("D:/Nav_1stYr_project_data/GazeCode data/R_outputs")
 
 sink("subject_006_gazeCodeCounts.csv")
 write.csv(subject_table, row.names = FALSE)
