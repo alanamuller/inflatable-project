@@ -277,31 +277,31 @@ retrieval_only_norm_long <- retrieval_subject_norm_long[1:361,]
 retreival_only_norm_log_long <- retrieval_subject_norm_long[362:720,]
 
 ### check for skew - significant values noted, otherwise not significant
-shapiro.test(subject_df$s.landmarks_norm) # p = .0459
+shapiro.test(subject_df$s.landmarks_norm) # p = .04124
 shapiro.test(subject_df$s.same_object_norm_log)
 shapiro.test(subject_df$s.DOSW_norm_log)
 shapiro.test(subject_df$s.wall_norm_log)
 shapiro.test(subject_df$s.DODW_norm_log)
-shapiro.test(subject_df$s.cart_norm_log)
-shapiro.test(subject_df$s.other_norm_log)
+shapiro.test(subject_df$s.cart_norm_log) # p = .02583
+shapiro.test(subject_df$s.other_norm_log) # p < .001
 shapiro.test(subject_df$s.obj_to_lm_norm_log)
-shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .0111
-shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .002969
+shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .008417
+shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .001912
 shapiro.test(subject_df$s.obj_to_diffObj_norm_log)
-shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .005719
+shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .007871
 
-shapiro.test(subject_df$r.landmarks_norm)
+shapiro.test(subject_df$r.landmarks_norm) # not sig but p = .05057
 shapiro.test(subject_df$r.same_object_norm_log)
 shapiro.test(subject_df$r.DOSW_norm_log)
 shapiro.test(subject_df$r.wall_norm_log)
 shapiro.test(subject_df$r.DODW_norm_log)
-shapiro.test(subject_df$r.cart_norm_log)
+shapiro.test(subject_df$r.cart_norm_log) # p = .02651
 shapiro.test(subject_df$r.other_norm_log)
 shapiro.test(subject_df$r.obj_to_lm_norm_log)
 shapiro.test(subject_df$r.lm_to_obj_norm_log)
 shapiro.test(subject_df$r.obj_to_so_norm_log)
-shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # p = .03037
-shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .04724
+shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # p = .01584
+shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .03103
 
 ### test study against test in each category # all sig expect when specified as not sig
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
@@ -315,7 +315,7 @@ t.test(subject_df$s.obj_to_lm_norm_log , subject_df$r.obj_to_lm_norm_log , paire
 t.test(subject_df$s.lm_to_obj_norm_log , subject_df$r.lm_to_obj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # p = .06586
+t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .03357
 
 ggpaired(subject_df, cond1 = "s.landmarks_norm_log", cond2 = "r.landmarks_norm_log")
 ggpaired(subject_df, cond1 = "s.same_object_norm_log", cond2 = "r.same_object_norm_log" )
@@ -359,12 +359,9 @@ mean_and_sd("subject_df", "s.cart_norm_log", "r.cart_norm_log")
 mean_and_sd("subject_df", "s.other_norm_log", "r.other_norm_log")
 mean_and_sd("subject_df", "s.obj_to_lm_norm_log", "r.obj_to_lm_norm_log")
 mean_and_sd("subject_df", "s.lm_to_obj_norm_log", "r.lm_to_obj_norm_log")
+mean_and_sd("subject_df", "s.obj_to_so_norm_log", "r.obj_to_so_norm_log")
 mean_and_sd("subject_df", "s.obj_to_diffObj_norm_log", "r.obj_to_diffObj_norm_log")
 mean_and_sd("subject_df", "s.lm_to_lm_norm_log", "r.lm_to_lm_norm_log")
-
-# comparisons with fixation numbers in each category in the study phase
-t.test(subject_df$s.landmarks_norm_log, subject_counts_df$s.same_object, paired = TRUE, alternative = "two.sided")
-ggpaired(subject_df, cond1 = "s.landmarks", cond2 = "s.same_object")
 
 # make a boxplot of just the study categories - norm values
 study_bxp <- ggboxplot(study_only_norm_long, x = "trial", y = "norm_fixation_mean", add = "point", 
@@ -405,6 +402,9 @@ study_norm_pwc
 study_norm_log_aov <- anova_test(data = study_only_norm_log_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_norm_log_aov) # sig
 
+study_norm_log_pwc <- pairwise.t.test(study_only_norm_log_long$norm_fixation_mean, study_only_norm_log_long$trial, p.adj = "bonferroni")
+study_norm_log_pwc
+
 retrieval_norm_aov <- anova_test(data = retrieval_only_norm_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_norm_aov) # sig
 
@@ -413,6 +413,9 @@ retrieval_norm_pwc
 
 retrieval_norm_log_aov <- anova_test(data = retreival_only_norm_log_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_norm_log_aov) # sig
+
+retrieval_norm_log_pwc <- pairwise.t.test(retreival_only_norm_log_long$norm_fixation_mean, retreival_only_norm_log_long$trial, p.adj = "bonferroni")
+retrieval_norm_log_pwc
 
 pwc <- subject_counts_long %>%
   pairwise_t_test(
