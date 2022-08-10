@@ -16,10 +16,10 @@ library(rstatix)
 library(car)
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("D:/Nav_1stYr_project_data/GazeCode data")
+setwd("E:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_output_paste.xlsx")
+inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_badTrialsDeleted.xlsx")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -255,7 +255,6 @@ retrieval_subject_norm_df <- myData %>%
 study_subject_norm_long <- study_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", s.landmarks_norm, s.same_object_norm, s.DOSW_norm, s.wall_norm, s.DODW_norm, s.cart_norm, s.other_norm,
          s.obj_to_lm_norm, s.lm_to_obj_norm, s.obj_to_so_norm, s.obj_to_diffObj_norm, s.lm_to_lm_norm,
-         s.landmarks_norm_log, s.same_object_norm_log, s.DOSW_norm_log, s.other_norm_log,
          s.landmarks_norm_log, s.same_object_norm_log, s.DOSW_norm_log, s.wall_norm_log, s.DODW_norm_log, s.cart_norm_log, s.other_norm_log, 
          s.obj_to_lm_norm_log, s.lm_to_obj_norm_log, s.obj_to_so_norm_log, s.obj_to_diffObj_norm_log, s.lm_to_lm_norm_log) %>%
   convert_as_factor(subject,trial)
@@ -264,65 +263,73 @@ study_subject_norm_long <- study_subject_norm_df %>%
 retrieval_subject_norm_long <- retrieval_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", r.landmarks_norm, r.same_object_norm, r.DOSW_norm, r.wall_norm, r.DODW_norm, r.cart_norm, r.other_norm,
          r.obj_to_lm_norm, r.lm_to_obj_norm, r.obj_to_so_norm, r.obj_to_diffObj_norm, r.lm_to_lm_norm,
-         r.landmarks_norm_log, r.same_object_norm_log, r.DOSW_norm_log, r.other_norm_log,
          r.landmarks_norm_log, r.same_object_norm_log, r.DOSW_norm_log, r.wall_norm_log, r.DODW_norm_log, r.cart_norm_log, r.other_norm_log, 
          r.obj_to_lm_norm_log, r.lm_to_obj_norm_log, r.obj_to_so_norm_log, r.obj_to_diffObj_norm_log, r.lm_to_lm_norm_log) %>%
   convert_as_factor(subject,trial)
 
 # filter data into norm and norm_log values
-study_only_norm_long <- study_subject_norm_long[1:361,]
-study_only_norm_log_long <- study_subject_norm_long[362:720,]
+study_only_norm_long <- study_subject_norm_long[1:360, ]
+study_only_norm_log_long <- study_subject_norm_long[361:720, ]
 
-retrieval_only_norm_long <- retrieval_subject_norm_long[1:361,]
-retreival_only_norm_log_long <- retrieval_subject_norm_long[362:720,]
+retrieval_only_norm_long <- retrieval_subject_norm_long[1:360, ]
+retreival_only_norm_log_long <- retrieval_subject_norm_long[361:720, ]
+
+# make group for only LM, Wall, and Other categories during study and retrieval separately
+study_lm_wall_other <- study_subject_norm_long[c(1:30, 91:120, 181:210), ]
+study_lm_wall_other_log <- study_subject_norm_long[c(361:390, 451:480, 541:570), ]
+
+retrieval_lm_wall_other <- retrieval_subject_norm_long[c(1:30, 91:120, 181:210), ]
+retrieval_lm_wall_other_log <- retrieval_subject_norm_long[c(361:390, 451:480, 541:570), ]
+
+# make a group for successive fixations during study and retrieval
+study_successive_fix <- study_subject_norm_long[c(211:270,301:360), ]
+retrieval_successive_fix <- retrieval_subject_norm_long[c(211:270,301:360), ]
 
 ### check for skew - significant values noted, otherwise not significant
-shapiro.test(subject_df$s.landmarks_norm) # p = .04124
+shapiro.test(subject_df$s.landmarks_norm) # not sig but p = .06489
 shapiro.test(subject_df$s.same_object_norm_log)
 shapiro.test(subject_df$s.DOSW_norm_log)
 shapiro.test(subject_df$s.wall_norm_log)
 shapiro.test(subject_df$s.DODW_norm_log)
-shapiro.test(subject_df$s.cart_norm_log) # p = .02583
+shapiro.test(subject_df$s.cart_norm_log) # p < .001
 shapiro.test(subject_df$s.other_norm_log) # p < .001
 shapiro.test(subject_df$s.obj_to_lm_norm_log)
-shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .008417
-shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .001912
+shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .02624
+shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .002047
 shapiro.test(subject_df$s.obj_to_diffObj_norm_log)
-shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .007871
+shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .002967
 
-shapiro.test(subject_df$r.landmarks_norm) # not sig but p = .05057
+shapiro.test(subject_df$r.landmarks_norm) # p = .009755
 shapiro.test(subject_df$r.same_object_norm_log)
-shapiro.test(subject_df$r.DOSW_norm_log)
+shapiro.test(subject_df$r.DOSW_norm_log) # not sig but p = .07021
 shapiro.test(subject_df$r.wall_norm_log)
-shapiro.test(subject_df$r.DODW_norm_log)
-shapiro.test(subject_df$r.cart_norm_log) # p = .02651
+shapiro.test(subject_df$r.DODW_norm_log) # p = .01362
+shapiro.test(subject_df$r.cart_norm_log)
 shapiro.test(subject_df$r.other_norm_log)
 shapiro.test(subject_df$r.obj_to_lm_norm_log)
 shapiro.test(subject_df$r.lm_to_obj_norm_log)
 shapiro.test(subject_df$r.obj_to_so_norm_log)
-shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # p = .01584
-shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .03103
+shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # not sig but p = .09054
+shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .002219
 
 ### test study against test in each category # all sig expect when specified as not sig
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.same_object_norm_log, subject_df$r.same_object_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.DOSW_norm_log , subject_df$r.DOSW_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.wall_norm_log , subject_df$r.wall_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.DODW_norm_log , subject_df$r.DODW_norm_log , paired = TRUE, alternative = "two.sided") # not sig
-t.test(subject_df$s.cart_norm_log , subject_df$r.cart_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.other_norm_log , subject_df$r.other_norm_log , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$s.DODW_norm_log , subject_df$r.DODW_norm_log , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$s.other_norm_log , subject_df$r.other_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .001593
 t.test(subject_df$s.obj_to_lm_norm_log , subject_df$r.obj_to_lm_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.lm_to_obj_norm_log , subject_df$r.lm_to_obj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .03357
+t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .03938
 
 ggpaired(subject_df, cond1 = "s.landmarks_norm_log", cond2 = "r.landmarks_norm_log")
 ggpaired(subject_df, cond1 = "s.same_object_norm_log", cond2 = "r.same_object_norm_log" )
 ggpaired(subject_df, cond1 = "s.DOSW_norm_log", cond2 = "r.DOSW_norm_log")
 ggpaired(subject_df, cond1 = "s.wall_norm_log", cond2 = "r.wall_norm_log")
 ggpaired(subject_df, cond1 = "s.DODW_norm_log", cond2 = "r.DODW_norm_log")
-ggpaired(subject_df, cond1 = "s.cart_norm_log", cond2 = "r.cart_norm_log")
 ggpaired(subject_df, cond1 = "s.other_norm_log", cond2 = "r.other_norm_log")
 ggpaired(subject_df, cond1 = "s.obj_to_lm_norm_log", cond2 = "r.obj_to_lm_norm_log")
 ggpaired(subject_df, cond1 = "s.lm_to_obj_norm_log", cond2 = "r.lm_to_obj_norm_log")
@@ -355,7 +362,6 @@ mean_and_sd("subject_df", "s.same_object_norm_log", "r.same_object_norm_log")
 mean_and_sd("subject_df", "s.DOSW_norm_log", "r.DOSW_norm_log")
 mean_and_sd("subject_df", "s.wall_norm_log", "r.wall_norm_log")
 mean_and_sd("subject_df", "s.DODW_norm_log", "r.DODW_norm_log")
-mean_and_sd("subject_df", "s.cart_norm_log", "r.cart_norm_log")
 mean_and_sd("subject_df", "s.other_norm_log", "r.other_norm_log")
 mean_and_sd("subject_df", "s.obj_to_lm_norm_log", "r.obj_to_lm_norm_log")
 mean_and_sd("subject_df", "s.lm_to_obj_norm_log", "r.lm_to_obj_norm_log")
@@ -486,12 +492,65 @@ big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.s
 summary(big_reg_norm)
  
 
+### conceptual ANOVAs and t-tests and figures
+
+# ANOVA for LM, wall, and other for study and retrieval separately
+bxp_study_lmWallOther <- ggboxplot(study_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
+                               title = "Log Normalized Fixation Number per Category during Study", 
+                               xlab = "", ylab = "Mean of Log Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+bxp_study_lmWallOther
+
+study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(study_lmWallOther_aov) # sig
+
+study_lmWallOther_pwc <- pairwise.t.test(study_lm_wall_other_log$norm_fixation_mean, study_lm_wall_other_log$trial, p.adj = "bonferroni")
+study_lmWallOther_pwc # all sig diff from each other
 
 
+bxp_retrieval_lmWallOther <- ggboxplot(retrieval_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
+                                   title = "Log Normalized Fixation Number per Category during Retrieval", 
+                                   xlab = "", ylab = "Mean of Log Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+bxp_retrieval_lmWallOther
+
+retrieval_lmWallOther_aov <- anova_test(data = retrieval_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(retrieval_lmWallOther_aov) # sig
+
+retrieval_lmWallOther_pwc <- pairwise.t.test(retrieval_lm_wall_other_log$norm_fixation_mean, retrieval_lm_wall_other_log$trial, p.adj = "bonferroni")
+retrieval_lmWallOther_pwc # all sig diff from each other
 
 
+# t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
+t.test(subject_df$s.DOSW_norm , subject_df$s.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
+ggpaired(subject_df, cond1 = "s.DOSW_norm", cond2 = "s.DODW_norm")
+
+# ANOVA for successive fixations
+
+bxp_study_fixfix <- ggboxplot(study_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
+                                   title = "Log Normalized Fixation Number per Category during Study", 
+                                   xlab = "", ylab = "Mean of Log Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+bxp_study_fixfix
+
+study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(study_fixfix_aov) # sig
+
+study_fixfix_pwc <- pairwise.t.test(study_successive_fix$norm_fixation_mean, study_successive_fix$trial, p.adj = "bonferroni")
+study_fixfix_pwc # all sig diff from each other except obj->lm and lm->obj
 
 
+bxp_retrieval_fixfix <- ggboxplot(retrieval_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
+                              title = "Log Normalized Fixation Number per Category during Retrieval", 
+                              xlab = "", ylab = "Mean of Log Normalized Fixations") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+bxp_retrieval_fixfix
+
+retrieval_fixfix_aov <- anova_test(data = retrieval_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
+get_anova_table(retrieval_fixfix_aov) # sig
+
+retrieval_fixfix_pwc <- pairwise.t.test(retrieval_successive_fix$norm_fixation_mean, retrieval_successive_fix$trial, p.adj = "bonferroni")
+retrieval_fixfix_pwc # about half comparisons are sig
 
 
 
