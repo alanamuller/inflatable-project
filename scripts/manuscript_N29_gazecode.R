@@ -16,10 +16,10 @@ library(rstatix)
 library(car)
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data")
+setwd("D:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_badTrialsDeleted.xlsx")
+inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_badTrialsDeleted.xlsx")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -398,7 +398,7 @@ retrieval_log_bxp <- ggboxplot(retreival_only_norm_log_long, x = "trial", y = "n
 retrieval_log_bxp
 
 
-
+# big ANOVAs for study and retrieval
 study_norm_aov <- anova_test(data = study_only_norm_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_norm_aov) # sig
 
@@ -423,12 +423,6 @@ get_anova_table(retrieval_norm_log_aov) # sig
 retrieval_norm_log_pwc <- pairwise.t.test(retreival_only_norm_log_long$norm_fixation_mean, retreival_only_norm_log_long$trial, p.adj = "bonferroni")
 retrieval_norm_log_pwc
 
-pwc <- subject_counts_long %>%
-  pairwise_t_test(
-    means ~ trial, paired = TRUE, 
-    p.adjust.method = "bonferroni"
-  )
-pwc
 
 # correlations with performance
 cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson")
@@ -498,7 +492,8 @@ summary(big_reg_norm)
 bxp_study_lmWallOther <- ggboxplot(study_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
                                title = "Log Normalized Fixation Number per Category during Study", 
                                xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+  scale_x_discrete(breaks=c("s.landmarks_norm_log", "s.other_norm_log", "s.wall_norm_log"), 
+                   labels=c("Landmarks", "Other", "Wall"))
 bxp_study_lmWallOther
 
 study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -511,7 +506,8 @@ study_lmWallOther_pwc # all sig diff from each other
 bxp_retrieval_lmWallOther <- ggboxplot(retrieval_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
                                    title = "Log Normalized Fixation Number per Category during Retrieval", 
                                    xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+  scale_x_discrete(breaks=c("r.landmarks_norm_log", "r.other_norm_log", "r.wall_norm_log"), 
+                   labels=c("Landmarks", "Other", "Wall"))
 bxp_retrieval_lmWallOther
 
 retrieval_lmWallOther_aov <- anova_test(data = retrieval_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -523,14 +519,26 @@ retrieval_lmWallOther_pwc # all sig diff from each other
 
 # t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
 t.test(subject_df$s.DOSW_norm , subject_df$s.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
-ggpaired(subject_df, cond1 = "s.DOSW_norm", cond2 = "s.DODW_norm")
+ggpaired(subject_df, cond1 = "s.DOSW_norm", cond2 = "s.DODW_norm", ylab = "Fixations per Second") +
+  ggtitle("Normalized Fixations During Study") + theme(plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(breaks=c("s.DOSW_norm", "s.DODW_norm"),
+                   labels=c("Different Wall", "Same Wall"))
+
+
+t.test(subject_df$r.DOSW_norm , subject_df$r.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
+ggpaired(subject_df, cond1 = "r.DOSW_norm", cond2 = "r.DODW_norm", ylab = "Fixations per Second") +
+  ggtitle("Normalized Fixations During Retrieval") + theme(plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(breaks=c("r.DOSW_norm", "r.DODW_norm"),
+                   labels=c("Different Wall", "Same Wall"))
 
 # ANOVA for successive fixations
 
 bxp_study_fixfix <- ggboxplot(study_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
                                    title = "Log Normalized Fixation Number per Category during Study", 
                                    xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(breaks=c("s.lm_to_lm_norm", "s.lm_to_obj_norm", "s.obj_to_diffObj_norm", "s.obj_to_lm_norm"),
+                   labels=c("Landmark to Landmark", "Landmark to Object", "Object to Object", "Object to Landmark"))
 bxp_study_fixfix
 
 study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -543,7 +551,9 @@ study_fixfix_pwc # all sig diff from each other except obj->lm and lm->obj
 bxp_retrieval_fixfix <- ggboxplot(retrieval_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
                               title = "Log Normalized Fixation Number per Category during Retrieval", 
                               xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
+  scale_x_discrete(breaks=c("r.lm_to_lm_norm", "r.lm_to_obj_norm", "r.obj_to_diffObj_norm", "r.obj_to_lm_norm"),
+                   labels=c("Landmark to Landmark", "Landmark to Object", "Object to Object", "Object to Landmark"))
 bxp_retrieval_fixfix
 
 retrieval_fixfix_aov <- anova_test(data = retrieval_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
