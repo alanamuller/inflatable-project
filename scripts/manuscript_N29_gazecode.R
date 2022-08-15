@@ -426,8 +426,7 @@ retrieval_norm_log_pwc
 
 # correlations with performance
 cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-plot(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log)
-cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
 cor.test(subject_df$s.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
@@ -435,25 +434,23 @@ cor.test(subject_df$s.cart_norm_log, subject_df$placement_error_cm_log, method =
 cor.test(subject_df$s.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, almost .05
 plot(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$s.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
-cor.test(subject_df$r.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # p = .07048
+cor.test(subject_df$r.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor
-cor.test(subject_df$r.cart_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-plot(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$r.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
 cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
 cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
 cor.test(subject_df$r.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
-cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, almost .05
 cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
 cor.test(subject_df$Number_of_fixations, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$Peak_velocity_of_entry_saccade, subject_df$placement_error_cm_log, method = "pearson")
@@ -461,32 +458,46 @@ cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm
 plot(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log)
 
 
+plot(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log)
+
+plot(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log) + stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
+plot(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log)
+
+
+x <- subject_df$Total_duration_of_fixations
+y<- subject_df$placement_error_cm_log
+
+ggplot( subject_df, aes( x=x, y=y ))+
+  geom_point()+
+  stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
+
+
+x <- subject_df$Average_duration_of_fixations
+y<- subject_df$placement_error_cm_log
+
+ggplot( subject_df, aes( x=x, y=y ))+
+  geom_point()+
+  stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
+
+
 # big regression with all sig ones to see which explains more variance with time to first fixation
-# only r.DODW sig
-only_sig_stuff_reg <- lm(formula = placement_error_cm_log ~ s.obj_to_so + r.same_object + r.DODW + r.obj_to_so + 
-                 Total_duration_of_fixations + Average_duration_of_fixations + Peak_velocity_of_exit_saccade, data = subject_df)
-summary(only_sig_stuff_reg)
 
-only_sig_stuff_reg_norm <- lm(formula = placement_error_cm_log ~ s.obj_to_so_norm_log + r.DODW_norm_log + r.obj_to_so_norm_log + 
-                           Total_duration_of_fixations + Average_duration_of_fixations + Peak_velocity_of_exit_saccade, data = subject_df)
-summary(only_sig_stuff_reg_norm)
-
-big_reg <- lm(formula = placement_error_cm_log ~ s.landmarks + s.same_object + s.DOSW + s.other + s.DODW +
-                s.obj_to_lm + s.lm_to_obj + s.obj_to_so + s.obj_to_diffObj + s.lm_to_lm +
-                r.landmarks + r.same_object + r.DOSW + r.other + r.DODW +
+big_reg <- lm(formula = placement_error_cm_log ~ s.landmarks + s.same_object + s.DOSW + s.wall + s.DODW +
+                s.other + s.obj_to_lm + s.lm_to_obj + s.obj_to_so + s.obj_to_diffObj + s.lm_to_lm +
+                r.landmarks + r.same_object + r.DOSW + r.wall + r.DODW + r.other +
                 r.obj_to_lm + r.lm_to_obj + r.obj_to_so + r.obj_to_diffObj + r.lm_to_lm +
                 Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
 summary(big_reg)
 
-big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.same_object_norm_log + s.DOSW_norm_log + s.other_norm_log + s.DODW_norm_log +
-                s.obj_to_lm_norm_log + s.lm_to_obj_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
-                r.landmarks_norm_log + r.same_object_norm_log + r.DOSW_norm_log + r.other_norm_log + r.DODW_norm_log +
+big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.same_object_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
+                s.other_norm_log + s.obj_to_lm_norm_log + s.lm_to_obj_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
+                r.landmarks_norm_log + r.same_object_norm_log + r.DOSW_norm_log + r.wall_norm_log + r.DODW_norm_log + r.other_norm_log +
                 r.obj_to_lm_norm_log + r.lm_to_obj_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
                 Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
 summary(big_reg_norm)
  
 
-### conceptual ANOVAs and t-tests and figures
+### conceptual ANOVAs andt-tests and figures
 
 # ANOVA for LM, wall, and other for study and retrieval separately
 bxp_study_lmWallOther <- ggboxplot(study_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
@@ -522,14 +533,14 @@ t.test(subject_df$s.DOSW_norm , subject_df$s.DODW_norm , paired = TRUE, alternat
 ggpaired(subject_df, cond1 = "s.DOSW_norm", cond2 = "s.DODW_norm", ylab = "Fixations per Second") +
   ggtitle("Normalized Fixations During Study") + theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_discrete(breaks=c("s.DOSW_norm", "s.DODW_norm"),
-                   labels=c("Different Wall", "Same Wall"))
+                   labels=c("Same Wall", "Different Wall"))
 
 
 t.test(subject_df$r.DOSW_norm , subject_df$r.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
 ggpaired(subject_df, cond1 = "r.DOSW_norm", cond2 = "r.DODW_norm", ylab = "Fixations per Second") +
   ggtitle("Normalized Fixations During Retrieval") + theme(plot.title = element_text(hjust = 0.5)) +
   scale_x_discrete(breaks=c("r.DOSW_norm", "r.DODW_norm"),
-                   labels=c("Different Wall", "Same Wall"))
+                   labels=c("Same Wall", "Different Wall"))
 
 # ANOVA for successive fixations
 
