@@ -139,6 +139,9 @@ myData_NO_y <- myData %>%
 
 ################### Parametric Analyses ###################  
 
+# uncomment this to save manuscript-quality pics to this folder
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
+
 ##### 2-way repeated-measures ANOVA walk view - not sig
 aov_data <- myData_NO %>%
   group_by(subject, walk_noWalk, same_diff) %>%
@@ -154,9 +157,9 @@ bxp <- ggboxplot(
   legend = "right", legend.title = "Viewpoint") + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same"))
-#jpeg("movement_viewpoint_anova.jpeg", width = 3.5, height = 3, units = 'in', res = 300)
+jpeg("movement_viewpoint_anova.jpeg", width = 5, height = 5, units = 'in', res = 500)
 bxp
-#dev.off()
+dev.off()
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -165,6 +168,24 @@ summary(results_2way) # nothing is sig, no main effects, no interaction effect
 withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff))
 get_anova_table(withinTest) # nothing is sig
+
+
+### exclude trials when people took the cart AND put back in the same order and halfs
+### all other trials can stay, just don't want people retracing their steps
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### exclude trials when people took the cart AND put back in the same order and halfs
 ### all other trials can stay, just don't want people retracing their steps
