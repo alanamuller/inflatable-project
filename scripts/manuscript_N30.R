@@ -32,35 +32,13 @@ str(inputData) # check the structure of the data
 # Make a copy of inputData that I'll use for analysis
 myData <- inputData
 
-# Make rows 1:12 and 16:19 factors
-myData$subject <- as.factor(myData$subject)
-myData$trial <- as.factor(myData$trial)
-myData$wall_side <- as.factor(myData$wall_side)
-myData$object <- as.factor(myData$object)
-myData$object_size <- as.factor(myData$object_size)
-myData$object_aliveORnot <- as.factor(myData$object_aliveORnot)
-myData$object_material <- as.factor(myData$object_material)
-myData$walk_noWalk <- as.factor(myData$walk_noWalk)
-myData$same_diff <- as.factor(myData$same_diff)
-myData$start_wall <- as.factor(myData$start_wall)
-myData$height <- as.factor(myData$height)
-myData$width <- as.factor(myData$width)
-myData$next_to_landmark <- as.factor(myData$next_to_landmark)
-myData$which_landmark <- as.factor(myData$which_landmark)
-myData$`objects_put_back_order (same/not_same)`<- as.factor(myData$`objects_put_back_order (same/not_same)`)
-myData$`cart (took/left/half)`<- as.factor(myData$`cart (took/left/half)`)
+# Make rows 1:13 and 17:24 and 40 factors
+i <- c(1:13,17:24,40)
+myData [i] <- lapply(myData[i], factor)
 
-# Make rows 20:29 numbers
-myData$x_study <- as.numeric(myData$x_study)
-myData$y_study <- as.numeric(myData$y_study)
-myData$x_replace <- as.numeric(myData$x_replace)
-myData$y_replace <- as.numeric(myData$y_replace)
-myData$x_error <- as.numeric(myData$x_error)
-myData$y_error <- as.numeric(myData$y_error)
-myData$placement_error <- as.numeric(myData$placement_error)
-myData$x_error_cm <- as.numeric(myData$x_error_cm)
-myData$y_error_cm <- as.numeric(myData$y_error_cm)
-myData$placement_error_cm <- as.numeric(myData$placement_error_cm)
+# Make rows 14:16 and 20:29 numbers
+i <- c(14:16,25:39,41:54)
+myData [ , i] <- apply(myData, 2, function(x) as.numeric(x))
 
 # make abs value columns for x_error_cm and y_error_cm
 myData$abs_x_error_cm <- abs(myData$x_error_cm)
