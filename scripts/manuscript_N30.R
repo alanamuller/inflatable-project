@@ -19,7 +19,6 @@ library(officer)
 library(tidyr)
 library(PairedData)
 
-
 rm(list = ls())
 
 setwd("E:/Nav_1stYr_project_data")
@@ -38,7 +37,7 @@ myData [i] <- lapply(myData[i], factor)
 
 # Make rows 14:16 and 20:29 numbers
 i <- c(14:16,25:39,41:54)
-myData [ , i] <- apply(myData, 2, function(x) as.numeric(x))
+myData [i] <- lapply(myData[i], as.numeric)
 
 # make abs value columns for x_error_cm and y_error_cm
 myData$abs_x_error_cm <- abs(myData$x_error_cm)
@@ -58,6 +57,7 @@ hist(myData$placement_error_cm_log)
 shapiro.test(myData$placement_error_cm_log) # still not normal
 ggqqplot(myData$placement_error_cm_log)
 
+# cube transformation - not better than log
 myData$placement_error_cm_cuberoot <- (myData$placement_error_cm)^(1/3)
 hist(myData$placement_error_cm_cuberoot)
 shapiro.test(myData$placement_error_cm_cuberoot) # still not normal, log is better
@@ -72,7 +72,7 @@ outliers_placement_error_cm <- myData %>%
   filter(placement_error_cm_log > mean_placement_error_cm_log + (3*sd_placement_error_cm_log) | 
          placement_error_cm_log < mean_placement_error_cm_log - (3*sd_placement_error_cm_log))
 
-# Make a dataset with No Outliers (NO for short) and there are also no more NAs in placement_error_cm_log
+# Make a dataset with No Outliers (NO for short) and also gets rid of NAs in placement_error_cm_log
 myData_NO <- myData %>% 
   filter(placement_error_cm_log < mean_placement_error_cm_log + (3*sd_placement_error_cm_log), 
            placement_error_cm_log > mean_placement_error_cm_log - (3*sd_placement_error_cm_log) )
@@ -109,7 +109,7 @@ outliers_y_error_cm_log <- myData %>%
   filter(abs_y_error_cm_log > mean_y_error_cm_log + (3*sd_y_error_cm_log) | 
            abs_y_error_cm_log < mean_y_error_cm_log - (3*sd_y_error_cm_log))
 
-# Make a dataset without outliers for x_error_cm
+# Make a dataset without outliers for y_error_cm
 myData_NO_y <- myData %>%
   filter(abs_y_error_cm_log < mean_y_error_cm_log + (3*sd_y_error_cm_log), 
            abs_y_error_cm_log > mean_y_error_cm_log - (3*sd_y_error_cm_log))
@@ -135,9 +135,9 @@ bxp <- ggboxplot(
   legend = "right", legend.title = "Viewpoint") + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same"))
-jpeg("movement_viewpoint_anova.jpeg", width = 5, height = 5, units = 'in', res = 500)
+#jpeg("movement_viewpoint_anova.jpeg", width = 5, height = 5, units = 'in', res = 500)
 bxp
-dev.off()
+#dev.off()
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -146,24 +146,6 @@ summary(results_2way) # nothing is sig, no main effects, no interaction effect
 withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff))
 get_anova_table(withinTest) # nothing is sig
-
-
-### exclude trials when people took the cart AND put back in the same order and halfs
-### all other trials can stay, just don't want people retracing their steps
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ### exclude trials when people took the cart AND put back in the same order and halfs
 ### all other trials can stay, just don't want people retracing their steps
@@ -178,28 +160,27 @@ cart <- myData_NO %>%
 
 # make groups of each pair of conditions to see how many of each there are
 cart_took_same <- myData_NO %>%
-  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "same")
+  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "same") # truly retracing their steps
 
 cart_took_notSame <- myData_NO %>%
-  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "not_same")
+  filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "not_same") # keep in analysis
 
 cart_left_same <- myData_NO %>%
-  filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "same")
+  filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "same") # still could be retracing their steps by reviewing what they saw at encoding
 
 cart_left_notSame <- myData_NO %>%
-  filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "not_same")
+  filter(`cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "not_same") # keep in analysis
 
 cart_half_same <- myData_NO %>%
-  filter(`cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "same")
+  filter(`cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "same") # still retracing their steps
 
 cart_half_notSame <- myData_NO %>%
-  filter(`cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "not_same")
+  filter(`cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "not_same") # keep in analysis 
 
-# put the data together that I want (took, not same; left, not same; left, same)
+# put the data together that I want (took, not same; left, not same; half, not same)
 cart_data <- myData_NO %>%
   filter(`cart (took/left/half)`== "took" & `objects_put_back_order (same/not_same)` == "not_same" |
          `cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "not_same" |
-         `cart (took/left/half)`== "left" & `objects_put_back_order (same/not_same)` == "same" |
          `cart (took/left/half)`== "half" & `objects_put_back_order (same/not_same)` == "not_same")
 
 aov_cart_data <- cart_data %>%
@@ -217,6 +198,51 @@ bxp <- ggboxplot(
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same"))
 bxp
+
+### exclude trials when people put objects back in the same order as taken off the walls
+cart_not_samePutBackOrder <- myData_NO %>%
+  filter(`objects_put_back_order (same/not_same)` != "same") # only keep trials in which objects were not put back in same order
+
+cart_samePutBackOrder <- myData_NO %>%
+  filter(`objects_put_back_order (same/not_same)` == "same")
+
+cart_same_counts <- myData_NO %>%
+  filter(`objects_put_back_order (same/not_same)` == "same") %>%
+  group_by(subject, trial) %>%
+  summarize(
+    count = n(),
+    mean = mean(placement_error_cm_log), 
+    sd = sd(placement_error_cm_log)
+  ) # sanity check to make sure I know how many trials are part of this "same put back order" group
+
+cart_not_same_counts <- myData_NO %>%
+  filter(`objects_put_back_order (same/not_same)` != "same") %>%
+  group_by(subject, trial) %>%
+  summarize(
+    count = n(),
+    mean = mean(placement_error_cm_log), 
+    sd = sd(placement_error_cm_log)
+  ) # sanity check to make sure I know how many trials are part of this "not same put back order" group
+
+cart_not_samePutBackOrder_data <- cart_not_samePutBackOrder %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    mean = mean(placement_error_cm_log, na.rm = TRUE),
+  )
+cart_not_samePutBackOrder_data <- as_tibble(cart_not_samePutBackOrder_data)
+
+bxp <- ggboxplot(
+  cart_not_samePutBackOrder_data, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", 
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same"))
+bxp
+
+aov_sameSeqExclude <- anova_test(data = cart_not_samePutBackOrder_data, dv = mean, wid = subject,
+                              within = c(walk_noWalk, same_diff))
+get_anova_table(aov_sameSeqExclude) # not sig but p = 0.08 for walk_noWalk
 
 # this 2-way repeated measures anova takes out the incomplete cases
 cart_withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,

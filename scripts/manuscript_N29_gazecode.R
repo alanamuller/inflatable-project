@@ -16,10 +16,10 @@ library(rstatix)
 library(car)
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("D:/Nav_1stYr_project_data/GazeCode data")
+setwd("E:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("D:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_badTrialsDeleted.xlsx")
+inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_badTrialsDeleted.xlsx")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -28,7 +28,7 @@ myData <- inputData
 
 # make all the rows their correct data type (numeric or factor)
 i <- c(1:59)
-myData [ , i] <- apply(myData, 2, function(x) as.numeric(x))
+myData [i] <- lapply(myData[i], as.numeric)
 myData$subject <- as.factor(myData$subject)
 myData$trial <- as.factor(myData$trial)
 
@@ -37,6 +37,13 @@ myData$placement_error_cm_log <- log(myData$placement_error_cm+1)
 myData$abs_x_error_cm_log <- log(myData$abs_x_error_cm+1)
 myData$abs_y_error_cm_log <- log(myData$abs_y_error_cm+1)
 str(myData)
+
+# create columns to combine specific fixation columns
+myData$s.lm_obj_lm <- myData$s.lm_to_obj + myData$s.obj_to_lm
+myData$r.lm_obj_lm <- myData$r.lm_to_obj + myData$r.obj_to_lm
+
+myData$s.objects <- myData$s.DOSW + myData$s.DODW + myData$s.same_object
+myData$r.objects <- myData$r.DOSW + myData$r.DODW + myData$r.same_object
 
 # create normalized values by dividing study fixation count by study duration (in seconds)
 myData$s.landmarks_norm <- myData$s.landmarks/myData$s.duration
@@ -51,6 +58,8 @@ myData$s.lm_to_obj_norm <- myData$s.lm_to_obj/myData$s.duration
 myData$s.obj_to_so_norm <- myData$s.obj_to_so/myData$s.duration
 myData$s.obj_to_diffObj_norm <- myData$s.obj_to_diffObj/myData$s.duration
 myData$s.lm_to_lm_norm <- myData$s.lm_to_lm/myData$s.duration
+myData$s.lm_obj_lm_norm <- myData$s.lm_obj_lm/myData$s.duration
+myData$s.objects_norm <- myData$s.objects/myData$s.duration
 
 # create normalized values by dividing retrieval fixation count by retrieval duration (in seconds)
 myData$r.landmarks_norm <- myData$r.landmarks/myData$r.duration
@@ -65,6 +74,8 @@ myData$r.lm_to_obj_norm <- myData$r.lm_to_obj/myData$r.duration
 myData$r.obj_to_so_norm <- myData$r.obj_to_so/myData$r.duration
 myData$r.obj_to_diffObj_norm <- myData$r.obj_to_diffObj/myData$r.duration
 myData$r.lm_to_lm_norm <- myData$r.lm_to_lm/myData$r.duration
+myData$r.lm_obj_lm_norm <- myData$r.lm_obj_lm/myData$r.duration
+myData$r.objects_norm <- myData$r.objects/myData$r.duration
 
 # create log transformed values by for skewed categories (but spoiler alert: they are not all skewed)
 myData$s.landmarks_norm_log <- log(myData$s.landmarks_norm+1)
@@ -79,6 +90,8 @@ myData$s.lm_to_obj_norm_log <- log(myData$s.lm_to_obj_norm+1)
 myData$s.obj_to_so_norm_log <- log(myData$s.obj_to_so_norm+1)
 myData$s.obj_to_diffObj_norm_log <- log(myData$s.obj_to_diffObj_norm+1)
 myData$s.lm_to_lm_norm_log <- log(myData$s.lm_to_lm_norm+1)
+myData$s.lm_obj_lm_norm_log <- log(myData$s.lm_obj_lm_norm +1)
+myData$s.objects_norm_log <- log(myData$s.objects_norm +1)
 
 myData$r.landmarks_norm_log <- log(myData$r.landmarks_norm+1)
 myData$r.same_object_norm_log <- log(myData$r.same_object_norm+1)
@@ -92,6 +105,8 @@ myData$r.lm_to_obj_norm_log <- log(myData$r.lm_to_obj_norm+1)
 myData$r.obj_to_so_norm_log <- log(myData$r.obj_to_so_norm+1)
 myData$r.obj_to_diffObj_norm_log <- log(myData$r.obj_to_diffObj_norm+1)
 myData$r.lm_to_lm_norm_log <- log(myData$r.lm_to_lm_norm+1)
+myData$r.lm_obj_lm_norm_log <- log(myData$r.lm_obj_lm_norm+1)
+myData$r.objects_norm_log <- log(myData$r.objects_norm+1)
 
 # create a dataset that groups fixation counts, normed fixations, and log fixations by subject
 subject_df <- myData %>%
@@ -109,6 +124,8 @@ subject_df <- myData %>%
     s.obj_to_so = mean(s.obj_to_so, na.rm = TRUE),
     s.obj_to_diffObj = mean(s.obj_to_diffObj, na.rm = TRUE),
     s.lm_to_lm = mean(s.lm_to_lm, na.rm = TRUE),
+    s.lm_obj_lm = mean(s.lm_obj_lm, na.rm = TRUE),
+    s.objects = mean(s.objects, na.rm = TRUE),
     r.landmarks = mean(r.landmarks, na.rm = TRUE),
     r.same_object = mean(r.same_object, na.rm = TRUE),
     r.DOSW = mean(r.DOSW, na.rm = TRUE),
@@ -121,6 +138,8 @@ subject_df <- myData %>%
     r.obj_to_so = mean(r.obj_to_so, na.rm = TRUE),
     r.obj_to_diffObj = mean(r.obj_to_diffObj, na.rm = TRUE),
     r.lm_to_lm = mean(r.lm_to_lm, na.rm = TRUE),
+    r.lm_obj_lm = mean(r.lm_obj_lm, na.rm = TRUE),
+    r.objects = mean(r.objects, na.rm = TRUE),
     s.landmarks_norm = mean(s.landmarks_norm, na.rm = TRUE),
     s.same_object_norm = mean(s.same_object_norm, na.rm = TRUE),
     s.DOSW_norm = mean(s.DOSW_norm, na.rm = TRUE),
@@ -133,6 +152,8 @@ subject_df <- myData %>%
     s.obj_to_so_norm = mean(s.obj_to_so_norm, na.rm = TRUE),
     s.obj_to_diffObj_norm = mean(s.obj_to_diffObj_norm, na.rm = TRUE),
     s.lm_to_lm_norm = mean(s.lm_to_lm_norm, na.rm = TRUE),
+    s.lm_obj_lm_norm = mean(s.lm_obj_lm_norm, na.rm = TRUE),
+    s.objects_norm = mean(s.objects_norm, na.rm = TRUE),
     r.landmarks_norm = mean(r.landmarks_norm, na.rm = TRUE),
     r.same_object_norm = mean(r.same_object_norm, na.rm = TRUE),
     r.DOSW_norm = mean(r.DOSW_norm, na.rm = TRUE),
@@ -145,6 +166,8 @@ subject_df <- myData %>%
     r.obj_to_so_norm = mean(r.obj_to_so_norm, na.rm = TRUE),
     r.obj_to_diffObj_norm = mean(r.obj_to_diffObj_norm, na.rm = TRUE),
     r.lm_to_lm_norm = mean(r.lm_to_lm_norm, na.rm = TRUE),
+    r.lm_obj_lm_norm = mean(r.lm_obj_lm_norm, na.rm = TRUE),
+    r.objects_norm = mean(r.objects_norm, na.rm = TRUE),
     s.landmarks_norm_log = mean(s.landmarks_norm_log, na.rm = TRUE),
     s.same_object_norm_log = mean(s.same_object_norm_log, na.rm = TRUE),
     s.DOSW_norm_log = mean(s.DOSW_norm_log, na.rm = TRUE),
@@ -157,6 +180,8 @@ subject_df <- myData %>%
     s.obj_to_so_norm_log = mean(s.obj_to_so_norm_log, na.rm = TRUE),
     s.obj_to_diffObj_norm_log = mean(s.obj_to_diffObj_norm_log, na.rm = TRUE),
     s.lm_to_lm_norm_log = mean(s.lm_to_lm_norm_log, na.rm = TRUE),
+    s.lm_obj_lm_norm_log = mean(s.lm_obj_lm_norm_log, na.rm = TRUE),
+    s.objects_norm_log = mean(s.objects_norm_log, na.rm = TRUE),    
     r.landmarks_norm_log = mean(r.landmarks_norm_log, na.rm = TRUE),
     r.same_object_norm_log = mean(r.same_object_norm_log, na.rm = TRUE),
     r.DOSW_norm_log = mean(r.DOSW_norm_log, na.rm = TRUE),
@@ -169,6 +194,8 @@ subject_df <- myData %>%
     r.obj_to_so_norm_log = mean(r.obj_to_so_norm_log, na.rm = TRUE),
     r.obj_to_diffObj_norm_log = mean(r.obj_to_diffObj_norm_log, na.rm = TRUE),
     r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE), 
+    r.lm_obj_lm_norm_log = mean(r.lm_obj_lm_norm_log, na.rm = TRUE),
+    r.objects_norm_log = mean(r.objects_norm_log, na.rm = TRUE),
     placement_error_cm_log = mean(placement_error_cm_log),
     abs_x_error_cm_log = mean(abs_x_error_cm_log),
     abs_y_error_cm_log = mean(abs_y_error_cm_log),
@@ -195,6 +222,8 @@ study_subject_norm_df <- myData %>%
     s.obj_to_so_norm = mean(s.obj_to_so_norm, na.rm = TRUE),
     s.obj_to_diffObj_norm = mean(s.obj_to_diffObj_norm, na.rm = TRUE),
     s.lm_to_lm_norm = mean(s.lm_to_lm_norm, na.rm = TRUE),
+    s.lm_obj_lm_norm = mean(s.lm_obj_lm_norm, na.rm = TRUE),
+    s.objects_norm = mean(s.objects_norm, na.rm = TRUE),
     placement_error_cm = mean(placement_error_cm),
     abs_x_error_cm = mean(abs_x_error_cm),
     abs_y_error_cm = mean(abs_y_error_cm),
@@ -210,6 +239,8 @@ study_subject_norm_df <- myData %>%
     s.obj_to_so_norm_log = mean(s.obj_to_so_norm_log, na.rm = TRUE),
     s.obj_to_diffObj_norm_log = mean(s.obj_to_diffObj_norm_log, na.rm = TRUE),
     s.lm_to_lm_norm_log = mean(s.lm_to_lm_norm_log, na.rm = TRUE),
+    s.lm_obj_lm_norm_log = mean(s.lm_obj_lm_norm_log, na.rm = TRUE),
+    s.objects_norm_log = mean(s.objects_norm_log, na.rm = TRUE),   
     placement_error_cm_log = mean(placement_error_cm_log),
     abs_x_error_cm_log = mean(abs_x_error_cm_log),
     abs_y_error_cm_log = mean(abs_y_error_cm_log)
@@ -231,6 +262,8 @@ retrieval_subject_norm_df <- myData %>%
     r.obj_to_so_norm = mean(r.obj_to_so_norm, na.rm = TRUE),
     r.obj_to_diffObj_norm = mean(r.obj_to_diffObj_norm, na.rm = TRUE),
     r.lm_to_lm_norm = mean(r.lm_to_lm_norm, na.rm = TRUE),
+    r.lm_obj_lm_norm = mean(r.lm_obj_lm_norm, na.rm = TRUE),
+    r.objects_norm = mean(r.objects_norm, na.rm = TRUE),
     placement_error_cm = mean(placement_error_cm),
     abs_x_error_cm = mean(abs_x_error_cm),
     abs_y_error_cm = mean(abs_y_error_cm),
@@ -246,6 +279,8 @@ retrieval_subject_norm_df <- myData %>%
     r.obj_to_so_norm_log = mean(r.obj_to_so_norm_log, na.rm = TRUE),
     r.obj_to_diffObj_norm_log = mean(r.obj_to_diffObj_norm_log, na.rm = TRUE),
     r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE),
+    r.lm_obj_lm_norm_log = mean(r.lm_obj_lm_norm_log, na.rm = TRUE),
+    r.objects_norm_log = mean(r.objects_norm_log, na.rm = TRUE),
     placement_error_cm_log = mean(placement_error_cm_log),
     abs_x_error_cm_log = mean(abs_x_error_cm_log),
     abs_y_error_cm_log = mean(abs_y_error_cm_log)
@@ -254,36 +289,36 @@ retrieval_subject_norm_df <- myData %>%
 # put the study subject grouped data in long format
 study_subject_norm_long <- study_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", s.landmarks_norm, s.same_object_norm, s.DOSW_norm, s.wall_norm, s.DODW_norm, s.cart_norm, s.other_norm,
-         s.obj_to_lm_norm, s.lm_to_obj_norm, s.obj_to_so_norm, s.obj_to_diffObj_norm, s.lm_to_lm_norm,
+         s.obj_to_lm_norm, s.lm_to_obj_norm, s.obj_to_so_norm, s.obj_to_diffObj_norm, s.lm_to_lm_norm, s.lm_obj_lm_norm, s.objects_norm,
          s.landmarks_norm_log, s.same_object_norm_log, s.DOSW_norm_log, s.wall_norm_log, s.DODW_norm_log, s.cart_norm_log, s.other_norm_log, 
-         s.obj_to_lm_norm_log, s.lm_to_obj_norm_log, s.obj_to_so_norm_log, s.obj_to_diffObj_norm_log, s.lm_to_lm_norm_log) %>%
+         s.obj_to_lm_norm_log, s.lm_to_obj_norm_log, s.obj_to_so_norm_log, s.obj_to_diffObj_norm_log, s.lm_to_lm_norm_log, s.lm_obj_lm_norm_log, s.objects_norm_log) %>%
   convert_as_factor(subject,trial)
   
 # put the retrieval subject grouped data in long format
 retrieval_subject_norm_long <- retrieval_subject_norm_df %>%
   gather(key = "trial", value = "norm_fixation_mean", r.landmarks_norm, r.same_object_norm, r.DOSW_norm, r.wall_norm, r.DODW_norm, r.cart_norm, r.other_norm,
-         r.obj_to_lm_norm, r.lm_to_obj_norm, r.obj_to_so_norm, r.obj_to_diffObj_norm, r.lm_to_lm_norm,
+         r.obj_to_lm_norm, r.lm_to_obj_norm, r.obj_to_so_norm, r.obj_to_diffObj_norm, r.lm_to_lm_norm, r.lm_obj_lm_norm, r.objects_norm, 
          r.landmarks_norm_log, r.same_object_norm_log, r.DOSW_norm_log, r.wall_norm_log, r.DODW_norm_log, r.cart_norm_log, r.other_norm_log, 
-         r.obj_to_lm_norm_log, r.lm_to_obj_norm_log, r.obj_to_so_norm_log, r.obj_to_diffObj_norm_log, r.lm_to_lm_norm_log) %>%
+         r.obj_to_lm_norm_log, r.lm_to_obj_norm_log, r.obj_to_so_norm_log, r.obj_to_diffObj_norm_log, r.lm_to_lm_norm_log, r.lm_obj_lm_norm_log, r.objects_norm_log) %>%
   convert_as_factor(subject,trial)
 
 # filter data into norm and norm_log values
-study_only_norm_long <- study_subject_norm_long[1:360, ]
-study_only_norm_log_long <- study_subject_norm_long[361:720, ]
+study_only_norm_long <- study_subject_norm_long[1:420, ]
+study_only_norm_log_long <- study_subject_norm_long[421:840, ]
 
-retrieval_only_norm_long <- retrieval_subject_norm_long[1:360, ]
-retreival_only_norm_log_long <- retrieval_subject_norm_long[361:720, ]
+retrieval_only_norm_long <- retrieval_subject_norm_long[1:420, ]
+retreival_only_norm_log_long <- retrieval_subject_norm_long[421:840, ]
 
-# make group for only LM, Wall, and Other categories during study and retrieval separately
-study_lm_wall_other <- study_subject_norm_long[c(1:30, 91:120, 181:210), ]
-study_lm_wall_other_log <- study_subject_norm_long[c(361:390, 451:480, 541:570), ]
+# make group for only LM, Wall, Other, and Objects categories during study and retrieval separately
+study_lm_wall_other <- study_subject_norm_long[c(1:30, 91:120, 181:210, 391:420), ]
+study_lm_wall_other_log <- study_subject_norm_long[c(421:450, 511:540, 601:630, 811:840), ]
 
-retrieval_lm_wall_other <- retrieval_subject_norm_long[c(1:30, 91:120, 181:210), ]
-retrieval_lm_wall_other_log <- retrieval_subject_norm_long[c(361:390, 451:480, 541:570), ]
+retrieval_lm_wall_other <- retrieval_subject_norm_long[c(1:30, 91:120, 181:210, 391:420), ]
+retrieval_lm_wall_other_log <- retrieval_subject_norm_long[c(421:450, 511:540, 601:630, 811:840), ]
 
-# make a group for successive fixations during study and retrieval
-study_successive_fix <- study_subject_norm_long[c(211:270,301:360), ]
-retrieval_successive_fix <- retrieval_subject_norm_long[c(211:270,301:360), ]
+# make a group for successive fixations: lm_lm, obj_obj, lm_obj_lm,
+study_successive_fix <- study_subject_norm_long[301:390, ]
+retrieval_successive_fix <- retrieval_subject_norm_long[301:390, ]
 
 ### check for skew - significant values noted, otherwise not significant
 shapiro.test(subject_df$s.landmarks_norm) # not sig but p = .06489
@@ -298,6 +333,8 @@ shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .02624
 shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .002047
 shapiro.test(subject_df$s.obj_to_diffObj_norm_log)
 shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .002967
+shapiro.test(subject_df$s.lm_obj_lm_norm_log)
+shapiro.test(subject_df$s.objects_norm_log)
 
 shapiro.test(subject_df$r.landmarks_norm) # p = .009755
 shapiro.test(subject_df$r.same_object_norm_log)
@@ -311,6 +348,8 @@ shapiro.test(subject_df$r.lm_to_obj_norm_log)
 shapiro.test(subject_df$r.obj_to_so_norm_log)
 shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # not sig but p = .09054
 shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .002219
+shapiro.test(subject_df$r.lm_obj_lm_norm_log)
+shapiro.test(subject_df$r.objects_norm_log)
 
 ### test study against test in each category # all sig expect when specified as not sig
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
@@ -324,6 +363,8 @@ t.test(subject_df$s.lm_to_obj_norm_log , subject_df$r.lm_to_obj_norm_log , paire
 t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .03938
+t.test(subject_df$s.objects_norm_log , subject_df$r.objects_norm_log , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$s.lm_obj_lm_norm_log , subject_df$r.lm_obj_lm_norm_log , paired = TRUE, alternative = "two.sided")
 
 ggpaired(subject_df, cond1 = "s.landmarks_norm_log", cond2 = "r.landmarks_norm_log")
 ggpaired(subject_df, cond1 = "s.same_object_norm_log", cond2 = "r.same_object_norm_log" )
@@ -335,7 +376,8 @@ ggpaired(subject_df, cond1 = "s.obj_to_lm_norm_log", cond2 = "r.obj_to_lm_norm_l
 ggpaired(subject_df, cond1 = "s.lm_to_obj_norm_log", cond2 = "r.lm_to_obj_norm_log")
 ggpaired(subject_df, cond1 = "s.obj_to_so_norm_log", cond2 = "r.obj_to_so_norm_log")
 ggpaired(subject_df, cond1 = "s.obj_to_diffObj_norm_log", cond2 = "r.obj_to_diffObj_norm_log")
-ggpaired(subject_df, cond1 = "s.lm_to_lm_norm_log", cond2 = "r.lm_to_lm_norm_log")
+ggpaired(subject_df, cond1 = "s.objects_norm_log", cond2 = "r.objects_norm_log")
+ggpaired(subject_df, cond1 = "s.lm_obj_lm_norm_log", cond2 = "r.lm_obj_lm_norm_log")
 
 mean_and_sd <- function(data, ttestvalue1, ttestvalue2) {
   numbers1 <- eval(parse(text = paste(data,"$",ttestvalue1)))
@@ -368,6 +410,8 @@ mean_and_sd("subject_df", "s.lm_to_obj_norm_log", "r.lm_to_obj_norm_log")
 mean_and_sd("subject_df", "s.obj_to_so_norm_log", "r.obj_to_so_norm_log")
 mean_and_sd("subject_df", "s.obj_to_diffObj_norm_log", "r.obj_to_diffObj_norm_log")
 mean_and_sd("subject_df", "s.lm_to_lm_norm_log", "r.lm_to_lm_norm_log")
+mean_and_sd("subject_df", "s.objects_norm_log", "r.objects_norm_log")
+mean_and_sd("subject_df", "s.lm_obj_lm_norm_log", "r.lm_obj_lm_norm_log")
 
 # make a boxplot of just the study categories - norm values
 study_bxp <- ggboxplot(study_only_norm_long, x = "trial", y = "norm_fixation_mean", add = "point", 
@@ -438,6 +482,8 @@ cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, met
 plot(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$s.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
 cor.test(subject_df$r.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
@@ -449,6 +495,8 @@ cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, met
 cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
 cor.test(subject_df$r.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
 cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, almost .05
 cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
@@ -499,12 +547,12 @@ summary(big_reg_norm)
 
 ### conceptual ANOVAs andt-tests and figures
 
-# ANOVA for LM, wall, and other for study and retrieval separately
+# ANOVA for LM, wall, other, and objects for study and retrieval separately
 bxp_study_lmWallOther <- ggboxplot(study_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
                                title = "Log Normalized Fixation Number per Category during Study", 
                                xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  scale_x_discrete(breaks=c("s.landmarks_norm_log", "s.other_norm_log", "s.wall_norm_log"), 
-                   labels=c("Landmarks", "Other", "Wall"))
+  scale_x_discrete(breaks=c("s.landmarks_norm_log", "s.objects_norm_log", "s.other_norm_log", "s.wall_norm_log"), 
+                   labels=c("Landmarks", "Objects", "Other", "Wall"))
 bxp_study_lmWallOther
 
 study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -517,8 +565,8 @@ study_lmWallOther_pwc # all sig diff from each other
 bxp_retrieval_lmWallOther <- ggboxplot(retrieval_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
                                    title = "Log Normalized Fixation Number per Category during Retrieval", 
                                    xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  scale_x_discrete(breaks=c("r.landmarks_norm_log", "r.other_norm_log", "r.wall_norm_log"), 
-                   labels=c("Landmarks", "Other", "Wall"))
+  scale_x_discrete(breaks=c("r.landmarks_norm_log", "r.objects_norm_log", "r.other_norm_log", "r.wall_norm_log"), 
+                   labels=c("Landmarks", "Objects", "Other", "Wall"))
 bxp_retrieval_lmWallOther
 
 retrieval_lmWallOther_aov <- anova_test(data = retrieval_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -548,8 +596,8 @@ bxp_study_fixfix <- ggboxplot(study_successive_fix, x = "trial", y = "norm_fixat
                                    title = "Log Normalized Fixation Number per Category during Study", 
                                    xlab = "", ylab = "Mean of Log Normalized Fixations") +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks=c("s.lm_to_lm_norm", "s.lm_to_obj_norm", "s.obj_to_diffObj_norm", "s.obj_to_lm_norm"),
-                   labels=c("Landmark to Landmark", "Landmark to Object", "Object to Object", "Object to Landmark"))
+  scale_x_discrete(breaks=c("s.lm_obj_lm_norm", "s.lm_to_lm_norm", "s.obj_to_diffObj_norm"),
+                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
 bxp_study_fixfix
 
 study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -563,8 +611,8 @@ bxp_retrieval_fixfix <- ggboxplot(retrieval_successive_fix, x = "trial", y = "no
                               title = "Log Normalized Fixation Number per Category during Retrieval", 
                               xlab = "", ylab = "Mean of Log Normalized Fixations") +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks=c("r.lm_to_lm_norm", "r.lm_to_obj_norm", "r.obj_to_diffObj_norm", "r.obj_to_lm_norm"),
-                   labels=c("Landmark to Landmark", "Landmark to Object", "Object to Object", "Object to Landmark"))
+  scale_x_discrete(breaks=c("r.lm_obj_lm_norm", "r.lm_to_lm_norm", "r.obj_to_diffObj_norm"),
+                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
 bxp_retrieval_fixfix
 
 retrieval_fixfix_aov <- anova_test(data = retrieval_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
