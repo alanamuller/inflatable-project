@@ -544,36 +544,84 @@ big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.s
                 Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
 summary(big_reg_norm)
  
+# uncomment this to save manuscript-quality pics to this folder
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
 ### conceptual ANOVAs andt-tests and figures
 
 # ANOVA for LM, wall, other, and objects for study and retrieval separately
-bxp_study_lmWallOther <- ggboxplot(study_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
-                               title = "Log Normalized Fixation Number per Category during Study", 
-                               xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  scale_x_discrete(breaks=c("s.landmarks_norm_log", "s.objects_norm_log", "s.other_norm_log", "s.wall_norm_log"), 
-                   labels=c("Landmarks", "Objects", "Other", "Wall"))
-bxp_study_lmWallOther
-
 study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_lmWallOther_aov) # sig
 
 study_lmWallOther_pwc <- pairwise.t.test(study_lm_wall_other_log$norm_fixation_mean, study_lm_wall_other_log$trial, p.adj = "bonferroni")
 study_lmWallOther_pwc # all sig diff from each other
 
-
-bxp_retrieval_lmWallOther <- ggboxplot(retrieval_lm_wall_other_log, x = "trial", y = "norm_fixation_mean", add = "point", 
-                                   title = "Log Normalized Fixation Number per Category during Retrieval", 
-                                   xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  scale_x_discrete(breaks=c("r.landmarks_norm_log", "r.objects_norm_log", "r.other_norm_log", "r.wall_norm_log"), 
-                   labels=c("Landmarks", "Objects", "Other", "Wall"))
-bxp_retrieval_lmWallOther
-
 retrieval_lmWallOther_aov <- anova_test(data = retrieval_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_lmWallOther_aov) # sig
 
 retrieval_lmWallOther_pwc <- pairwise.t.test(retrieval_lm_wall_other_log$norm_fixation_mean, retrieval_lm_wall_other_log$trial, p.adj = "bonferroni")
 retrieval_lmWallOther_pwc # all sig diff from each other
+
+
+# need to make trial a character, not a factor or the renaming won't work
+study_lm_wall_other_log$trial <- as.character(study_lm_wall_other_log$trial)
+study_lm_wall_other_log$trial[study_lm_wall_other_log$trial=="s.landmarks_norm_log"]<-"landmarks_norm_log"
+study_lm_wall_other_log$trial[study_lm_wall_other_log$trial=="s.wall_norm_log"]<-"wall_norm_log"
+study_lm_wall_other_log$trial[study_lm_wall_other_log$trial=="s.other_norm_log"]<-"other_norm_log"
+study_lm_wall_other_log$trial[study_lm_wall_other_log$trial=="s.objects_norm_log"]<-"objects_norm_log"
+
+retrieval_lm_wall_other_log$trial <- as.character(retrieval_lm_wall_other_log$trial)
+retrieval_lm_wall_other_log$trial[retrieval_lm_wall_other_log$trial=="r.landmarks_norm_log"]<-"landmarks_norm_log"
+retrieval_lm_wall_other_log$trial[retrieval_lm_wall_other_log$trial=="r.wall_norm_log"]<-"wall_norm_log"
+retrieval_lm_wall_other_log$trial[retrieval_lm_wall_other_log$trial=="r.other_norm_log"]<-"other_norm_log"
+retrieval_lm_wall_other_log$trial[retrieval_lm_wall_other_log$trial=="r.objects_norm_log"]<-"objects_norm_log"
+
+study_lm_wall_other_log$trial_type <- "Encoding"
+retrieval_lm_wall_other_log$trial_type <- "Retrieval"
+singlefixData <- rbind(study_lm_wall_other_log, retrieval_lm_wall_other_log)
+
+# FIGURE FOR MANUSCRIPT
+bxp_singlefix <- ggline(singlefixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
+                     title = "Log Normalized Fixation Number per Category", add = "boxplot", facet.by = "trial_type") +
+  xlab("") +
+  ylab("Mean of Log Normalized Fixations") +
+  theme(legend.position = "none")+
+  scale_x_discrete(breaks=c("landmarks_norm_log", "wall_norm_log", "other_norm_log", "objects_norm_log"),
+                   labels=c("Landmarks", "Wall", "Other", "Object")) +
+  theme(plot.title = element_text(hjust = 0.5))
+#jpeg("lmWallObject_anova.jpeg", width = 7, height = 5, units = 'in', res = 500)
+bxp_singlefix
+#dev.off()
+
+# make smaller dataframe for t-test graph
+dosw_dodw_study <- study_subject_norm_long[c(481:510,541:570),]
+dosw_dodw_retrieval <- retrieval_subject_norm_long[c(481:510,541:570),]
+
+# need to make trial a character, not a factor or the renaming won't work
+dosw_dodw_study$trial <- as.character(dosw_dodw_study$trial)
+dosw_dodw_study$trial[dosw_dodw_study$trial=="s.DOSW_norm_log"]<-"DOSW_norm_log"
+dosw_dodw_study$trial[dosw_dodw_study$trial=="s.DODW_norm_log"]<-"DODW_norm_log"
+
+dosw_dodw_retrieval$trial <- as.character(dosw_dodw_retrieval$trial)
+dosw_dodw_retrieval$trial[dosw_dodw_retrieval$trial=="r.DOSW_norm_log"]<-"DOSW_norm_log"
+dosw_dodw_retrieval$trial[dosw_dodw_retrieval$trial=="r.DODW_norm_log"]<-"DODW_norm_log"
+
+dosw_dodw_study$trial_type <- "Encoding"
+dosw_dodw_retrieval$trial_type <- "Retrieval"
+dosw_dodw_data <- rbind(dosw_dodw_study, dosw_dodw_retrieval)
+
+# FIGURE FOR MANUSCRIPT
+bxp_dosw_dodw <- ggline(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
+                        title = "Log Normalized Fixation Number per Category", add = "boxplot", facet.by = "trial_type") +
+  xlab("") +
+  ylab("Mean of Log Normalized Fixations") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
+                   labels=c("Same Wall", "Different Wall")) +
+  theme(plot.title = element_text(hjust = 0.5))
+jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
+bxp_dosw_dodw
+dev.off()
 
 
 # t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
@@ -592,13 +640,24 @@ ggpaired(subject_df, cond1 = "r.DOSW_norm", cond2 = "r.DODW_norm", ylab = "Fixat
 
 # ANOVA for successive fixations
 
-bxp_study_fixfix <- ggboxplot(study_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
-                                   title = "Log Normalized Fixation Number per Category during Study", 
-                                   xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks=c("s.lm_obj_lm_norm", "s.lm_to_lm_norm", "s.obj_to_diffObj_norm"),
-                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
-bxp_study_fixfix
+#Old boxplot code - but I don't want to just delete it. What if I need it later?
+#bxp_study_fixfix <- ggboxplot(study_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
+#                                   title = "Log Normalized Fixation Number per Category during Study", 
+#                                   xlab = "", ylab = "Mean of Log Normalized Fixations") +
+#  scale_x_discrete(breaks=c("s.lm_obj_lm_norm", "s.lm_to_lm_norm", "s.obj_to_diffObj_norm"),
+#                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
+
+# boxplot for study alone
+#bxp_study_fixfix <- ggline(study_successive_fix, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", 
+#                           title = "Log Normalized Fixation Number per Category during Study", add = "boxplot") +
+#  xlab("") +
+#  ylab("Mean of Log Normalized Fixations") +
+#  theme(legend.position = "none") +
+#  scale_x_discrete(breaks=c("s.lm_obj_lm_norm", "s.lm_to_lm_norm", "s.obj_to_diffObj_norm"),
+#                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
+
+#bxp_study_fixfix
+
 
 study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_fixfix_aov) # sig
@@ -606,14 +665,15 @@ get_anova_table(study_fixfix_aov) # sig
 study_fixfix_pwc <- pairwise.t.test(study_successive_fix$norm_fixation_mean, study_successive_fix$trial, p.adj = "bonferroni")
 study_fixfix_pwc # all sig diff from each other except obj->lm and lm->obj
 
-
-bxp_retrieval_fixfix <- ggboxplot(retrieval_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
-                              title = "Log Normalized Fixation Number per Category during Retrieval", 
-                              xlab = "", ylab = "Mean of Log Normalized Fixations") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks=c("r.lm_obj_lm_norm", "r.lm_to_lm_norm", "r.obj_to_diffObj_norm"),
-                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
-bxp_retrieval_fixfix
+# boxplot for retrieval only
+#bxp_retrieval_fixfix <- ggline(retrieval_successive_fix, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", 
+#                           title = "Log Normalized Fixation Number per Category during Retrieval", add = "boxplot") +
+#  xlab("") +
+#  ylab("Mean of Log Normalized Fixations") +
+#  theme(legend.position = "none") +
+#  scale_x_discrete(breaks=c("r.lm_obj_lm_norm", "r.lm_to_lm_norm", "r.obj_to_diffObj_norm"),
+#                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
+#bxp_retrieval_fixfix
 
 retrieval_fixfix_aov <- anova_test(data = retrieval_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_fixfix_aov) # sig
@@ -621,6 +681,32 @@ get_anova_table(retrieval_fixfix_aov) # sig
 retrieval_fixfix_pwc <- pairwise.t.test(retrieval_successive_fix$norm_fixation_mean, retrieval_successive_fix$trial, p.adj = "bonferroni")
 retrieval_fixfix_pwc # about half comparisons are sig
 
+# need to make trial a character, not a factor or the renaming won't work
+study_successive_fix$trial <- as.character(study_successive_fix$trial)
+study_successive_fix$trial[study_successive_fix$trial=="s.obj_to_diffObj_norm"]<-"obj_to_diffObj_norm"
+study_successive_fix$trial[study_successive_fix$trial=="s.lm_to_lm_norm"]<-"lm_to_lm_norm"
+study_successive_fix$trial[study_successive_fix$trial=="s.lm_obj_lm_norm"]<-"lm_obj_lm_norm"
 
+retrieval_successive_fix$trial <- as.character(retrieval_successive_fix$trial)
+retrieval_successive_fix$trial[retrieval_successive_fix$trial=="r.obj_to_diffObj_norm"]<-"obj_to_diffObj_norm"
+retrieval_successive_fix$trial[retrieval_successive_fix$trial=="r.lm_to_lm_norm"]<-"lm_to_lm_norm"
+retrieval_successive_fix$trial[retrieval_successive_fix$trial=="r.lm_obj_lm_norm"]<-"lm_obj_lm_norm"
+
+study_successive_fix$trial_type <- "Encoding"
+retrieval_successive_fix$trial_type <- "Retrieval"
+fixfixData <- rbind(study_successive_fix, retrieval_successive_fix)
+
+# FIGURE FOR MANUSCRIPT
+bxp_fixfix <- ggline(fixfixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25,
+                     title = "Log Normalized Fixation Number per Category", add = "boxplot", facet.by = "trial_type") +
+  xlab("") +
+  ylab("Mean of Log Normalized Fixations") +
+  theme(legend.position = "none")+
+  scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
+                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object")) +
+  theme(axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
+#jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
+bxp_fixfix
+#dev.off()
 
 
