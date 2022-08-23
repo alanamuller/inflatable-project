@@ -8,7 +8,6 @@ library(reshape)
 library(reshape2)
 library(readxl)
 library(ggpubr)
-library(dplyr)
 library(tidyverse)
 library(rstatix)
 library(mosaic)
@@ -18,6 +17,7 @@ library(PMCMRplus)
 library(officer)
 library(tidyr)
 library(PairedData)
+library(dplyr)
 
 rm(list = ls())
 
@@ -128,16 +128,31 @@ aov_data <- myData_NO %>%
   )
 aov_data <- as_tibble(aov_data)
 
+aov_data$trial_type <- paste(aov_data$walk_noWalk, aov_data$same_diff, sep="_")
+  
 bxp <- ggboxplot(
   aov_data, x = "walk_noWalk", y = "mean", 
-  color = "same_diff", add = "jitter", 
+  color = "same_diff", add = "jitter",
   xlab = "Movement Condition", ylab = "Placement Error (log cm)",
   legend = "right", legend.title = "Viewpoint") + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same"))
-#jpeg("movement_viewpoint_anova.jpeg", width = 5, height = 5, units = 'in', res = 500)
+#jpeg("movement_viewpoint_bxp.jpeg", width = 7, height = 6, units = 'in', res = 500)
 bxp
 #dev.off()
+
+move_view_bxp <- ggline(aov_data, x = "trial_type", y = "mean", group = "subject", color = "black", size = 0.25,
+                     add = "boxplot") +
+  xlab("Movement Condition") +
+  ylab("Placement Error (log cm)") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=c("no walk_diff", "no walk_same", "walk_diff", "walk_same"),
+                 labels=c("Stationary \n Different Viewpoint", "Stationary \n Same Viewpoint", "Walk \n Different Viewpoint", "Walk \n Same Viewpoint")) +
+  theme(plot.title = element_text(hjust = 0.5))
+#jpeg("move_view_bxplines.jpeg", width = 7, height = 6, units = 'in', res = 500)
+move_view_bxp
+#dev.off()
+
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -341,7 +356,7 @@ t.test(xy_data$x_cm_mean_scaled, xy_data$y_cm_mean_scaled, paired = TRUE)
 ##### Landmark and placement accuracy
 
 landmark_data <- myData_NO %>%
-  select(c("subject", "next_to_landmark", "placement_error_cm_log"))
+  dplyr::select(c("subject", "next_to_landmark", "placement_error_cm_log"))
 
 landmark_ttest <- landmark_data %>%
   group_by(subject, next_to_landmark) %>%
@@ -349,20 +364,31 @@ landmark_ttest <- landmark_data %>%
     mean = mean(placement_error_cm_log, na.rm = TRUE)
   )
 
-landmark_ttest_long <- spread(landmark_ttest, key = next_to_landmark, value = mean)
+landmark_lines <- ggline(landmark_ttest, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
+                     add = "boxplot") +
+  xlab("") +
+  ylab("Mean Error (log cm)") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=c("y", "n"), labels=c("Next to Landmark", "Not Next to Landmark")) +
+  theme(plot.title = element_text(hjust = 0.5))
+jpeg("landmark_lines.jpeg", width = 7, height = 6, units = 'in', res = 500)
+landmark_lines
+dev.off()
 
-t.test(landmark_ttest_long$y, landmark_ttest_long$n, paired = TRUE) # sig, p = .002
+landmark_ttest_wide <- spread(landmark_ttest, key = next_to_landmark, value = mean)
+
+t.test(landmark_ttest_wide$y, landmark_ttest_wide$n, paired = TRUE) # sig, p = .002
 
 yes_mean <- subset(landmark_ttest, next_to_landmark == "y", mean, drop = TRUE)
 no_mean <- subset(landmark_ttest, next_to_landmark == "n", mean, drop = TRUE)
 
 pd <- paired(yes_mean, no_mean)
 
-jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
+#jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
 plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (log cm)") + 
   scale_x_discrete(breaks=c("yes_mean", "no_mean"), labels=c("Next to \n Landmark", "Not Next to \n Landmark")) + 
   theme(axis.text = element_text(size = 10, color = 'black')) 
-dev.off()
+#dev.off()
 
 mean(landmark_ttest_long$y) # 1.26
 sd(landmark_ttest_long$y) # 0.20
@@ -645,3 +671,4 @@ ggscatter(fixation_filter, x = "Number_of_fixations", y = "placement_error_cm_lo
           cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 7.5, label.y = 2.3, label.sep = "\n"), 
           xlab = "Number of fixations", ylab = "Placement Error (log cm)") # sig
 #dev.off()
+
