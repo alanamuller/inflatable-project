@@ -446,31 +446,32 @@ retrieval_log_bxp
 study_norm_aov <- anova_test(data = study_only_norm_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_norm_aov) # sig
 
-study_norm_pwc <- pairwise.t.test(study_only_norm_long$norm_fixation_mean, study_only_norm_long$trial, p.adj = "bonferroni")
+study_norm_pwc <- pairwise.t.test(study_only_norm_long$norm_fixation_mean, study_only_norm_long$trial, p.adj = "bonferroni", paired = TRUE)
 study_norm_pwc
 
 study_norm_log_aov <- anova_test(data = study_only_norm_log_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_norm_log_aov) # sig
 
-study_norm_log_pwc <- pairwise.t.test(study_only_norm_log_long$norm_fixation_mean, study_only_norm_log_long$trial, p.adj = "bonferroni")
+study_norm_log_pwc <- pairwise.t.test(study_only_norm_log_long$norm_fixation_mean, study_only_norm_log_long$trial, p.adj = "bonferroni", paired = TRUE)
 study_norm_log_pwc
 
 retrieval_norm_aov <- anova_test(data = retrieval_only_norm_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_norm_aov) # sig
 
-retrieval_norm_pwc <- pairwise.t.test(retrieval_only_norm_long$norm_fixation_mean, retrieval_only_norm_long$trial, p.adj = "bonferroni")
+retrieval_norm_pwc <- pairwise.t.test(retrieval_only_norm_long$norm_fixation_mean, retrieval_only_norm_long$trial, p.adj = "bonferroni", paired = TRUE)
 retrieval_norm_pwc
 
 retrieval_norm_log_aov <- anova_test(data = retreival_only_norm_log_long, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_norm_log_aov) # sig
 
-retrieval_norm_log_pwc <- pairwise.t.test(retreival_only_norm_log_long$norm_fixation_mean, retreival_only_norm_log_long$trial, p.adj = "bonferroni")
+retrieval_norm_log_pwc <- pairwise.t.test(retreival_only_norm_log_long$norm_fixation_mean, retreival_only_norm_log_long$trial, p.adj = "bonferroni", paired = TRUE)
 retrieval_norm_log_pwc
 
 
 # correlations with performance
 cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+plot(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$s.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
@@ -492,7 +493,7 @@ cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method =
 cor.test(subject_df$r.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
 cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
-cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
@@ -511,6 +512,8 @@ plot(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log)
 plot(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log) + stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
 plot(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log)
 
+# uncomment this to save manuscript-quality pics to this folder
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
 x <- subject_df$Total_duration_of_fixations
 y<- subject_df$placement_error_cm_log
@@ -523,43 +526,45 @@ ggplot( subject_df, aes( x=x, y=y ))+
 x <- subject_df$Average_duration_of_fixations
 y<- subject_df$placement_error_cm_log
 
-ggplot( subject_df, aes( x=x, y=y ))+
+avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point()+
-  stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
-
+  stat_cor(method = "pearson", label.x = 600, label.y = 3.8) +
+  theme_classic() + xlab("Average duration of fixations (sec)") +
+  ylab("Placement Error (log cm)") + 
+  geom_smooth(method = 'lm')
+jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
+avg_fix_dur
+dev.off()
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
 
-big_reg <- lm(formula = placement_error_cm_log ~ s.landmarks + s.same_object + s.DOSW + s.wall + s.DODW +
-                s.other + s.obj_to_lm + s.lm_to_obj + s.obj_to_so + s.obj_to_diffObj + s.lm_to_lm +
-                r.landmarks + r.same_object + r.DOSW + r.wall + r.DODW + r.other +
-                r.obj_to_lm + r.lm_to_obj + r.obj_to_so + r.obj_to_diffObj + r.lm_to_lm +
-                Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
-summary(big_reg)
-
-big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.same_object_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
-                s.other_norm_log + s.obj_to_lm_norm_log + s.lm_to_obj_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
-                r.landmarks_norm_log + r.same_object_norm_log + r.DOSW_norm_log + r.wall_norm_log + r.DODW_norm_log + r.other_norm_log +
-                r.obj_to_lm_norm_log + r.lm_to_obj_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
+big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.objects_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
+                s.other_norm_log + s.lm_obj_lm_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
+                r.landmarks_norm_log + r.objects_norm_log + r.DOSW_norm_log + r.wall_norm_log + r.DODW_norm_log + r.other_norm_log +
+                r.lm_obj_lm_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
                 Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
 summary(big_reg_norm)
- 
-# uncomment this to save manuscript-quality pics to this folder
-setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
-### conceptual ANOVAs andt-tests and figures
 
-# ANOVA for LM, wall, other, and objects for study and retrieval separately
+
+### conceptual ANOVAs and t-tests and figures
+
+# ANOVA for LM, wall, objects, and other for study and retrieval separately
 study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_lmWallOther_aov) # sig
 
-study_lmWallOther_pwc <- pairwise.t.test(study_lm_wall_other_log$norm_fixation_mean, study_lm_wall_other_log$trial, p.adj = "bonferroni")
+study_lmWallOther_pwc <- pairwise.t.test(study_lm_wall_other_log$norm_fixation_mean, study_lm_wall_other_log$trial, p.adj = "bonferroni", paired = TRUE)
 study_lmWallOther_pwc # all sig diff from each other
+
+pair <- study_lm_wall_other_log %>%
+  pairwise_t_test(norm_fixation_mean~trial, paired = TRUE, p.adjust.method = "bonferroni", paired = TRUE)
+data.frame(pair)
+
 
 retrieval_lmWallOther_aov <- anova_test(data = retrieval_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_lmWallOther_aov) # sig
 
-retrieval_lmWallOther_pwc <- pairwise.t.test(retrieval_lm_wall_other_log$norm_fixation_mean, retrieval_lm_wall_other_log$trial, p.adj = "bonferroni")
+retrieval_lmWallOther_pwc <- pairwise.t.test(retrieval_lm_wall_other_log$norm_fixation_mean, retrieval_lm_wall_other_log$trial, p.adj = "bonferroni", paired = TRUE)
 retrieval_lmWallOther_pwc # all sig diff from each other
 
 
@@ -619,9 +624,9 @@ bxp_dosw_dodw <- ggline(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", g
   scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
                    labels=c("Same Wall", "Different Wall")) +
   theme(plot.title = element_text(hjust = 0.5))
-jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
+#jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
 bxp_dosw_dodw
-dev.off()
+#dev.off()
 
 
 # t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
@@ -662,8 +667,12 @@ ggpaired(subject_df, cond1 = "r.DOSW_norm", cond2 = "r.DODW_norm", ylab = "Fixat
 study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(study_fixfix_aov) # sig
 
-study_fixfix_pwc <- pairwise.t.test(study_successive_fix$norm_fixation_mean, study_successive_fix$trial, p.adj = "bonferroni")
+study_fixfix_pwc <- pairwise.t.test(study_successive_fix$norm_fixation_mean, study_successive_fix$trial, p.adj = "bonferroni", paired = TRUE)
 study_fixfix_pwc # all sig diff from each other except obj->lm and lm->obj
+
+t.test(subject_df$s.lm_to_lm_norm , subject_df$s.lm_obj_lm_norm , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$s.obj_to_diffObj_norm , subject_df$s.lm_obj_lm_norm , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$s.obj_to_diffObj_norm , subject_df$s.lm_to_lm_norm , paired = TRUE, alternative = "two.sided")
 
 # boxplot for retrieval only
 #bxp_retrieval_fixfix <- ggline(retrieval_successive_fix, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", 
@@ -678,8 +687,12 @@ study_fixfix_pwc # all sig diff from each other except obj->lm and lm->obj
 retrieval_fixfix_aov <- anova_test(data = retrieval_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_fixfix_aov) # sig
 
-retrieval_fixfix_pwc <- pairwise.t.test(retrieval_successive_fix$norm_fixation_mean, retrieval_successive_fix$trial, p.adj = "bonferroni")
+retrieval_fixfix_pwc <- pairwise.t.test(retrieval_successive_fix$norm_fixation_mean, retrieval_successive_fix$trial, p.adj = "bonferroni", paired = TRUE)
 retrieval_fixfix_pwc # about half comparisons are sig
+
+t.test(subject_df$r.lm_to_lm_norm , subject_df$r.lm_obj_lm_norm , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$r.obj_to_diffObj_norm , subject_df$r.lm_obj_lm_norm , paired = TRUE, alternative = "two.sided")
+t.test(subject_df$r.obj_to_diffObj_norm , subject_df$r.lm_to_lm_norm , paired = TRUE, alternative = "two.sided")
 
 # need to make trial a character, not a factor or the renaming won't work
 study_successive_fix$trial <- as.character(study_successive_fix$trial)
@@ -708,5 +721,20 @@ bxp_fixfix <- ggline(fixfixData, x = "trial", y = "norm_fixation_mean", group = 
 #jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
 bxp_fixfix
 #dev.off()
+
+# figuring out average duration for encoding and retrieval
+duration_data <- myData %>%
+  dplyr::select("subject", "trial", "s.duration", "r.duration") %>%
+  group_by(subject) %>%
+  summarize(
+    s.mean = mean(s.duration, na.rm = TRUE),
+    r.mean = mean(r.duration, na.rm = TRUE)
+  )
+
+mean(duration_data$s.mean, na.rm = TRUE) # 34.38
+mean(duration_data$r.mean, na.rm = TRUE) # 113.60
+
+
+
 
 
