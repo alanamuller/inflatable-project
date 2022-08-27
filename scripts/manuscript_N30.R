@@ -21,6 +21,7 @@ library(dplyr)
 
 rm(list = ls())
 
+# work computer uses E but laptop uses D, change accordingly
 setwd("E:/Nav_1stYr_project_data")
 
 # Read in data
@@ -32,7 +33,7 @@ str(inputData) # check the structure of the data
 myData <- inputData
 
 # Make rows 1:13 and 17:24 and 40 factors
-i <- c(1:13,17:24,40)
+i <- c(1:13,17:24,40,55)
 myData [i] <- lapply(myData[i], factor)
 
 # Make rows 14:16 and 20:29 numbers
@@ -118,7 +119,7 @@ myData_NO_y <- myData %>%
 ################### Parametric Analyses ###################  
 
 # uncomment this to save manuscript-quality pics to this folder
-setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
+#setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
 ##### 2-way repeated-measures ANOVA walk view - not sig
 aov_data <- myData_NO %>%
@@ -130,6 +131,7 @@ aov_data <- as_tibble(aov_data)
 
 aov_data$trial_type <- paste(aov_data$walk_noWalk, aov_data$same_diff, sep="_")
   
+# FIGURE FOR MANUSCRIPT
 bxp <- ggboxplot(
   aov_data, x = "walk_noWalk", y = "mean", 
   color = "same_diff", add = "jitter",
@@ -141,6 +143,7 @@ bxp <- ggboxplot(
 bxp
 #dev.off()
 
+# connecting lines - NOT USED but saved for example of how to do it so I don't forget
 move_view_bxp <- ggline(aov_data, x = "trial_type", y = "mean", group = "subject", color = "black", size = 0.25,
                      add = "boxplot") +
   xlab("Movement Condition") +
@@ -152,7 +155,6 @@ move_view_bxp <- ggline(aov_data, x = "trial_type", y = "mean", group = "subject
 #jpeg("move_view_bxplines.jpeg", width = 7, height = 6, units = 'in', res = 500)
 move_view_bxp
 #dev.off()
-
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
@@ -364,16 +366,27 @@ landmark_ttest <- landmark_data %>%
     mean = mean(placement_error_cm_log, na.rm = TRUE)
   )
 
-landmark_lines <- ggline(landmark_ttest, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
-                     add = "boxplot") +
+# possible violin plot
+testpic <- ggplot(landmark_ttest, aes(x = next_to_landmark, y = mean)) + geom_violin(draw_quantiles = c(0.25, 0.50, 0.75)) + 
+  theme_classic() + stat_summary(fun = "mean", geom = "crossbar", color = "red") +
+testpic
+
+
+
+  
+
+
+# FIGURE FOR MANUSCRIPT
+landmark_lines <- ggboxplot(landmark_ttest, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
+                     add = "jitter") +
   xlab("") +
   ylab("Mean Error (log cm)") +
   theme(legend.position = "none") +
   scale_x_discrete(breaks=c("y", "n"), labels=c("Next to Landmark", "Not Next to Landmark")) +
   theme(plot.title = element_text(hjust = 0.5))
-jpeg("landmark_lines.jpeg", width = 7, height = 6, units = 'in', res = 500)
+#jpeg("landmark_lines.jpeg", width = 7, height = 6, units = 'in', res = 500)
 landmark_lines
-dev.off()
+#dev.off()
 
 landmark_ttest_wide <- spread(landmark_ttest, key = next_to_landmark, value = mean)
 
@@ -671,4 +684,55 @@ ggscatter(fixation_filter, x = "Number_of_fixations", y = "placement_error_cm_lo
           cor.coef = TRUE, cor.coeff.args = list(method = "pearson", label.x = 7.5, label.y = 2.3, label.sep = "\n"), 
           xlab = "Number of fixations", ylab = "Placement Error (log cm)") # sig
 #dev.off()
+
+
+### some other analyses I wanted to try
+
+ggscatter(myData_NO, x = "order_replaced", y = "order_looked", add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson")) # sig but stupid looking, positive
+
+plot(myData_NO$order_replaced, myData_NO$order_removed)
+
+ggscatter(myData_NO, x = "order_replaced", y = "order_removed", add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson")) # sig but stupid looking, negative
+
+ggscatter(myData_NO, x = "order_looked", y = "order_removed", add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.coeff.args = list(method = "pearson")) # sig but stupid looking, negative
+
+plot(myData_NO$placement_error_cm_log, myData_NO$Fixated_or_not)
+
+
+
+# peripheral test, fixated objs and non fixated objs had same placement error
+peripheral_data <- myData_NO %>%
+  dplyr::select(c("subject", "Fixated_or_not", "placement_error_cm_log"))
+
+peripheral_ttest <- peripheral_data %>%
+  group_by(subject, Fixated_or_not) %>%
+  summarise(
+    mean = mean(placement_error_cm_log, na.rm = TRUE)
+  )
+
+peripheral_lines <- ggboxplot(peripheral_ttest, x = "Fixated_or_not", y = "mean", group = "subject", color = "black", size = 0.25,
+                            add = "jitter") +
+  xlab("") +
+  ylab("Mean Error (log cm)") +
+  theme(legend.position = "none")
+peripheral_lines
+
+peripheral_ttest_wide <- spread(peripheral_ttest, key = Fixated_or_not, value = mean)
+
+t.test(peripheral_ttest_wide$no, peripheral_ttest_wide$yes, paired = TRUE) # not sig
+
+yes_mean <- subset(peripheral_ttest, Fixated_or_not == "yes", mean, drop = TRUE)
+no_mean <- subset(peripheral_ttest, Fixated_or_not == "no", mean, drop = TRUE)
+
+pd <- paired(no_mean, yes_mean)
+
+#jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
+plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (log cm)")
+#dev.off()
+
+
+
 
