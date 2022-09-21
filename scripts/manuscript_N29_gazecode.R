@@ -586,8 +586,8 @@ retrieval_lm_wall_other_log$trial_type <- "Retrieval"
 singlefixData <- rbind(study_lm_wall_other_log, retrieval_lm_wall_other_log)
 
 # FIGURE FOR MANUSCRIPT
-bxp_singlefix <- ggline(singlefixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
-                     title = "Log Normalized Fixation Number per Category", add = "boxplot", facet.by = "trial_type") +
+bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
+                     title = "Log Normalized Fixation Number per Category", add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean of Log Normalized Fixations") +
   theme(legend.position = "none")+
@@ -616,8 +616,8 @@ dosw_dodw_retrieval$trial_type <- "Retrieval"
 dosw_dodw_data <- rbind(dosw_dodw_study, dosw_dodw_retrieval)
 
 # FIGURE FOR MANUSCRIPT
-bxp_dosw_dodw <- ggline(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
-                        title = "Log Normalized Fixation Number per Category", add = "boxplot", facet.by = "trial_type") +
+bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
+                        title = "Log Normalized Fixation Number per Category", add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean of Log Normalized Fixations") +
   theme(legend.position = "none") +
@@ -710,8 +710,8 @@ retrieval_successive_fix$trial_type <- "Retrieval"
 fixfixData <- rbind(study_successive_fix, retrieval_successive_fix)
 
 # FIGURE FOR MANUSCRIPT
-bxp_fixfix <- ggline(fixfixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25,
-                     title = "Log Normalized Fixation Number per Category", add = "boxplot", facet.by = "trial_type") +
+bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25,
+                     title = "Log Normalized Fixation Number per Category", add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean of Log Normalized Fixations") +
   theme(legend.position = "none")+

@@ -18,6 +18,8 @@ library(officer)
 library(tidyr)
 library(PairedData)
 library(dplyr)
+library(BayesFactor)
+library(here)
 
 rm(list = ls())
 
@@ -163,6 +165,12 @@ summary(results_2way) # nothing is sig, no main effects, no interaction effect
 withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff))
 get_anova_table(withinTest) # nothing is sig
+
+# Bayes factor for this ANOVA
+aov_data <- as.data.frame(aov_data)
+bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_data, whichRandom = "subject")
+bayes_rm
+plot(bayes_rm)
 
 ### exclude trials when people took the cart AND put back in the same order and halfs
 ### all other trials can stay, just don't want people retracing their steps
@@ -371,7 +379,8 @@ testpic <- ggplot(landmark_ttest, aes(x = next_to_landmark, y = mean)) + geom_vi
   theme_classic() + stat_summary(fun = "mean", geom = "crossbar", color = "red") +
 testpic
 
-
+# uncomment this to save manuscript-quality pics to this folder
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
   
 
