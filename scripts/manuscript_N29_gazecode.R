@@ -586,17 +586,19 @@ retrieval_lm_wall_other_log$trial_type <- "Retrieval"
 singlefixData <- rbind(study_lm_wall_other_log, retrieval_lm_wall_other_log)
 
 # FIGURE FOR MANUSCRIPT
+
+singlefixData$trial <- factor(singlefixData$trial, levels = c("objects_norm_log", "landmarks_norm_log", "wall_norm_log", "other_norm_log"))
 bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
-                     title = "Log Normalized Fixation Number per Category", add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
+                     add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean of Log Normalized Fixations") +
   theme(legend.position = "none")+
   scale_x_discrete(breaks=c("landmarks_norm_log", "wall_norm_log", "other_norm_log", "objects_norm_log"),
                    labels=c("Landmarks", "Wall", "Other", "Object")) +
   theme(plot.title = element_text(hjust = 0.5))
-#jpeg("lmWallObject_anova.jpeg", width = 7, height = 5, units = 'in', res = 500)
+jpeg("lmWallObject_anova.jpeg", width = 7, height = 5, units = 'in', res = 500)
 bxp_singlefix
-#dev.off()
+dev.off()
 
 # make smaller dataframe for t-test graph
 dosw_dodw_study <- study_subject_norm_long[c(481:510,541:570),]
@@ -617,16 +619,16 @@ dosw_dodw_data <- rbind(dosw_dodw_study, dosw_dodw_retrieval)
 
 # FIGURE FOR MANUSCRIPT
 bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
-                        title = "Log Normalized Fixation Number per Category", add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
+                        add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean of Log Normalized Fixations") +
   theme(legend.position = "none") +
   scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
                    labels=c("Same Wall", "Different Wall")) +
   theme(plot.title = element_text(hjust = 0.5))
-#jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
+jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
 bxp_dosw_dodw
-#dev.off()
+dev.off()
 
 
 # t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
@@ -711,16 +713,16 @@ fixfixData <- rbind(study_successive_fix, retrieval_successive_fix)
 
 # FIGURE FOR MANUSCRIPT
 bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25,
-                     title = "Log Normalized Fixation Number per Category", add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
+                     add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean of Log Normalized Fixations") +
   theme(legend.position = "none")+
   scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
                    labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object")) +
   theme(axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
-#jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
+jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
 bxp_fixfix
-#dev.off()
+dev.off()
 
 # figuring out average duration for encoding and retrieval
 duration_data <- myData %>%
