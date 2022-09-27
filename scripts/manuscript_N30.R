@@ -121,7 +121,7 @@ myData_NO_y <- myData %>%
 ################### Parametric Analyses ###################  
 
 # uncomment this to save manuscript-quality pics to this folder
-#setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
 ##### 2-way repeated-measures ANOVA walk view - not sig
 aov_data <- myData_NO %>%
@@ -134,6 +134,7 @@ aov_data <- as_tibble(aov_data)
 aov_data$trial_type <- paste(aov_data$walk_noWalk, aov_data$same_diff, sep="_")
   
 # FIGURE FOR MANUSCRIPT
+
 bxp <- ggboxplot(
   aov_data, x = "walk_noWalk", y = "mean", 
   color = "same_diff", add = "jitter",
@@ -386,15 +387,16 @@ setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics
 
 
 # FIGURE FOR MANUSCRIPT
-landmark_lines <- ggboxplot(landmark_ttest, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
+landmark_ttest$next_to_landmark <- factor(landmark_ttest$next_to_landmark, levels = c("y", "n"))
+landmark_near <- ggboxplot(landmark_ttest, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
                      add = "jitter") +
   xlab("") +
   ylab("Mean Error (log cm)") +
   theme(legend.position = "none") +
   scale_x_discrete(breaks=c("y", "n"), labels=c("Next to Landmark", "Not Next to Landmark")) +
   theme(plot.title = element_text(hjust = 0.5))
-#jpeg("landmark_lines.jpeg", width = 7, height = 6, units = 'in', res = 500)
-landmark_lines
+#jpeg("landmark_near.jpeg", width = 7, height = 6, units = 'in', res = 500)
+landmark_near
 #dev.off()
 
 landmark_ttest_wide <- spread(landmark_ttest, key = next_to_landmark, value = mean)
@@ -741,7 +743,5 @@ pd <- paired(no_mean, yes_mean)
 #jpeg("landmark.jpeg", width = 3, height = 3, units = 'in', res = 300)
 plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (log cm)")
 #dev.off()
-
-
 
 

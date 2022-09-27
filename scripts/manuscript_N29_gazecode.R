@@ -470,7 +470,7 @@ retrieval_norm_log_pwc
 
 # correlations with performance
 cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
 plot(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log)
 cor.test(subject_df$s.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson")
@@ -499,11 +499,11 @@ cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, meth
 cor.test(subject_df$r.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
-cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, almost .05
-cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
+cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, p = .04168
+cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, p = .001042
 cor.test(subject_df$Number_of_fixations, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$Peak_velocity_of_entry_saccade, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor
+cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor, p = .02768
 plot(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log)
 
 
@@ -526,15 +526,17 @@ ggplot( subject_df, aes( x=x, y=y ))+
 x <- subject_df$Average_duration_of_fixations
 y<- subject_df$placement_error_cm_log
 
+# FIGURE FOR MANUSCRIPT
+
 avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point()+
   stat_cor(method = "pearson", label.x = 600, label.y = 3.8) +
   theme_classic() + xlab("Average duration of fixations (sec)") +
   ylab("Placement Error (log cm)") + 
   geom_smooth(method = 'lm')
-jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
+#jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
 avg_fix_dur
-dev.off()
+#dev.off()
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
 
@@ -543,9 +545,35 @@ big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.o
                 r.landmarks_norm_log + r.objects_norm_log + r.DOSW_norm_log + r.wall_norm_log + r.DODW_norm_log + r.other_norm_log +
                 r.lm_obj_lm_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
                 Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
-summary(big_reg_norm)
+summary(big_reg_norm) # overall not sig but there is one sig term
 
+s_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.objects_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
+                     s.other_norm_log + s.lm_obj_lm_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
+                     Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
+summary(s_reg_norm) # overall not sig and no sig terms, but multicollinearity problems
 
+big_reg_terms <- subject_df %>%
+  dplyr::select("s.landmarks_norm_log", "s.objects_norm_log", "s.DOSW_norm_log", "s.DODW_norm_log",
+                "s.lm_obj_lm_norm_log", "s.obj_to_so_norm_log", "s.obj_to_diffObj_norm_log", "s.lm_to_lm_norm_log",
+                "Total_duration_of_fixations", "Average_duration_of_fixations", "Number_of_fixations")
+### more regressions with less terms
+# first, take out all retrieval terms
+# then, take out the terms that don't really matter (wall, other, etc.)
+# then, take out all multicollinear terms (above .5)
+
+cor(big_reg_terms, use = "complete.obs")
+pairs(big_reg_terms)
+
+small_reg_terms <- subject_df %>%
+  dplyr::select("s.landmarks_norm_log", "s.DOSW_norm_log", "s.DODW_norm_log", "Average_duration_of_fixations")
+
+cor(small_reg_terms, use = "complete.obs")
+pairs(small_reg_terms)
+
+# this is the correct regression
+small_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.DOSW_norm_log + s.DODW_norm_log + Average_duration_of_fixations, data = subject_df)
+summary(small_reg_norm) # overall sig and only average duration of fixations is sig (marginal s.DOSW)
+# but using Total duration of fixations instead of average duration of fixations makes S.DOSW sig but why? What does that mean?
 
 ### conceptual ANOVAs and t-tests and figures
 
@@ -591,14 +619,14 @@ singlefixData$trial <- factor(singlefixData$trial, levels = c("objects_norm_log"
 bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
                      add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
-  ylab("Mean of Log Normalized Fixations") +
+  ylab("Mean Log Normalized Fixations") +
   theme(legend.position = "none")+
   scale_x_discrete(breaks=c("landmarks_norm_log", "wall_norm_log", "other_norm_log", "objects_norm_log"),
                    labels=c("Landmarks", "Wall", "Other", "Object")) +
   theme(plot.title = element_text(hjust = 0.5))
-jpeg("lmWallObject_anova.jpeg", width = 7, height = 5, units = 'in', res = 500)
+#jpeg("lmWallObject_anova.jpeg", width = 7, height = 5, units = 'in', res = 500)
 bxp_singlefix
-dev.off()
+#dev.off()
 
 # make smaller dataframe for t-test graph
 dosw_dodw_study <- study_subject_norm_long[c(481:510,541:570),]
@@ -621,14 +649,14 @@ dosw_dodw_data <- rbind(dosw_dodw_study, dosw_dodw_retrieval)
 bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
                         add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
-  ylab("Mean of Log Normalized Fixations") +
+  ylab("Mean Log Normalized Fixations") +
   theme(legend.position = "none") +
   scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
                    labels=c("Same Wall", "Different Wall")) +
   theme(plot.title = element_text(hjust = 0.5))
-jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
+#jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
 bxp_dosw_dodw
-dev.off()
+#dev.off()
 
 
 # t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
@@ -712,17 +740,18 @@ retrieval_successive_fix$trial_type <- "Retrieval"
 fixfixData <- rbind(study_successive_fix, retrieval_successive_fix)
 
 # FIGURE FOR MANUSCRIPT
+fixfixData$trial <- factor(fixfixData$trial, levels = c("obj_to_diffObj_norm", "lm_obj_lm_norm", "lm_to_lm_norm"))
 bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25,
                      add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
-  ylab("Mean of Log Normalized Fixations") +
+  ylab("Mean Log Normalized Fixations") +
   theme(legend.position = "none")+
   scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
                    labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object")) +
   theme(axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
-jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
+#jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
 bxp_fixfix
-dev.off()
+#dev.off()
 
 # figuring out average duration for encoding and retrieval
 duration_data <- myData %>%
@@ -733,10 +762,12 @@ duration_data <- myData %>%
     r.mean = mean(r.duration, na.rm = TRUE)
   )
 
-mean(duration_data$s.mean, na.rm = TRUE) # 34.38
-mean(duration_data$r.mean, na.rm = TRUE) # 113.60
+mean(duration_data$s.mean, na.rm = TRUE) # encoding time: 34.38 seconds
+sd(duration_data$s.mean, na.rm = TRUE) # sd = 2.397
+mean(duration_data$r.mean, na.rm = TRUE) # retrieval time: 113.60 seconds
+sd(duration_data$r.mean, na.rm = TRUE) # sd = 19.614
 
-
+max(duration_data$r.mean, na.rm = TRUE)
 
 
 
