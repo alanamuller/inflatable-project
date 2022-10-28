@@ -52,6 +52,9 @@ str(myData)
 # Placement error (cm) is skewed to the right
 hist(myData$placement_error_cm)
 
+# Using smaller bins to see the spread of data better at the lower region
+hist(myData$placement_error_cm, breaks = 50)
+
 ### Data transformations - they were not successful at making the data normal but log is the best
 
 # Log transformation to make the placement error data more normal
@@ -79,6 +82,11 @@ outliers_placement_error_cm <- myData %>%
 myData_NO <- myData %>% 
   filter(placement_error_cm_log < mean_placement_error_cm_log + (3*sd_placement_error_cm_log), 
            placement_error_cm_log > mean_placement_error_cm_log - (3*sd_placement_error_cm_log) )
+
+myData_NO_cm <-myData_NO
+myData_NO_cm$unlog_placement_error_cm <- (10^myData_NO_cm$placement_error_cm_log)
+hist(myData_NO_cm$unlog_placement_error_cm, breaks = 25)
+
 
 # Check normality assumption on NO data - still not normal but looks better
 hist(myData_NO$placement_error_cm_log)
@@ -133,6 +141,14 @@ aov_data <- as_tibble(aov_data)
 
 aov_data$trial_type <- paste(aov_data$walk_noWalk, aov_data$same_diff, sep="_")
   
+# table for cm values too
+unlog_cm <- myData_NO_cm %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    mean = mean(unlog_placement_error_cm, na.rm = TRUE),
+  )
+unlog_cm <- as_tibble(unlog_cm)
+
 # FIGURE FOR MANUSCRIPT
 
 bxp <- ggboxplot(
@@ -145,6 +161,17 @@ bxp <- ggboxplot(
 #jpeg("movement_viewpoint_bxp.jpeg", width = 7, height = 6, units = 'in', res = 500)
 bxp
 #dev.off()
+
+bxp <- ggboxplot(
+  unlog_cm, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter",
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same"))
+
+bxp
+
 
 # connecting lines - NOT USED but saved for example of how to do it so I don't forget
 move_view_bxp <- ggline(aov_data, x = "trial_type", y = "mean", group = "subject", color = "black", size = 0.25,
