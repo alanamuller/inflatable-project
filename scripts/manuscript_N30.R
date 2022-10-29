@@ -87,6 +87,25 @@ myData_NO_cm <-myData_NO
 myData_NO_cm$unlog_placement_error_cm <- (10^myData_NO_cm$placement_error_cm_log)
 hist(myData_NO_cm$unlog_placement_error_cm, breaks = 25)
 
+# How participants performed in cm
+subj_trial_cm_data <- myData_NO_cm %>%
+  group_by(subject, trial) %>%
+  summarize(
+    count = n(),
+    placement_error_cm = mean(placement_error_cm)
+  )
+
+subj_cm_data <- subj_trial_cm_data %>%
+  group_by(subject) %>%
+  summarise(
+    count = n(), 
+    placement_error_cm_mean = mean(placement_error_cm)
+  )
+
+mean(subj_cm_data$placement_error_cm_mean)
+sd(subj_cm_data$placement_error_cm_mean)
+min(subj_cm_data$placement_error_cm_mean)
+max(subj_cm_data$placement_error_cm_mean)
 
 # Check normality assumption on NO data - still not normal but looks better
 hist(myData_NO$placement_error_cm_log)
