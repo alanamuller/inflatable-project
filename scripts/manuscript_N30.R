@@ -86,6 +86,13 @@ myData_NO <- myData %>%
 myData_NO_cm <-myData_NO
 myData_NO_cm$unlog_placement_error_cm <- (10^myData_NO_cm$placement_error_cm_log)
 hist(myData_NO_cm$unlog_placement_error_cm, breaks = 25)
+correct_resps <- myData_NO_cm %>%
+  filter(unlog_placement_error_cm <= 20)
+resp_21_50 <- myData_NO_cm %>%
+  filter(unlog_placement_error_cm > 20 & unlog_placement_error_cm <= 50)
+resp_greater_50 <- myData_NO_cm %>%
+  filter(unlog_placement_error_cm >= 50)
+
 
 # How participants performed in cm
 subj_trial_cm_data <- myData_NO_cm %>%
@@ -159,7 +166,7 @@ aov_data <- myData_NO %>%
 aov_data <- as_tibble(aov_data)
 
 aov_data$trial_type <- paste(aov_data$walk_noWalk, aov_data$same_diff, sep="_")
-  
+
 # table for cm values too
 unlog_cm <- myData_NO_cm %>%
   group_by(subject, walk_noWalk, same_diff) %>%
@@ -218,6 +225,17 @@ aov_data <- as.data.frame(aov_data)
 bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_data, whichRandom = "subject")
 bayes_rm
 plot(bayes_rm)
+
+# analysis with only non-correct trials - not sig but that could be because of loss of power
+aov_data2 <- correct_resps %>%
+  group_by(subject, walk_noWalk, same_diff) %>%
+  summarize(
+    mean = mean(placement_error_cm_log, na.rm = TRUE),
+  )
+aov_data2 <- as_tibble(aov_data2)
+
+aov_correct_resps <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data2)
+summary(aov_correct_resps) # nothing is sig, no main effects, no interaction effect
 
 ### exclude trials when people took the cart AND put back in the same order and halfs
 ### all other trials can stay, just don't want people retracing their steps
