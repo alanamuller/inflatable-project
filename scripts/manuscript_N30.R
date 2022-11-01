@@ -85,6 +85,8 @@ myData_NO <- myData %>%
 
 
 hist(myData_NO$placement_error_cm, breaks = 25)
+resp_less_5 <- myData_NO %>%
+  filter(placement_error_cm <= 5) # 175 observations
 resp_less_10 <- myData_NO %>%
   filter(placement_error_cm <= 10) # 507 observations
 resp_less_20 <- myData_NO %>%
@@ -115,6 +117,11 @@ resp_8_9 <- myData_NO %>%
   filter(placement_error_cm > 8 & placement_error_cm <= 9) # 60 observations
 resp_9_10 <- myData_NO %>%
   filter(placement_error_cm > 9 & placement_error_cm <= 10) # 83 observations
+
+resp_5_10 <- myData_NO %>%
+  filter(placement_error_cm > 5 & placement_error_cm <= 10) # 332 observations
+resp_10_20 <- myData_NO %>%
+  filter(placement_error_cm > 10 & placement_error_cm <= 20) # 599 observations
 
 # How participants performed in cm
 subj_trial_cm_data <- myData_NO %>%
@@ -189,13 +196,10 @@ aov_data <- as_tibble(aov_data)
 
 aov_data$trial_type <- paste(aov_data$walk_noWalk, aov_data$same_diff, sep="_")
 
-# table for cm values too
-unlog_cm <- myData_NO_cm %>%
-  group_by(subject, walk_noWalk, same_diff) %>%
-  summarize(
-    mean = mean(unlog_placement_error_cm, na.rm = TRUE),
-  )
-unlog_cm <- as_tibble(unlog_cm)
+# summary stats used in 2way rep ANOVA
+aov_means <- myData_NO %>%
+  group_by(walk_noWalk, same_diff) %>%
+  get_summary_stats(placement_error_cm_log, type = "mean_sd")
 
 # FIGURE FOR MANUSCRIPT
 
