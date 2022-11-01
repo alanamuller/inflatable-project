@@ -361,6 +361,11 @@ cart_withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
                               within = c(walk_noWalk, same_diff))
 get_anova_table(cart_withinTest) # not sig but p = 0.08 for walk_noWalk
 
+# Bayes factor for this ANOVA
+aov_cart_data <- as.data.frame(aov_cart_data)
+bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
+bayes_rm
+plot(bayes_rm)
 
 ### 2-way ANOVA with abs x error
 aov_x_data <- myData_NO_x %>%
