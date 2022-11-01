@@ -83,19 +83,41 @@ myData_NO <- myData %>%
   filter(placement_error_cm_log < mean_placement_error_cm_log + (3*sd_placement_error_cm_log), 
            placement_error_cm_log > mean_placement_error_cm_log - (3*sd_placement_error_cm_log) )
 
-myData_NO_cm <-myData_NO
-myData_NO_cm$unlog_placement_error_cm <- (10^myData_NO_cm$placement_error_cm_log)
-hist(myData_NO_cm$unlog_placement_error_cm, breaks = 25)
-correct_resps <- myData_NO_cm %>%
-  filter(unlog_placement_error_cm <= 20)
-resp_21_50 <- myData_NO_cm %>%
-  filter(unlog_placement_error_cm > 20 & unlog_placement_error_cm <= 50)
-resp_greater_50 <- myData_NO_cm %>%
-  filter(unlog_placement_error_cm >= 50)
 
+hist(myData_NO$placement_error_cm, breaks = 25)
+resp_less_10 <- myData_NO %>%
+  filter(placement_error_cm <= 10) # 507 observations
+resp_less_20 <- myData_NO %>%
+  filter(placement_error_cm <= 20) # 1106 observations
+resp_20_50 <- myData_NO %>%
+  filter(placement_error_cm > 20 & placement_error_cm <= 50) # 804 observations
+resp_greater_50 <- myData_NO %>%
+  filter(placement_error_cm >= 50) # 412 observations
+resp_less_0 <- myData_NO %>%
+  filter(placement_error_cm <= 0) # 0 observations
+resp_less_1 <- myData_NO %>%
+  filter(placement_error_cm <= 1) # 0 observations
+resp_less_2 <- myData_NO %>%
+  filter(placement_error_cm <= 2) # 28 observations
+resp_2_3 <- myData_NO %>%
+  filter(placement_error_cm > 2 & placement_error_cm <= 3) # 38 observations
+resp_3_4 <- myData_NO %>%
+  filter(placement_error_cm > 3 & placement_error_cm <= 4) # 52 observations
+resp_4_5 <- myData_NO %>%
+  filter(placement_error_cm > 4 & placement_error_cm <= 5) # 57 observations
+resp_5_6 <- myData_NO %>%
+  filter(placement_error_cm > 5 & placement_error_cm <= 6) # 50 observations
+resp_6_7 <- myData_NO %>%
+  filter(placement_error_cm > 6 & placement_error_cm <= 7) # 68 observations
+resp_7_8 <- myData_NO %>%
+  filter(placement_error_cm > 7 & placement_error_cm <= 8) # 71 observations
+resp_8_9 <- myData_NO %>%
+  filter(placement_error_cm > 8 & placement_error_cm <= 9) # 60 observations
+resp_9_10 <- myData_NO %>%
+  filter(placement_error_cm > 9 & placement_error_cm <= 10) # 83 observations
 
 # How participants performed in cm
-subj_trial_cm_data <- myData_NO_cm %>%
+subj_trial_cm_data <- myData_NO %>%
   group_by(subject, trial) %>%
   summarize(
     count = n(),
