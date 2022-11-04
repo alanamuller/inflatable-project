@@ -91,6 +91,8 @@ resp_less_10 <- myData_NO %>%
   filter(placement_error_cm <= 10) # 507 observations
 resp_less_20 <- myData_NO %>%
   filter(placement_error_cm <= 20) # 1106 observations
+resp_less_30 <- myData_NO %>%
+  filter(placement_error_cm <= 30) # 1106 observations
 resp_20_50 <- myData_NO %>%
   filter(placement_error_cm > 20 & placement_error_cm <= 50) # 804 observations
 resp_greater_50 <- myData_NO %>%
