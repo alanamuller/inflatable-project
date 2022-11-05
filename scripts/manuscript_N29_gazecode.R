@@ -802,7 +802,7 @@ bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean",
   group = "subject", color = "black", size = 2,
   add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
   xlab("") +
-  ylab("Mean Log Normalized Fixations") +
+  ylab("Mean Log Norm Fixations") +
   theme(legend.position = "none")+
   scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
   labels=c("Lmk-Obj", "Lmk-Lmk", "Obj-Obj")) +
