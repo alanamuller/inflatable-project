@@ -216,16 +216,18 @@ bxp <- ggboxplot(
 bxp
 #dev.off()
 
+# FIGURE FOR SFN22
 bxp <- ggboxplot(
-  unlog_cm, x = "walk_noWalk", y = "mean", 
+  aov_data, x = "walk_noWalk", y = "mean", 
   color = "same_diff", add = "jitter",
   xlab = "Movement Condition", ylab = "Placement Error (log cm)",
-  legend = "right", legend.title = "Viewpoint") + 
+  legend = "top", legend.title = "Viewpoint", size = 2, add.params = list(size = 4)) + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
-  scale_color_discrete(labels = c("Different", "Same"))
-
+  scale_color_discrete(labels = c("Different", "Same")) +
+  theme(text = element_text(size = 44))
+jpeg("SFN_movement_viewpoint_bxp.jpeg", width = 9, height = 10, units = 'in', res = 700)
 bxp
-
+dev.off()
 
 # connecting lines - NOT USED but saved for example of how to do it so I don't forget
 move_view_bxp <- ggline(aov_data, x = "trial_type", y = "mean", group = "subject", color = "black", size = 0.25,
@@ -491,8 +493,21 @@ landmark_near <- ggboxplot(landmark_ttest, x = "next_to_landmark", y = "mean", g
   ylab("Mean Error (log cm)") +
   theme(legend.position = "none") +
   scale_x_discrete(breaks=c("y", "n"), labels=c("Next to Landmark", "Not Next to Landmark")) +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(ylim = c(0.9, 1.7))
 #jpeg("landmark_near.jpeg", width = 7, height = 6, units = 'in', res = 500)
+landmark_near
+#dev.off()
+
+# FIGURE FOR SFN22
+landmark_near <- ggboxplot(landmark_ttest, x = "next_to_landmark", y = "mean", 
+  group = "subject", color = "black", add = "jitter", size = 2, add.params = list(size = 4)) +
+  xlab("") +
+  ylab("Mean Error (log cm)") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=c("y", "n"), labels=c("Next to \n Landmark", "Not Next to \n Landmark")) +
+  theme(plot.title = element_text(hjust = 0.5)) + coord_cartesian(ylim = c(0.9, 1.7)) +
+  theme(text = element_text(size = 44))
+#jpeg("SFN_landmark_near.jpeg", width = 9, height = 10, units = 'in', res = 700)
 landmark_near
 #dev.off()
 

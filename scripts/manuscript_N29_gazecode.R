@@ -533,10 +533,23 @@ avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   stat_cor(method = "pearson", label.x = 600, label.y = 3.8) +
   theme_classic() + xlab("Average duration of fixations (sec)") +
   ylab("Placement Error (log cm)") + 
-  geom_smooth(method = 'lm')
+  geom_smooth(method = 'lm') + coord_cartesian(ylim = c(2.4, 4))
 #jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
 avg_fix_dur
 #dev.off()
+
+# FIGURE FOR SFN22
+avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
+  geom_point(aes(size = 12), show.legend = FALSE)+
+  stat_cor(method = "pearson", label.x = 440, label.y = 3.8, size = 12) +
+  theme_classic() + xlab("Avg duration of fixations (s)") +
+  ylab("Placement Error (log cm)") + 
+  geom_smooth(method = 'lm', size = 2) + coord_cartesian(ylim = c(2.4, 4)) +
+  theme(text = element_text(size = 44))
+jpeg("SFN_avg_fix_dur.jpeg", width = 9, height = 10, units = 'in', res = 700)
+avg_fix_dur
+dev.off()
+
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
 
@@ -628,6 +641,22 @@ bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean",
 bxp_singlefix
 #dev.off()
 
+# FIGURE FOR SFN22
+bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean", 
+  group = "subject", color = "black", size = 2, 
+  add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
+  xlab("") + ylab("Mean Log Norm Fixations") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=c("landmarks_norm_log", "wall_norm_log", "other_norm_log", "objects_norm_log"),
+                   labels=c("Landmarks", "Wall", "Other", "Object")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 40)) +
+  rotate_x_text(45)
+jpeg("SFN_lmWallObject_anova.jpeg", width = 13, height = 11, units = 'in', res = 700)
+bxp_singlefix
+dev.off()
+
+
 # make smaller dataframe for t-test graph
 dosw_dodw_study <- study_subject_norm_long[c(481:510,541:570),]
 dosw_dodw_retrieval <- retrieval_subject_norm_long[c(481:510,541:570),]
@@ -646,8 +675,9 @@ dosw_dodw_retrieval$trial_type <- "Retrieval"
 dosw_dodw_data <- rbind(dosw_dodw_study, dosw_dodw_retrieval)
 
 # FIGURE FOR MANUSCRIPT
-bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
-                        add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
+bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", 
+                           group = "subject", color = "black", size = 0.25, 
+  add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
   xlab("") +
   ylab("Mean Log Normalized Fixations") +
   theme(legend.position = "none") +
@@ -658,6 +688,20 @@ bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean"
 bxp_dosw_dodw
 #dev.off()
 
+# FIGURE FOR SFN22
+bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", 
+  group = "subject", color = "black", size = 2, 
+  add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
+  xlab("") +
+  ylab("Mean Log Norm Fixations") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
+                   labels=c("Same \n Wall", "Diff \n Wall")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 50))
+jpeg("SFN_dosw_dodw_bxp.jpeg", width = 13, height = 11, units = 'in', res = 700)
+bxp_dosw_dodw
+dev.off()
 
 # t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
 t.test(subject_df$s.DOSW_norm , subject_df$s.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
@@ -752,6 +796,21 @@ bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", group
 #jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
 bxp_fixfix
 #dev.off()
+
+# FIGURE FOR SFN22
+bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", 
+  group = "subject", color = "black", size = 2,
+  add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
+  xlab("") +
+  ylab("Mean Log Normalized Fixations") +
+  theme(legend.position = "none")+
+  scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
+  labels=c("Lmk-Obj", "Lmk-Lmk", "Obj-Obj")) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size = 44))
+jpeg("SFN_fixfix_anova.jpeg", width = 13, height = 11, units = 'in', res = 700)
+bxp_fixfix
+dev.off()
 
 # figuring out average duration for encoding and retrieval
 duration_data <- myData %>%
