@@ -225,7 +225,7 @@ bxp <- ggboxplot(
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
   scale_color_discrete(labels = c("Different", "Same")) +
   theme(text = element_text(size = 44))
-jpeg("SFN_movement_viewpoint_bxp.jpeg", width = 9, height = 10, units = 'in', res = 700)
+jpeg("SFN_movement_viewpoint_bxp.jpeg", width = 10, height = 9, units = 'in', res = 700)
 bxp
 dev.off()
 
