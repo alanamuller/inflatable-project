@@ -3,7 +3,7 @@ library(gtools)
 
 rm(list = ls())
 
-setwd("C:/Users/Updates/Desktop/Alana/UA/R_projects/nav_room_project")
+setwd("C:/Users/Updates/Desktop/Alana/UA/R_projects/inflatable-project")
 
 letterAndNumberList <- function(lanl) {
   wall_high <- c("A","B","C")
@@ -67,9 +67,9 @@ zooAnimals <- c("elephant", "giraffe", "lion", "monkey", "zebra") #5
 
 thing <- c("baby bottle", "box", "masks", "cowboy hat", "crayon", "crown", "finger",
            "fire", "fire extinguisher", "globe", "oven mitt", "phone", "pinata", "pitcher", "quarter",
-           "space shuttle", "sword", "tiki mask", "trophy", "water container") #21 witch hat too hard to velcro, fanny pack decommisioned
-food <- c("banana", "bread", "carrot", "chili", "donut", "gummy bear", "hot dog", "pretzel", "turkey") #9 pumpkin decommisioned
-game <- c("basketball", "bat", "bowling ball", "bowling pin", "football", "glove", "card") #7, dice decommisioned
+           "space shuttle", "sword", "tiki mask", "trophy", "water container") #21 witch hat too hard to velcro, fanny pack decommissioned
+food <- c("banana", "bread", "carrot", "chili", "donut", "gummy bear", "hot dog", "pretzel", "turkey") #9 pumpkin decommissioned
+game <- c("basketball", "bat", "bowling ball", "bowling pin", "football", "glove", "card") #7, dice decommissioned
 music <- c("boombox", "guitar", "microphone", "saxophone", "trumpet") #5
 tool <- c("bucket", "hammer", "hanger", "mallet", "pick axe", "screw driver", "wrench") #7
 
