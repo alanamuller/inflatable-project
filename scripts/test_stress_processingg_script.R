@@ -54,43 +54,8 @@ data_df <- data_df %>%
 #plot(x,z)
 
 
-library(stringr)
-library(tidyverse)
-
-# Example string with multiple instances of TASK_START and TASK_END
-text <- "Random text before TASK_START First task text TASK_END Random text before TASK_START Second task text TASK_END Random text after TASK_END"
-
-# Define the start and end keywords
-start_keyword <- "TASK_START"
-end_keyword <- "TASK_END"
-
-# Split the text into separate lines
-lines <- str_split(text, "\n")[[1]]
-
-# Find the indices of the start and end keywords
-start_indices <- which(str_detect(lines, start_keyword))
-end_indices <- which(str_detect(lines, end_keyword))
-
-# Initialize an empty list to hold the dataframes
-dfs <- list()
-
-# Loop through the start indices
-for (i in start_indices) {
-  # Find the index of the next end keyword
-  j <- min(end_indices[end_indices > i])
-  
-  # Extract the lines between the start and end indices
-  task_lines <- lines[(i+1):(j-1)]
-  
-  # Convert the lines to a single string
-  task_text <- paste(task_lines, collapse = "\n")
-  
-  # Add the task text to the list of dataframes
-  dfs[[length(dfs)+1]] <- data.frame(task_text = task_text)
-}
-
-# Combine the list of dataframes into a single dataframe
-result <- bind_rows(dfs)
-
-# Print the result
-result
+# Still need to split the data into the different chunks (each learning trial and navigation trial)
+# TASK_START LearnSmoothPassive SmoothPassivePathStart
+# TASK_START LearnActivePath ActivePathStart
+# TASK_START	TASK_NavigateInOrder
+# TASK_START TASK_NavigationTest
