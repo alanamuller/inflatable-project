@@ -1,43 +1,96 @@
-library(regexPipes)
-library(regexSelect)
+library(stringr)
+library(tidyverse)
+library(dplyr)
 
+# Made by Alana Muller with a lot of help from ChatGPT
+
+# Set working directory
 setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
 
-input_file <- "mini_test_log.txt"
+# Load the data
+input_file <- "navStress_pilotAM_city1_navigation_23-03-21D_16.35.12T.log"
+input_data <- paste(readLines(input_file), collapse="\n")
 
-input_lines <- readLines(input_file)
+# Convert the data to a tibble
+data_df <- tibble(input_data = str_split(input_data, "\n")[[1]])
 
+# Use regular expressions to extract the number before "Avatar:"
+data_df <- data_df %>%
+  mutate(avatar_number = str_extract(input_data, "\\d+(?=\\tAvatar:)"))
 
+# Use regular expressions to extract the three numbers after "Position (xyz):"
+data_df <- data_df %>%
+  mutate(numbers = str_extract_all(input_data, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+
+# Split the numbers column into three separate columns
+data_df <- data_df %>%
+  separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
+
+# Use regular expressions to extract the three numbers after "Rotation (xyz):"
+data_df <- data_df %>%
+  mutate(numbers = str_extract_all(input_data, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+
+# Split the numbers column into three separate columns
+data_df <- data_df %>%
+  separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
+
+# Convert the columns to numeric
+data_df <- data_df %>%
+  mutate(across(2:8, as.numeric))
+
+# Remove the rows with NAs
+data_df <- na.omit(data_df)
+
+# Make column for time stamp by making avatar number start from 0
+avatar_initial_number <- data_df$avatar_number[1]
+data_df <- data_df %>%
+  mutate(avatar_time = avatar_number - avatar_initial_number)
+
+##### Above this section, the code works but it doesn't split the chunks into learned trials 
+
+#x <- data_df$pos_X
+#z <- data_df$pos_Z
+
+#plot(x,z)
 
 
 library(stringr)
 library(tidyverse)
 
-# Read in the data
-data <- "63815013312726	TASK_START	LM_Timeline	TaskList
-63815013329493\tAvatar:\tKeyboardMouseController\tPosition (xyz):\t-230.886\t-0.09318924\t278.2897\tRotation (xyz):\t359.5977\t272.9221\t1.334054E-08\tCamera\t(xyz):\t359.5977\t272.9221\t1.334054E-08
-63815013329500\tAvatar:\tKeyboardMouseController\tPosition (xyz):\t-230.886\t-0.09318924\t278.2897\tRotation (xyz):\t359.596\t273.33\t0.001655868\tCamera\t(xyz):\t359.596\t273.33\t0.001655868
-63815013329519\tAvatar:\tKeyboardMouseController\tPosition (xyz):\t-230.886\t-0.09318924\t278.2897\tRotation (xyz):\t359.5945\t273.6767\t0.003053638\tCamera\t(xyz):\t359.5945\t273.6767\t0.003053638"
+# Example string with multiple instances of TASK_START and TASK_END
+text <- "Random text before TASK_START First task text TASK_END Random text before TASK_START Second task text TASK_END Random text after TASK_END"
 
+# Define the start and end keywords
+start_keyword <- "TASK_START"
+end_keyword <- "TASK_END"
 
+# Split the text into separate lines
+lines <- str_split(text, "\n")[[1]]
 
-data <- paste(readLines("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp/mini_test_log.txt"), collapse="\n")
+# Find the indices of the start and end keywords
+start_indices <- which(str_detect(lines, start_keyword))
+end_indices <- which(str_detect(lines, end_keyword))
 
+# Initialize an empty list to hold the dataframes
+dfs <- list()
 
-# Convert the data to a tibble
-df <- tibble(data = str_split(data, "\n")[[1]])
+# Loop through the start indices
+for (i in start_indices) {
+  # Find the index of the next end keyword
+  j <- min(end_indices[end_indices > i])
+  
+  # Extract the lines between the start and end indices
+  task_lines <- lines[(i+1):(j-1)]
+  
+  # Convert the lines to a single string
+  task_text <- paste(task_lines, collapse = "\n")
+  
+  # Add the task text to the list of dataframes
+  dfs[[length(dfs)+1]] <- data.frame(task_text = task_text)
+}
 
-# Use regular expressions to extract the three numbers after "Position (xyz):"
-df <- df %>%
-  mutate(numbers = str_extract_all(data, "(?<=Position \\(xyz\\):\\s)[0-9.-]+\\s+[0-9.-]+\\s+[0-9.-]+"))
+# Combine the list of dataframes into a single dataframe
+result <- bind_rows(dfs)
 
-# Split the numbers column into three separate columns
-df <- df %>%
-  separate(numbers, into = c("X", "Y", "Z"), sep = "\t")
-
-# Convert the columns to numeric
-df <- df %>%
-  mutate(across(c(X, Y, Z), as.numeric))
-
-
-
+# Print the result
+result
