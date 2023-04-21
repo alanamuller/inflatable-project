@@ -59,3 +59,29 @@ data_df <- data_df %>%
 # TASK_START LearnActivePath ActivePathStart
 # TASK_START	TASK_NavigateInOrder
 # TASK_START TASK_NavigationTest
+
+
+
+
+
+library(stringr)
+
+text <- "63816379065996	TASK_START	LearnSmoothPassive	SmoothPassivePathStart
+63816379066012	Avatar: 	KeyboardMouseController		
+63816379066025	Avatar: 	KeyboardMouseController
+63816379066046	Avatar: 	KeyboardMouseController
+63816379217199	TASK_END	LearnSmoothPassive	SmoothPassivePathStart	151203
+63816379217200	LM_Output	TaskList
+TaskListName	RepetitionNumber	CatchFlag"
+
+task_start <- "TASK_START	LearnSmoothPassive"
+task_end <- "TASK_END	LearnSmoothPassive"
+
+task_text <- str_sub(text, 
+                     str_locate(text, fixed(task_start))[2], 
+                     str_locate(text, fixed(task_end))[1] - 1)
+
+
+
+
+
