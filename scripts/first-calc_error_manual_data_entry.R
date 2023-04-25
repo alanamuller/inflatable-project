@@ -13,7 +13,7 @@ rm(list = ls())
 setwd("E:/Nav_1stYr_project_data")
 
 # Read in data
-myData <- read_excel("s004_to_merge.xlsx")
+myData <- read_excel("OA_nav_room_error_data.xlsx")
 str(myData)
 
 myData <- as.data.frame(myData)
@@ -63,7 +63,7 @@ myData$abs_x_error_cm <- abs(myData$x_error_cm)
 myData$abs_y_error_cm <- abs(myData$y_error_cm)
 
 # Save file
-write.csv(myData, "E:/Nav_1stYr_project_data/nav_room_error_data_s004.csv", row.names = FALSE)
+write.csv(myData, "E:/Nav_1stYr_project_data/partialOA_nav_room_error_processed.csv", row.names = FALSE)
 
 
 
