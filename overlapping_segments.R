@@ -7,8 +7,8 @@ ymin <- 0
 ymax <- 10
 
 # define the number of cells in the x and y directions
-ncellx <- 3
-ncelly <- 3
+ncellx <- 6
+ncelly <- 6
 
 cellsize <- ((xmax - xmin)/ ncellx)
 
