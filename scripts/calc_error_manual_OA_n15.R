@@ -136,11 +136,11 @@ dev.off()
 
 # these are two ways to do a 2x2 repeated measures ANOVA
 results_2way <- aov(mean ~ walk_noWalk*same_diff + Error(subject/(walk_noWalk*same_diff)), data = aov_data)
-summary(results_2way) # walk_noWalk is sig
+summary(results_2way) # nothing sig
 
 withinTest <- anova_test(data = aov_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff))
-get_anova_table(withinTest) # walk_noWalk is sig
+get_anova_table(withinTest) # nothing sig
 
 # Bayes factor for this ANOVA
 aov_data <- as.data.frame(aov_data)
