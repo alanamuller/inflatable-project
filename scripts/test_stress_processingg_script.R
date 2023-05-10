@@ -4,6 +4,12 @@ library(dplyr)
 
 # Made by Alana Muller with a lot of help from ChatGPT
 
+# Store coordinates
+# Store 1 - (X,Z): -249.37, 279.16
+# Store 2 - (X,Z): 207.3, 99.9
+# Store 3 - (X,Z): 145.79, -231.68
+# Store 4 - (X,Z): -130.43, -112.92
+
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
   setwd("E:/Nav Stress Pilot Data")
@@ -11,9 +17,11 @@ library(dplyr)
 # Load the data
 input_file <- "navStress_P001_city1_navigation_23-03-24D_10.18.47T.log"
 # input_file <- "mini_test_log.txt"
+# input_file <- "environment_corner_coordinates.log"
 input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
+##################################### LEARN SMOOTH PASSIVE PATH #####################################
 
 ############# Extract all lines between TASK_START LearnSmoothPassive SmoothPassivePathStart and TASK_END LearnSmoothPassive SmoothPassivePathStart
 
@@ -64,7 +72,8 @@ for (i in seq_along(learn_passive_df_list)) {
   # Make column for time stamp by making avatar number start from 0
   avatar_initial_number <- data_df$avatar_number[1]
   data_df <- data_df %>%
-    mutate(avatar_time = avatar_number - avatar_initial_number)
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
   
   # Update the dataframe in the list
   learn_passive_df_list[[i]] <- data_df
@@ -74,13 +83,22 @@ for (i in seq_along(learn_passive_df_list)) {
 x1 <- learn_passive_df_list[[1]]$pos_X
 z1 <- learn_passive_df_list[[1]]$pos_Z
 plot(x1,z1)
+points(-249.37, 279.16)
+points(207.3, 99.9)
+points(145.79, -231.68)
+points(-130.43, -112.92)
+
+
+
 
 x2 <- learn_passive_df_list[[2]]$pos_X
 z2 <- learn_passive_df_list[[2]]$pos_Z
 plot(x2,z2)
 
 
-############# Extract all lines between LearnActivePath ActivePathStart and TASK_END LearnActivePath ActivePathStart
+##################################### LEARN ACTIVE PATH #####################################
+
+############# Extract all lines between TASK_START LearnActivePath ActivePathStart and TASK_END LearnActivePath ActivePathStart
 
 matches <- str_extract_all(text, "(?s)TASK_START\\s+LearnActivePath\\s+ActivePathStart.*?TASK_END\\s+LearnActivePath\\s+ActivePathStart")
 learn_active_df <- data.frame(matches, stringsAsFactors = FALSE)
@@ -129,21 +147,26 @@ for (i in seq_along(learn_active_df_list)) {
   # Make column for time stamp by making avatar number start from 0
   avatar_initial_number <- data_df$avatar_number[1]
   data_df <- data_df %>%
-    mutate(avatar_time = avatar_number - avatar_initial_number)
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
   
   # Update the dataframe in the list
   learn_active_df_list[[i]] <- data_df
   
 }
 
-x1 <- learn_active_df_list[[1]]$pos_X
-z1 <- learn_active_df_list[[1]]$pos_Z
-plot(x1,z1)
+first_x1 <- learn_active_df_list[[1]]$pos_X
+first_z1 <- learn_active_df_list[[1]]$pos_Z
+plot(first_x1,first_z1)
 
-x2 <- learn_active_df_list[[2]]$pos_X
-z2 <- learn_active_df_list[[2]]$pos_Z
-plot(x2,z2)
+second_x2 <- learn_active_df_list[[2]]$pos_X
+second_z2 <- learn_active_df_list[[2]]$pos_Z
+plot(second_x2,second_z2)
 
+
+
+
+##################################### LEARN: NAVIGATE IN ORDER #####################################
 
 ############# Extract all lines between TASK_START TASK_NavigateInOrder and TASK_END TASK_NavigateInOrder
 
@@ -206,7 +229,8 @@ for (i in seq_along(navInOrder_df_list)) {
     # Make column for time stamp by making avatar number start from 0
     avatar_initial_number <- data_df$avatar_number[1]
     data_df <- data_df %>%
-      mutate(avatar_time = avatar_number - avatar_initial_number)
+      mutate(time_ms = avatar_number - avatar_initial_number,
+             time_sec = time_ms/1000)
     
     # Update the dataframe in the list
     navInOrder_df_list[[i]][[j]] <- data_df
@@ -231,6 +255,13 @@ x4 <- navInOrder_df_list[[1]][[4]]$pos_X
 z4 <- navInOrder_df_list[[1]][[4]]$pos_Z
 plot(x4,z4)
 
+combo_navInOrder_1 <- do.call(rbind, navInOrder_df_list[[1]])
+
+combo_x <- combo_navInOrder_1$pos_X
+combo_z <- combo_navInOrder_1$pos_Z
+plot(combo_x, combo_z)
+
+
 # how well the Ss learned the inner path
 x1 <- navInOrder_df_list[[2]][[1]]$pos_X
 z1 <- navInOrder_df_list[[2]][[1]]$pos_Z
@@ -248,6 +279,8 @@ x4 <- navInOrder_df_list[[2]][[4]]$pos_X
 z4 <- navInOrder_df_list[[2]][[4]]$pos_Z
 plot(x4,z4)
 
+
+##################################### RETRIEVE: NAVIGATION TASK #####################################
 
 ############# Extract all lines between TASK_START TASK_NavigationTest and TASK_END TASK_NavigationTest
 
@@ -310,7 +343,8 @@ for (i in seq_along(navInOrder_df_list)) {
     # Make column for time stamp by making avatar number start from 0
     avatar_initial_number <- data_df$avatar_number[1]
     data_df <- data_df %>%
-      mutate(avatar_time = avatar_number - avatar_initial_number)
+      mutate(time_ms = avatar_number - avatar_initial_number,
+             time_sec = time_ms/1000)
     
     # Update the dataframe in the list
     navInOrder_df_list[[i]][[j]] <- data_df
@@ -353,29 +387,6 @@ z4 <- navInOrder_df_list[[2]][[4]]$pos_Z
 plot(x4,z4)
 
 
-############################ This is still plotting everything, need to plot per task part
-
-
-##### Above this section, the code works but it doesn't split the chunks into learned trials 
-
-#x <- data_df$pos_X
-#z <- data_df$pos_Z
-
-#plot(x,z)
-
-
-# Still need to split the data into the different chunks (each learning trial and navigation trial)
-# TASK_START LearnSmoothPassive SmoothPassivePathStart
-# TASK_START LearnActivePath ActivePathStart
-# TASK_START	TASK_NavigateInOrder
-# TASK_START TASK_NavigationTest
-# TASK_START	Navigate	NavigationTask
-
-
-
-
-
-################################
 
 
 

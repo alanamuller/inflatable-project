@@ -1,14 +1,14 @@
 library(sp)
 
 # define the extent of the area you want to cover
-xmin <- 0
-xmax <- 10
-ymin <- 0
-ymax <- 10
+xmin <- -400
+xmax <- 400
+ymin <- -400
+ymax <- 400
 
 # define the number of cells in the x and y directions
-ncellx <- 6
-ncelly <- 6
+ncellx <- 37
+ncelly <- 37
 
 cellsize <- ((xmax - xmin)/ ncellx)
 
@@ -20,11 +20,19 @@ grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsi
 grid_sp <- SpatialGrid(grid)
 
 # generate path1 x-y coordinates within the area
-points1_df <- data.frame(x = c(1,2,10), y = c(1,2,3))
-points1_sp <- SpatialPoints(points1_df)
+#points1_df <- data.frame(x = c(1,2,10), y = c(1,2,3))
+#points1_sp <- SpatialPoints(points1_df)
 
 # generate path2 x-y coordinates within the area
-points2_df <- data.frame(x = c(10,9,8,7,6,5,4,3,2,1,0), y = c(0,1,2,3,4,5,6,7,8,9,10))
+#points2_df <- data.frame(x = c(10,9,8,7,6,5,4,3,2,1,0), y = c(0,1,2,3,4,5,6,7,8,9,10))
+#points2_sp <- SpatialPoints(points2_df)
+
+# my own data for path 1
+points1_df <- data.frame(x = first_x1, y = first_z1)
+points1_sp <- SpatialPoints(points1_df)
+
+# my own data for path 2
+points2_df <- data.frame(x = second_x2, y = second_z2)
 points2_sp <- SpatialPoints(points2_df)
 
 # use the "over()" function to find which grid cells contain the x-y coordinates
