@@ -755,25 +755,16 @@ print(closest_points_df)
 ######################## Experimental ChatGPT Stuff ###########################
 
 
-# Define the points to search for
-search_points <- data.frame(x = c(207.3, 145.79, -130.43, -249.37), y = c(99.9, -231.68, -112.92, 279.16))
-
-# Find the closest point to each search point
-closest_points <- lapply(search_points, function(sp) {
-  # Calculate distances to all points in data frame
-  distances <- sqrt((outer_active_df_list[[4]]$pos_X - sp$x)^2 + (outer_active_df_list[[4]]$pos_Z - sp$y)^2)
-  
-  # Get index of minimum distance
-  min_index <- which.min(distances)
-  
-  # Return x-y values and index of closest point
-  return(data.frame(x = outer_active_df_list[[4]]$pos_X[min_index], y = outer_active_df_list[[4]]$pos_Z[min_index], index = min_index))
-})
-
-# Print the closest points
-print(closest_points)
 
 
+# Create a new column in the data frame for the closest time value
+outer_active_df_list[[4]]$closest_time <- closest_time$closest_time
+
+# Split the data frame into four subsets based on the closest time values
+df_list <- split(outer_active_df_list[[4]], outer_active_df_list[[4]]$closest_time)
+
+# Print the first few rows of each subset
+lapply(df_list, head)
 
 
 
