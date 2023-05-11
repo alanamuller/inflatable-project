@@ -18,8 +18,8 @@ library(dplyr)
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
-# setwd("E:/Nav Stress Pilot Data") # for desktop
-  setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
+ setwd("E:/Nav Stress Pilot Data") # for desktop
+# setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 # Load the data
 input_file <- "navStress_P001_city1_navigation_23-03-24D_10.18.47T.log"
@@ -180,19 +180,7 @@ for (i in seq_along(outer_active_df_list)) {
   
 }
 
-x <- outer_active_df_list[[1]]$pos_X
-z <- outer_active_df_list[[1]]$pos_Z
-plot(x,z)
-
-x <- outer_active_df_list[[2]]$pos_X
-z <- outer_active_df_list[[2]]$pos_Z
-plot(x,z)
-
-x <- outer_active_df_list[[3]]$pos_X
-z <- outer_active_df_list[[3]]$pos_Z
-plot(x,z)
-
-# this one will be the optimal whole outer route
+# Use the last active learning trial as the actual whole outer path length
 x <- outer_active_df_list[[4]]$pos_X
 z <- outer_active_df_list[[4]]$pos_Z
 plot(x,z)
@@ -206,8 +194,8 @@ ggplot(outer_active_df_list[[4]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point(aes(x = 145.79, y = -231.68), size = 3, color = "red") +
   geom_point(aes(x = -130.43, y = -112.92), size = 3, color = "red")
 
-# Use this as the actual path length
-outer_actual_length <- totDist(outer_active_df_list[[4]]$pos_X, outer_active_df_list[[4]]$pos_Z)
+# Use last trial as the actual whole path length
+outer_actual_dist <- totDist(outer_active_df_list[[length(outer_active_df_list)]]$pos_X, outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
 
 
 ############# Extract all lines between TASK_START Navigate	NavigationTask and TASK_END Navigate NavigationTask	
@@ -271,22 +259,6 @@ for (i in seq_along(outer_navInOrder_df_list)) {
 
 # make one big dataframe with all outer nav in order x z values
 outer_navInOrder_all_dfs <- do.call(rbind, outer_navInOrder_df_list)
-
-x <- outer_navInOrder_df_list[[1]]$pos_X
-z <- outer_navInOrder_df_list[[1]]$pos_Z
-plot(x,z)
-
-x <- outer_navInOrder_df_list[[2]]$pos_X
-z <- outer_navInOrder_df_list[[2]]$pos_Z
-plot(x,z)
-
-x <- outer_navInOrder_df_list[[3]]$pos_X
-z <- outer_navInOrder_df_list[[3]]$pos_Z
-plot(x,z)
-
-x <- outer_navInOrder_df_list[[4]]$pos_X
-z <- outer_navInOrder_df_list[[4]]$pos_Z
-plot(x,z)
 
 # this is the participant's whole traveled path (segments combined together)
 x <- outer_navInOrder_all_dfs$pos_X
@@ -429,20 +401,17 @@ for (i in seq_along(inner_active_df_list)) {
   
 }
 
-
 x <- inner_active_df_list[[1]]$pos_X
 z <- inner_active_df_list[[1]]$pos_Z
 plot(x,z)
 
-# this will be the inner optimal path
+# this will be the inner whole actual path
 x <- inner_active_df_list[[2]]$pos_X
 z <- inner_active_df_list[[2]]$pos_Z
 plot(x,z)
 
 # inner path actual path length
-inner_actual_length <- totDist(inner_active_df_list[[2]]$pos_X, inner_active_df_list[[2]]$pos_Z)
-
-# now I just need to split the paths into the four paths without adding too much error
+inner_actual_dist <- totDist(inner_active_df_list[[length(inner_active_df_list)]]$pos_X, inner_active_df_list[[length(inner_active_df_list)]]$pos_Z)
 
 ############# Extract all lines between TASK_START Navigate	NavigationTask and TASK_END Navigate NavigationTask	
 
@@ -506,26 +475,119 @@ for (i in seq_along(inner_navInOrder_df_list)) {
 # make one big dataframe with all inner nav in order x z values
 inner_navInOrder_all_dfs <- do.call(rbind, inner_navInOrder_df_list)
 
-x <- inner_navInOrder_df_list[[1]]$pos_X
-z <- inner_navInOrder_df_list[[1]]$pos_Z
-plot(x,z)
-
-x <- inner_navInOrder_df_list[[2]]$pos_X
-z <- inner_navInOrder_df_list[[2]]$pos_Z
-plot(x,z)
-
-x <- inner_navInOrder_df_list[[3]]$pos_X
-z <- inner_navInOrder_df_list[[3]]$pos_Z
-plot(x,z)
-
-x <- inner_navInOrder_df_list[[4]]$pos_X
-z <- inner_navInOrder_df_list[[4]]$pos_Z
-plot(x,z)
-
 # participant's whole path
 x <- inner_navInOrder_all_dfs$pos_X
 z <- inner_navInOrder_all_dfs$pos_Z
 plot(x,z)
+
+##################### Getting the closest points to separate the whole active path into four segments #####################
+
+########### OUTER PATH ###########
+
+# Define the points to search for (these are the store coordinates)
+search_points <- data.frame(x = c(207.3, 145.79, -130.43, -249.37), y = c(99.9, -231.68, -112.92, 279.16))
+
+# Find the closest point to each search point
+outer_closest_points <- lapply(1:nrow(search_points), function(i) {
+  
+  # Calculate distances to all points in data frame
+  distances <- sqrt((outer_active_df_list[[length(outer_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (outer_active_df_list[[length(outer_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
+  
+  # Get index of minimum distance
+  min_index <- which.min(distances)
+  
+  # Return x-y values and index of closest point
+  return(data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X[min_index], 
+                    y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z[min_index], 
+                    index = min_index,
+                    time = outer_active_df_list[[length(outer_active_df_list)]]$time_sec[min_index]))
+})
+
+# Combine the closest points into a single data frame
+outer_closest_points_df <- do.call(rbind, outer_closest_points)
+
+# Print the closest points
+print(outer_closest_points_df)
+
+### Make a list of dataframes to segment one path into four paths
+
+# Initialize the dataframe
+outer_active_seg_list <- list()
+
+# Store 1 to store 2
+outer_active_seg_list[[1]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec <= outer_closest_points_df$time[1])
+# Store 2 to store 3
+outer_active_seg_list[[2]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[1] & time_sec <= outer_closest_points_df$time[2])
+# Store 3 to store 4
+outer_active_seg_list[[3]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[2] & time_sec <= outer_closest_points_df$time[3])
+# Store 4 to store 1
+outer_active_seg_list[[4]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[3])
+
+# Make an empty dataframe to put the path segment distance values into
+outer_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
+
+# Fill dataframe with actual path distance values for each segment
+for (i in seq_along(outer_active_seg_list)) {
+  actual_seg_dist <- totDist(outer_active_seg_list[[i]]$pos_X, outer_active_seg_list[[i]]$pos_Z)
+  
+  # put info in dataframe
+  outer_actual_seg_dist <- rbind(outer_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
+  
+  }
+
+########### INNER PATH ###########
+
+# Find the closest point to each search point
+inner_closest_points <- lapply(1:nrow(search_points), function(i) {
+  
+  # Calculate distances to all points in data frame
+  distances <- sqrt((inner_active_df_list[[length(inner_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (inner_active_df_list[[length(inner_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
+  
+  # Get index of minimum distance
+  min_index <- which.min(distances)
+  
+  # Return x-y values and index of closest point
+  return(data.frame(x = inner_active_df_list[[length(inner_active_df_list)]]$pos_X[min_index], 
+                    y = inner_active_df_list[[length(inner_active_df_list)]]$pos_Z[min_index], 
+                    index = min_index,
+                    time = inner_active_df_list[[length(inner_active_df_list)]]$time_sec[min_index]))
+})
+
+# Combine the closest points into a single data frame
+inner_closest_points_df <- do.call(rbind, inner_closest_points)
+
+# Print the closest points
+print(inner_closest_points_df)
+
+
+# Store 1 to store 2
+inner_active_seg_list[[1]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec <= inner_closest_points_df$time[1])
+# Store 2 to store 3
+inner_active_seg_list[[2]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[1] & time_sec <= inner_closest_points_df$time[2])
+# Store 3 to store 4
+inner_active_seg_list[[3]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[2] & time_sec <= inner_closest_points_df$time[3])
+# Store 4 to store 1
+inner_active_seg_list[[4]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[3])
+
+# Make an empty dataframe to put the path segment distance values into
+inner_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
+
+# Fill dataframe with actual path distance values for each segment
+for (i in seq_along(inner_active_seg_list)) {
+  actual_seg_dist <- totDist(inner_active_seg_list[[i]]$pos_X, inner_active_seg_list[[i]]$pos_Z)
+  
+  # put info in dataframe
+  inner_actual_seg_dist <- rbind(inner_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
+  
+}
 
 
 ##################################### RETRIEVE: NAVIGATION TASK #####################################
@@ -595,68 +657,15 @@ for (i in seq_along(navTest_trials_df_list)) {
   
 }
 
-####################### Make another dataframe with path length and duration values #######################
 
-# function to calculate total distance of the path - aka totDist
-totDist <- function(x,y) {
-  sum(sqrt(diff(x)^2 + diff(y)^2))
-}
+
+
+
+
+####################### Make another dataframe with total path length, excess path length, and duration values #######################
 
 # Make an empty dataframe to put the path distance values into
-path_dist_df <- data.frame(trialname = character(), path_distance = numeric(), path_duration = numeric(), stringsAsFactors = FALSE)
-
-# Calculate distance of learned path
-inner_learned_dist <- 
-
-
-########## INNER PASSIVE ##########
-for (i in 1:length(inner_passive_df_list)) {
-  
-  # calculate the total path distance
-  path_dist <- totDist(inner_passive_df_list[[i]]$pos_X, inner_passive_df_list[[i]]$pos_Z)
-  
-  # grab the last value of the time in seconds for path duration
-  path_dur <- max(inner_passive_df_list[[i]]$time_sec)
-  
-  # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_passive_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
-  
-}
-
-########## INNER ACTIVE ##########
-for (i in 1:length(inner_active_df_list)) {
-  
-  # calculate the total path distance
-  path_dist <- totDist(inner_active_df_list[[i]]$pos_X, inner_active_df_list[[i]]$pos_Z)
-  
-  # grab the last value of the time in seconds for path duration
-  path_dur <- max(inner_active_df_list[[i]]$time_sec)
-  
-  # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_active_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
-  
-}
-
-########## INNER NAV IN ORDER WHOLE PATH ##########
-path_dist <- totDist(inner_navInOrder_all_dfs$pos_X, inner_navInOrder_all_dfs$pos_Z)
-path_dur <- sum(max(inner_navInOrder_df_list[[1]]$time_sec), max(inner_navInOrder_df_list[[2]]$time_sec),
-                max(inner_navInOrder_df_list[[3]]$time_sec), max(inner_navInOrder_df_list[[4]]$time_sec))
-
-path_dist_df <- rbind(path_dist_df, data.frame(trialname = "inner_navInOrder_all", path_distance = path_dist, path_duration = path_dur))
-
-########## INNER NAV IN ORDER SEGMENTS ##########
-for (i in 1:length(inner_navInOrder_df_list)) {
-  
-  # calculate the total path distance
-  path_dist <- totDist(inner_navInOrder_df_list[[i]]$pos_X, inner_navInOrder_df_list[[i]]$pos_Z)
-  
-  # grab the last value of the time in seconds for path duration
-  path_dur <- max(inner_navInOrder_df_list[[i]]$time_sec)
-  
-  # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_navInOrder_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
-  
-}
+path_dist_df <- data.frame(trialname = character(), total_path_distance = numeric(), excess_path_distance = numeric(), path_duration = numeric(), stringsAsFactors = FALSE)
 
 ########## OUTER PASSIVE ##########
 for (i in 1:length(outer_passive_df_list)) {
@@ -664,11 +673,13 @@ for (i in 1:length(outer_passive_df_list)) {
   # calculate the total path distance
   path_dist <- totDist(outer_passive_df_list[[i]]$pos_X, outer_passive_df_list[[i]]$pos_Z)
   
+  # no excess path distance to calculate here
+  
   # grab the last value of the time in seconds for path duration
   path_dur <- max(outer_passive_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_passive_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_passive_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "N/A", path_duration = path_dur))
   
 }
 
@@ -678,21 +689,24 @@ for (i in 1:length(outer_active_df_list)) {
   # calculate the total path distance
   path_dist <- totDist(outer_active_df_list[[i]]$pos_X, outer_active_df_list[[i]]$pos_Z)
   
+  # calculate excess path distance
+  excess_path = path_dist - outer_actual_dist
+  
   # grab the last value of the time in seconds for path duration
   path_dur <- max(outer_active_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_active_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_active_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
   
 }
 
 ########## OUTER NAV IN ORDER WHOLE PATH ##########
 path_dist <- totDist(outer_navInOrder_all_dfs$pos_X, outer_navInOrder_all_dfs$pos_Z)
+excess_path <- path_dist - outer_actual_dist
 path_dur <- sum(max(outer_navInOrder_df_list[[1]]$time_sec), max(outer_navInOrder_df_list[[2]]$time_sec),
                 max(outer_navInOrder_df_list[[3]]$time_sec), max(outer_navInOrder_df_list[[4]]$time_sec))
 
-path_dist_df <- rbind(path_dist_df, data.frame(trialname = "outer_navInOrder_all", path_distance = path_dist, path_duration = path_dur))
-
+path_dist_df <- rbind(path_dist_df, data.frame(trialname = "outer_navInOrder_all", total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
 
 ########## OUTER NAV IN ORDER SEGMENTS ##########
 for (i in 1:length(outer_navInOrder_df_list)) {
@@ -700,13 +714,76 @@ for (i in 1:length(outer_navInOrder_df_list)) {
   # calculate the total path distance
   path_dist <- totDist(outer_navInOrder_df_list[[i]]$pos_X, outer_navInOrder_df_list[[i]]$pos_Z)
   
+  # calculate excess path distances
+  excess_path = path_dist - outer_actual_seg_dist[i, 1]
+  
   # grab the last value of the time in seconds for path duration
   path_dur <- max(outer_navInOrder_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_navInOrder_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_navInOrder_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
   
 }
+
+########## INNER PASSIVE ##########
+for (i in 1:length(inner_passive_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(inner_passive_df_list[[i]]$pos_X, inner_passive_df_list[[i]]$pos_Z)
+  
+  # no excess path distance to calculate here
+
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(inner_passive_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_passive_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "N/A", path_duration = path_dur))
+  
+}
+
+########## INNER ACTIVE ##########
+for (i in 1:length(inner_active_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(inner_active_df_list[[i]]$pos_X, inner_active_df_list[[i]]$pos_Z)
+  
+  # calculate excess path distance
+  excess_path = path_dist - inner_actual_dist
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(inner_active_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_active_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
+  
+}
+
+########## INNER NAV IN ORDER WHOLE PATH ##########
+path_dist <- totDist(inner_navInOrder_all_dfs$pos_X, inner_navInOrder_all_dfs$pos_Z)
+excess_path <- path_dist - inner_actual_dist
+path_dur <- sum(max(inner_navInOrder_df_list[[1]]$time_sec), max(inner_navInOrder_df_list[[2]]$time_sec),
+                max(inner_navInOrder_df_list[[3]]$time_sec), max(inner_navInOrder_df_list[[4]]$time_sec))
+
+path_dist_df <- rbind(path_dist_df, data.frame(trialname = "inner_navInOrder_all", total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
+
+########## INNER NAV IN ORDER SEGMENTS ##########
+for (i in 1:length(inner_navInOrder_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(inner_navInOrder_df_list[[i]]$pos_X, inner_navInOrder_df_list[[i]]$pos_Z)
+  
+  # calculate excess path distances
+  excess_path = path_dist - inner_actual_seg_dist[i, 1]
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(inner_navInOrder_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_navInOrder_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
+  
+}
+
+
 
 ########## NAV TEST ##########
 for (i in 1:length(navTest_trials_df_list)) {
@@ -718,36 +795,11 @@ for (i in 1:length(navTest_trials_df_list)) {
   path_dur <- max(navTest_trials_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = navTest_trials_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = navTest_trials_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, path_duration = path_dur))
   
 }
 
 
-##################### getting the closest points to separate the whole active path into four segments
-
-# Define the points to search for
-search_points <- data.frame(x = c(207.3, 145.79, -130.43, -249.37), y = c(99.9, -231.68, -112.92, 279.16))
-
-# Find the closest point to each search point
-closest_points <- lapply(1:nrow(search_points), function(i) {
-  # Calculate distances to all points in data frame
-  distances <- sqrt((outer_active_df_list[[4]]$pos_X - search_points[i, "x"])^2 + (outer_active_df_list[[4]]$pos_Z - search_points[i, "y"])^2)
-  
-  # Get index of minimum distance
-  min_index <- which.min(distances)
-  
-  # Return x-y values and index of closest point
-  return(data.frame(x = outer_active_df_list[[4]]$pos_X[min_index], 
-                    y = outer_active_df_list[[4]]$pos_Z[min_index], 
-                    index = min_index,
-                    time = outer_active_df_list[[4]]$time_ms[min_index]))
-})
-
-# Combine the closest points into a single data frame
-closest_points_df <- do.call(rbind, closest_points)
-
-# Print the closest points
-print(closest_points_df)
 
 
 ###############################################################################
@@ -755,16 +807,6 @@ print(closest_points_df)
 ######################## Experimental ChatGPT Stuff ###########################
 
 
-
-
-# Create a new column in the data frame for the closest time value
-outer_active_df_list[[4]]$closest_time <- closest_time$closest_time
-
-# Split the data frame into four subsets based on the closest time values
-df_list <- split(outer_active_df_list[[4]], outer_active_df_list[[4]]$closest_time)
-
-# Print the first few rows of each subset
-lapply(df_list, head)
 
 
 
