@@ -10,6 +10,11 @@ library(dplyr)
 # Store 3 - (X,Z): 145.79, -231.68
 # Store 4 - (X,Z): -130.43, -112.92
 
+#points(-249.37, 279.16)
+#points(207.3, 99.9)
+#points(145.79, -231.68)
+#points(-130.43, -112.92)
+
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
   setwd("E:/Nav Stress Pilot Data")
@@ -21,23 +26,31 @@ input_file <- "navStress_P001_city1_navigation_23-03-24D_10.18.47T.log"
 input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
-##################################### LEARN SMOOTH PASSIVE PATH #####################################
+
+
+##################################### EXTRACT OUTER PATH: PASSIVE AND ACTIVE LEARNING #####################################
+
+############# Extract all lines between TASK_START TASK_EncodeOuterPaths and TASK_END TASK_EncodeOuterPaths
+
+matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_EncodeOuterPaths\\s+(.*?)\\s+TASK_END\\s+TASK_EncodeOuterPaths") # finds the data between the start and end point
+outer_df <- data.frame(matches, stringsAsFactors = FALSE) # make one big dataframe for outer path
+colnames(outer_df)[1] <- "learn_outer_paths"
 
 ############# Extract all lines between TASK_START LearnSmoothPassive SmoothPassivePathStart and TASK_END LearnSmoothPassive SmoothPassivePathStart
 
-matches <- str_extract_all(text, "(?s)TASK_START\\s+LearnSmoothPassive\\s+SmoothPassivePathStart.*?TASK_END\\s+LearnSmoothPassive\\s+SmoothPassivePathStart")
-learn_passive_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(learn_passive_df)[1] <- "learn_passive_task"
+matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+LearnSmoothPassive\\s+SmoothPassivePathStart.*?TASK_END\\s+LearnSmoothPassive\\s+SmoothPassivePathStart")
+outer_passive_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(outer_passive_df)[1] <- "outer_passive_task"
 
-learn_passive_df_list <- lapply(seq_len(nrow(learn_passive_df)), function(i) data.frame(value = learn_passive_df[i, ]))
+outer_passive_df_list <- lapply(seq_len(nrow(outer_passive_df)), function(i) data.frame(value = outer_passive_df[i, ]))
 
 
 # Loop through each of the dataframes in the list to do the stuff below
 
-for (i in seq_along(learn_passive_df_list)) {
+for (i in seq_along(outer_passive_df_list)) {
   
   # Get the dataframe from the list
-  data_df <- learn_passive_df_list[[i]]
+  data_df <- outer_passive_df_list[[i]]
   
   # Convert the data to a tibble
   data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
@@ -75,44 +88,45 @@ for (i in seq_along(learn_passive_df_list)) {
     mutate(time_ms = avatar_number - avatar_initial_number,
            time_sec = time_ms/1000)
   
+  # Add a column to mark the condition and trial name and number (e.g. outer_passive1)
+  data_df$trialname <- paste0("outer_passive", i)
+  
   # Update the dataframe in the list
-  learn_passive_df_list[[i]] <- data_df
+  outer_passive_df_list[[i]] <- data_df
   
 }
 
-x1 <- learn_passive_df_list[[1]]$pos_X
-z1 <- learn_passive_df_list[[1]]$pos_Z
-plot(x1,z1)
-points(-249.37, 279.16)
-points(207.3, 99.9)
-points(145.79, -231.68)
-points(-130.43, -112.92)
+x <- outer_passive_df_list[[1]]$pos_X
+z <- outer_passive_df_list[[1]]$pos_Z
+plot(x,z)
 
+x <- outer_passive_df_list[[2]]$pos_X
+z <- outer_passive_df_list[[2]]$pos_Z
+plot(x,z)
 
+x <- outer_passive_df_list[[3]]$pos_X
+z <- outer_passive_df_list[[3]]$pos_Z
+plot(x,z)
 
-
-x2 <- learn_passive_df_list[[2]]$pos_X
-z2 <- learn_passive_df_list[[2]]$pos_Z
-plot(x2,z2)
-
-
-##################################### LEARN ACTIVE PATH #####################################
+x <- outer_passive_df_list[[4]]$pos_X
+z <- outer_passive_df_list[[4]]$pos_Z
+plot(x,z)
 
 ############# Extract all lines between TASK_START LearnActivePath ActivePathStart and TASK_END LearnActivePath ActivePathStart
 
-matches <- str_extract_all(text, "(?s)TASK_START\\s+LearnActivePath\\s+ActivePathStart.*?TASK_END\\s+LearnActivePath\\s+ActivePathStart")
-learn_active_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(learn_active_df)[1] <- "learn_active_task"
+matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+LearnActivePath\\s+ActivePathStart.*?TASK_END\\s+LearnActivePath\\s+ActivePathStart")
+outer_active_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(outer_active_df)[1] <- "outer_active_task"
 
-learn_active_df_list <- lapply(seq_len(nrow(learn_active_df)), function(i) data.frame(value = learn_active_df[i, ]))
+outer_active_df_list <- lapply(seq_len(nrow(outer_active_df)), function(i) data.frame(value = outer_active_df[i, ]))
 
 
 # Loop through each of the dataframes in the list to do the stuff below
 
-for (i in seq_along(learn_active_df_list)) {
+for (i in seq_along(outer_active_df_list)) {
   
   # Get the dataframe from the list
-  data_df <- learn_active_df_list[[i]]
+  data_df <- outer_active_df_list[[i]]
   
   # Convert the data to a tibble
   data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
@@ -150,134 +164,324 @@ for (i in seq_along(learn_active_df_list)) {
     mutate(time_ms = avatar_number - avatar_initial_number,
            time_sec = time_ms/1000)
   
+  # Add a column to mark the condition and trial name and number (e.g. outer_passive1)
+  data_df$trialname <- paste0("outer_active", i)
+  
   # Update the dataframe in the list
-  learn_active_df_list[[i]] <- data_df
+  outer_active_df_list[[i]] <- data_df
   
 }
 
-first_x1 <- learn_active_df_list[[1]]$pos_X
-first_z1 <- learn_active_df_list[[1]]$pos_Z
-plot(first_x1,first_z1)
+x <- outer_active_df_list[[1]]$pos_X
+z <- outer_active_df_list[[1]]$pos_Z
+plot(x,z)
 
-second_x2 <- learn_active_df_list[[2]]$pos_X
-second_z2 <- learn_active_df_list[[2]]$pos_Z
-plot(second_x2,second_z2)
+x <- outer_active_df_list[[2]]$pos_X
+z <- outer_active_df_list[[2]]$pos_Z
+plot(x,z)
 
+x <- outer_active_df_list[[3]]$pos_X
+z <- outer_active_df_list[[3]]$pos_Z
+plot(x,z)
 
+x <- outer_active_df_list[[4]]$pos_X
+z <- outer_active_df_list[[4]]$pos_Z
+plot(x,z)
 
+############# Extract all lines between TASK_START Navigate	NavigationTask and TASK_END Navigate NavigationTask	
 
-##################################### LEARN: NAVIGATE IN ORDER #####################################
+matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
+outer_navInOrder_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(outer_navInOrder_df)[1] <- "outer_navInOrder_task"
 
-############# Extract all lines between TASK_START TASK_NavigateInOrder and TASK_END TASK_NavigateInOrder
+outer_navInOrder_df_list <- lapply(seq_len(nrow(outer_navInOrder_df)), function(i) data.frame(value = outer_navInOrder_df[i, ]))
 
-matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_NavigateInOrder\\s+(.*?)\\s+TASK_END\\s+TASK_NavigateInOrder") # finds the data between the start and end point
-navInOrder_df <- data.frame(matches, stringsAsFactors = FALSE) # creates a dataframe with a row being each chunck of data 
-colnames(navInOrder_df)[1] <- "navInOrder_task" # renames the first column
+# Loop through each of the dataframes in the list to do the stuff below
 
-navInOrder_df_list <- lapply(seq_len(nrow(navInOrder_df)), function(i) data.frame(value = navInOrder_df[i, ])) # makes each row its own dataframe in a list of dataframes
-
-
-# Extract all lines between TASK_START	Navigate	NavigationTask and TASK_END	Navigate	NavigationTask
-
-for (j in seq_along(navInOrder_df_list)) {
-  text <- navInOrder_df_list[[j]]
-  matches <- str_extract_all(text, "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
-  navInOrder_df_list[[j]] <- data.frame(matches, stringsAsFactors = FALSE)
-  # make a list of dataframes in the list of dataframes
-  navInOrder_df_list[[j]] <- lapply(seq_len(nrow(navInOrder_df_list[[j]])), function(i) data.frame(value = navInOrder_df_list[[j]][i, ]))
-}
-
-# Loop through each of the two loops to do the things below for each loop inside the loop
-
-for (i in seq_along(navInOrder_df_list)) {
+for (i in seq_along(outer_navInOrder_df_list)) {
   
-  for (j in seq_along(navInOrder_df_list[[i]])) {
-    
-    # Get the dataframe from the list
-    data_df <- navInOrder_df_list[[i]][[j]]
-    
-    # Convert the data to a tibble
-    data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
-    
-    # Use regular expressions to extract the number before "Avatar:"
-    data_df <- data_df %>%
-      mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
-    
-    # Use regular expressions to extract the three numbers after "Position (xyz):"
-    data_df <- data_df %>%
-      mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-    
-    # Split the numbers column into three separate columns
-    data_df <- data_df %>%
-      separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
-    
-    # Use regular expressions to extract the three numbers after "Rotation (xyz):"
-    data_df <- data_df %>%
-      mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-    
-    # Split the numbers column into three separate columns
-    data_df <- data_df %>%
-      separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
-    
-    # Convert the columns to numeric
-    data_df <- data_df %>%
-      mutate(across(2:8, as.numeric))
-    
-    # Remove the rows with NAs
-    data_df <- na.omit(data_df)
-    
-    # Make column for time stamp by making avatar number start from 0
-    avatar_initial_number <- data_df$avatar_number[1]
-    data_df <- data_df %>%
-      mutate(time_ms = avatar_number - avatar_initial_number,
-             time_sec = time_ms/1000)
-    
-    # Update the dataframe in the list
-    navInOrder_df_list[[i]][[j]] <- data_df
-    
-  }
+  # Get the dataframe from the list
+  data_df <- outer_navInOrder_df_list[[i]]
+  
+  # Convert the data to a tibble
+  data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
+  
+  # Use regular expressions to extract the number before "Avatar:"
+  data_df <- data_df %>%
+    mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
+  
+  # Use regular expressions to extract the three numbers after "Position (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
+  
+  # Use regular expressions to extract the three numbers after "Rotation (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
+  
+  # Convert the columns to numeric
+  data_df <- data_df %>%
+    mutate(across(2:8, as.numeric))
+  
+  # Remove the rows with NAs
+  data_df <- na.omit(data_df)
+  
+  # Make column for time stamp by making avatar number start from 0
+  avatar_initial_number <- data_df$avatar_number[1]
+  data_df <- data_df %>%
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
+  
+  # Add a column to mark the condition and trial name and number (e.g. outer_passive1)
+  data_df$trialname <- paste0("outer_navInOrder", i)
+  
+  # Update the dataframe in the list
+  outer_navInOrder_df_list[[i]] <- data_df
+  
 }
 
-# how well Ss learned the outer path
-x1 <- navInOrder_df_list[[1]][[1]]$pos_X
-z1 <- navInOrder_df_list[[1]][[1]]$pos_Z
-plot(x1,z1)
+x <- outer_navInOrder_df_list[[1]]$pos_X
+z <- outer_navInOrder_df_list[[1]]$pos_Z
+plot(x,z)
 
-x2 <- navInOrder_df_list[[1]][[2]]$pos_X
-z2 <- navInOrder_df_list[[1]][[2]]$pos_Z
-plot(x2,z2)
+x <- outer_navInOrder_df_list[[2]]$pos_X
+z <- outer_navInOrder_df_list[[2]]$pos_Z
+plot(x,z)
 
-x3 <- navInOrder_df_list[[1]][[3]]$pos_X
-z3 <- navInOrder_df_list[[1]][[3]]$pos_Z
-plot(x3,z3)
+x <- outer_navInOrder_df_list[[3]]$pos_X
+z <- outer_navInOrder_df_list[[3]]$pos_Z
+plot(x,z)
 
-x4 <- navInOrder_df_list[[1]][[4]]$pos_X
-z4 <- navInOrder_df_list[[1]][[4]]$pos_Z
-plot(x4,z4)
-
-combo_navInOrder_1 <- do.call(rbind, navInOrder_df_list[[1]])
-
-combo_x <- combo_navInOrder_1$pos_X
-combo_z <- combo_navInOrder_1$pos_Z
-plot(combo_x, combo_z)
+x <- outer_navInOrder_df_list[[4]]$pos_X
+z <- outer_navInOrder_df_list[[4]]$pos_Z
+plot(x,z)
 
 
-# how well the Ss learned the inner path
-x1 <- navInOrder_df_list[[2]][[1]]$pos_X
-z1 <- navInOrder_df_list[[2]][[1]]$pos_Z
-plot(x1,z1)
+##################################### EXTRACT INNER PATH: PASSIVE AND ACTIVE LEARNING #####################################
 
-x2 <- navInOrder_df_list[[2]][[2]]$pos_X
-z2 <- navInOrder_df_list[[2]][[2]]$pos_Z
-plot(x2,z2)
+############# Extract all lines between TASK_START TASK_EncodeInnerPaths and TASK_END TASK_EncodeInnerPaths
 
-x3 <- navInOrder_df_list[[2]][[3]]$pos_X
-z3 <- navInOrder_df_list[[2]][[3]]$pos_Z
-plot(x3,z3)
+matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_EncodeInnerPaths\\s+(.*?)\\s+TASK_END\\s+TASK_EncodeInnerPaths") # finds the data between the start and end point
+inner_df <- data.frame(matches, stringsAsFactors = FALSE) # make one big dataframe for the inner path
+colnames(inner_df)[1] <- "learn_inner_paths"
 
-x4 <- navInOrder_df_list[[2]][[4]]$pos_X
-z4 <- navInOrder_df_list[[2]][[4]]$pos_Z
-plot(x4,z4)
+############# Extract all lines between TASK_START LearnSmoothPassive SmoothPassivePathStart and TASK_END LearnSmoothPassive SmoothPassivePathStart
+
+matches <- str_extract_all(inner_df[1], "(?s)TASK_START\\s+LearnSmoothPassive\\s+SmoothPassivePathStart.*?TASK_END\\s+LearnSmoothPassive\\s+SmoothPassivePathStart")
+inner_passive_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(inner_passive_df)[1] <- "inner_passive_task"
+
+inner_passive_df_list <- lapply(seq_len(nrow(inner_passive_df)), function(i) data.frame(value = inner_passive_df[i, ]))
+
+
+# Loop through each of the dataframes in the list to do the stuff below
+
+for (i in seq_along(inner_passive_df_list)) {
+  
+  # Get the dataframe from the list
+  data_df <- inner_passive_df_list[[i]]
+  
+  # Convert the data to a tibble
+  data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
+  
+  # Use regular expressions to extract the number before "Avatar:"
+  data_df <- data_df %>%
+    mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
+  
+  # Use regular expressions to extract the three numbers after "Position (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
+  
+  # Use regular expressions to extract the three numbers after "Rotation (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
+  
+  # Convert the columns to numeric
+  data_df <- data_df %>%
+    mutate(across(2:8, as.numeric))
+  
+  # Remove the rows with NAs
+  data_df <- na.omit(data_df)
+  
+  # Make column for time stamp by making avatar number start from 0
+  avatar_initial_number <- data_df$avatar_number[1]
+  data_df <- data_df %>%
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
+  
+  # Add a column to mark the condition and trial name and number (e.g. inner_passive1)
+  data_df$trialname <- paste0("inner_passive", i)
+  
+  # Update the dataframe in the list
+  inner_passive_df_list[[i]] <- data_df
+  
+}
+
+x <- inner_passive_df_list[[1]]$pos_X
+z <- inner_passive_df_list[[1]]$pos_Z
+plot(x,z)
+
+x <- inner_passive_df_list[[2]]$pos_X
+z <- inner_passive_df_list[[2]]$pos_Z
+plot(x,z)
+
+############# Extract all lines between TASK_START LearnActivePath ActivePathStart and TASK_END LearnActivePath ActivePathStart
+
+matches <- str_extract_all(inner_df[1], "(?s)TASK_START\\s+LearnActivePath\\s+ActivePathStart.*?TASK_END\\s+LearnActivePath\\s+ActivePathStart")
+inner_active_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(inner_active_df)[1] <- "inner_active_task"
+
+inner_active_df_list <- lapply(seq_len(nrow(inner_active_df)), function(i) data.frame(value = inner_active_df[i, ]))
+
+# Loop through each of the dataframes in the list to do the stuff below
+
+for (i in seq_along(inner_active_df_list)) {
+  
+  # Get the dataframe from the list
+  data_df <- inner_active_df_list[[i]]
+  
+  # Convert the data to a tibble
+  data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
+  
+  # Use regular expressions to extract the number before "Avatar:"
+  data_df <- data_df %>%
+    mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
+  
+  # Use regular expressions to extract the three numbers after "Position (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
+  
+  # Use regular expressions to extract the three numbers after "Rotation (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
+  
+  # Convert the columns to numeric
+  data_df <- data_df %>%
+    mutate(across(2:8, as.numeric))
+  
+  # Remove the rows with NAs
+  data_df <- na.omit(data_df)
+  
+  # Make column for time stamp by making avatar number start from 0
+  avatar_initial_number <- data_df$avatar_number[1]
+  data_df <- data_df %>%
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
+  
+  # Add a column to mark the condition and trial name and number (e.g. inner_passive1)
+  data_df$trialname <- paste0("inner_active", i)
+  
+  # Update the dataframe in the list
+  inner_active_df_list[[i]] <- data_df
+  
+}
+
+
+x <- inner_passive_df_list[[1]]$pos_X
+z <- inner_passive_df_list[[1]]$pos_Z
+plot(x,z)
+
+x <- inner_passive_df_list[[2]]$pos_X
+z <- inner_passive_df_list[[2]]$pos_Z
+plot(x,z)
+
+############# Extract all lines between TASK_START Navigate	NavigationTask and TASK_END Navigate NavigationTask	
+
+matches <- str_extract_all(inner_df[1], "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
+inner_navInOrder_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(inner_navInOrder_df)[1] <- "inner_navInOrder_task"
+
+inner_navInOrder_df_list <- lapply(seq_len(nrow(inner_navInOrder_df)), function(i) data.frame(value = inner_navInOrder_df[i, ]))
+
+# Loop through each of the dataframes in the list to do the stuff below
+
+for (i in seq_along(inner_navInOrder_df_list)) {
+  
+  # Get the dataframe from the list
+  data_df <- inner_navInOrder_df_list[[i]]
+  
+  # Convert the data to a tibble
+  data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
+  
+  # Use regular expressions to extract the number before "Avatar:"
+  data_df <- data_df %>%
+    mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
+  
+  # Use regular expressions to extract the three numbers after "Position (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
+  
+  # Use regular expressions to extract the three numbers after "Rotation (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
+  
+  # Convert the columns to numeric
+  data_df <- data_df %>%
+    mutate(across(2:8, as.numeric))
+  
+  # Remove the rows with NAs
+  data_df <- na.omit(data_df)
+  
+  # Make column for time stamp by making avatar number start from 0
+  avatar_initial_number <- data_df$avatar_number[1]
+  data_df <- data_df %>%
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
+  
+  # Add a column to mark the condition and trial name and number (e.g. inner_passive1)
+  data_df$trialname <- paste0("inner_navInOrder", i)
+  
+  # Update the dataframe in the list
+  inner_navInOrder_df_list[[i]] <- data_df
+  
+}
+
+x <- inner_navInOrder_df_list[[1]]$pos_X
+z <- inner_navInOrder_df_list[[1]]$pos_Z
+plot(x,z)
+
+x <- inner_navInOrder_df_list[[2]]$pos_X
+z <- inner_navInOrder_df_list[[2]]$pos_Z
+plot(x,z)
+
+x <- inner_navInOrder_df_list[[3]]$pos_X
+z <- inner_navInOrder_df_list[[3]]$pos_Z
+plot(x,z)
+
+x <- inner_navInOrder_df_list[[4]]$pos_X
+z <- inner_navInOrder_df_list[[4]]$pos_Z
+plot(x,z)
 
 
 ##################################### RETRIEVE: NAVIGATION TASK #####################################
@@ -285,111 +489,177 @@ plot(x4,z4)
 ############# Extract all lines between TASK_START TASK_NavigationTest and TASK_END TASK_NavigationTest
 
 matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_NavigationTest\\s+(.*?)\\s+TASK_END\\s+TASK_NavigationTest") # finds the data between the start and end point
-navTest_df <- data.frame(matches, stringsAsFactors = FALSE) # creates a dataframe with a row being each chunck of data 
+navTest_df <- data.frame(matches, stringsAsFactors = FALSE) # creates a dataframe with a row being each chunk of data 
 colnames(navTest_df)[1] <- "navInOrder_task" # renames the first column
 
-navInOrder_df_list <- lapply(seq_len(nrow(navInOrder_df)), function(i) data.frame(value = navInOrder_df[i, ])) # makes each row its own dataframe in a list of dataframes
+############# Extract all lines between TASK_START	Navigate	NavigationTask and TASK_END	Navigate	NavigationTask
 
+matches <- str_extract_all(navTest_df[1], "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
+navTest_trials_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(navTest_trials_df)[1] <- "navTest_trials_task"
 
-# Extract all lines between TASK_START	Navigate	NavigationTask and TASK_END	Navigate	NavigationTask
+navTest_trials_df_list <- lapply(seq_len(nrow(navTest_trials_df)), function(i) data.frame(value = navTest_trials_df[i, ]))
 
-for (j in seq_along(navInOrder_df_list)) {
-  text <- navInOrder_df_list[[j]]
-  matches <- str_extract_all(text, "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
-  navInOrder_df_list[[j]] <- data.frame(matches, stringsAsFactors = FALSE)
-  # make a list of dataframes in the list of dataframes
-  navInOrder_df_list[[j]] <- lapply(seq_len(nrow(navInOrder_df_list[[j]])), function(i) data.frame(value = navInOrder_df_list[[j]][i, ]))
-}
+# Loop through each of the dataframes in the list to do the stuff below
 
-# Loop through each of the two loops to do the things below for each loop inside the loop
-
-for (i in seq_along(navInOrder_df_list)) {
+for (i in seq_along(navTest_trials_df_list)) {
   
-  for (j in seq_along(navInOrder_df_list[[i]])) {
-    
-    # Get the dataframe from the list
-    data_df <- navInOrder_df_list[[i]][[j]]
-    
-    # Convert the data to a tibble
-    data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
-    
-    # Use regular expressions to extract the number before "Avatar:"
-    data_df <- data_df %>%
-      mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
-    
-    # Use regular expressions to extract the three numbers after "Position (xyz):"
-    data_df <- data_df %>%
-      mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-    
-    # Split the numbers column into three separate columns
-    data_df <- data_df %>%
-      separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
-    
-    # Use regular expressions to extract the three numbers after "Rotation (xyz):"
-    data_df <- data_df %>%
-      mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-    
-    # Split the numbers column into three separate columns
-    data_df <- data_df %>%
-      separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
-    
-    # Convert the columns to numeric
-    data_df <- data_df %>%
-      mutate(across(2:8, as.numeric))
-    
-    # Remove the rows with NAs
-    data_df <- na.omit(data_df)
-    
-    # Make column for time stamp by making avatar number start from 0
-    avatar_initial_number <- data_df$avatar_number[1]
-    data_df <- data_df %>%
-      mutate(time_ms = avatar_number - avatar_initial_number,
-             time_sec = time_ms/1000)
-    
-    # Update the dataframe in the list
-    navInOrder_df_list[[i]][[j]] <- data_df
-    
-  }
+  # Get the dataframe from the list
+  data_df <- navTest_trials_df_list[[i]]
+  
+  # Convert the data to a tibble
+  data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
+  
+  # Use regular expressions to extract the number before "Avatar:"
+  data_df <- data_df %>%
+    mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
+  
+  # Use regular expressions to extract the three numbers after "Position (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
+  
+  # Use regular expressions to extract the three numbers after "Rotation (xyz):"
+  data_df <- data_df %>%
+    mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
+  
+  # Split the numbers column into three separate columns
+  data_df <- data_df %>%
+    separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
+  
+  # Convert the columns to numeric
+  data_df <- data_df %>%
+    mutate(across(2:8, as.numeric))
+  
+  # Remove the rows with NAs
+  data_df <- na.omit(data_df)
+  
+  # Make column for time stamp by making avatar number start from 0
+  avatar_initial_number <- data_df$avatar_number[1]
+  data_df <- data_df %>%
+    mutate(time_ms = avatar_number - avatar_initial_number,
+           time_sec = time_ms/1000)
+  
+  # Add a column to mark the condition and trial name and number (e.g. outer_passive1)
+  data_df$trialname <- paste0("navTest_trials", i)
+  
+  # Update the dataframe in the list
+  navTest_trials_df_list[[i]] <- data_df
+  
 }
 
-# how well Ss learned the outer path
-x1 <- navInOrder_df_list[[1]][[1]]$pos_X
-z1 <- navInOrder_df_list[[1]][[1]]$pos_Z
-plot(x1,z1)
+####################### Make another dataframe with path length and duration values #######################
 
-x2 <- navInOrder_df_list[[1]][[2]]$pos_X
-z2 <- navInOrder_df_list[[1]][[2]]$pos_Z
-plot(x2,z2)
+# function to calculate total distance of the path - aka totDist
 
-x3 <- navInOrder_df_list[[1]][[3]]$pos_X
-z3 <- navInOrder_df_list[[1]][[3]]$pos_Z
-plot(x3,z3)
+totDist <- function(x,y) {
+  sum(sqrt(diff(x)^2 + diff(y)^2))
+}
 
-x4 <- navInOrder_df_list[[1]][[4]]$pos_X
-z4 <- navInOrder_df_list[[1]][[4]]$pos_Z
-plot(x4,z4)
-
-# how well the Ss learned the inner path
-x1 <- navInOrder_df_list[[2]][[1]]$pos_X
-z1 <- navInOrder_df_list[[2]][[1]]$pos_Z
-plot(x1,z1)
-
-x2 <- navInOrder_df_list[[2]][[2]]$pos_X
-z2 <- navInOrder_df_list[[2]][[2]]$pos_Z
-plot(x2,z2)
-
-x3 <- navInOrder_df_list[[2]][[3]]$pos_X
-z3 <- navInOrder_df_list[[2]][[3]]$pos_Z
-plot(x3,z3)
-
-x4 <- navInOrder_df_list[[2]][[4]]$pos_X
-z4 <- navInOrder_df_list[[2]][[4]]$pos_Z
-plot(x4,z4)
+# Make an empty dataframe to put the path distance values into
+path_dist_df <- data.frame(trialname = character(), path_distance = numeric(), path_duration = numeric(), stringsAsFactors = FALSE)
 
 
+########## INNER PASSIVE ##########
+for (i in 1:length(inner_passive_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(inner_passive_df_list[[i]]$pos_X, inner_passive_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(inner_passive_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_passive_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
 
+########## INNER ACTIVE ##########
+for (i in 1:length(inner_active_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(inner_active_df_list[[i]]$pos_X, inner_active_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(inner_active_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_active_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
 
+########## INNER NAV IN ORDER ##########
+for (i in 1:length(inner_navInOrder_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(inner_navInOrder_df_list[[i]]$pos_X, inner_navInOrder_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(inner_navInOrder_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_navInOrder_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
 
+########## OUTER PASSIVE ##########
+for (i in 1:length(outer_passive_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(outer_passive_df_list[[i]]$pos_X, outer_passive_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(outer_passive_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_passive_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
+
+########## OUTER ACTIVE ##########
+for (i in 1:length(outer_active_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(outer_active_df_list[[i]]$pos_X, outer_active_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(outer_active_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_active_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
+
+########## OUTER NAV IN ORDER ##########
+for (i in 1:length(outer_navInOrder_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(outer_navInOrder_df_list[[i]]$pos_X, outer_navInOrder_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(outer_navInOrder_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_navInOrder_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
+
+########## NAV TEST ##########
+for (i in 1:length(navTest_trials_df_list)) {
+  
+  # calculate the total path distance
+  path_dist <- totDist(navTest_trials_df_list[[i]]$pos_X, navTest_trials_df_list[[i]]$pos_Z)
+  
+  # grab the last value of the time in seconds for path duration
+  path_dur <- max(navTest_trials_df_list[[i]]$time_sec)
+  
+  # put all the info together, including trial name
+  path_dist_df <- rbind(path_dist_df, data.frame(trialname = navTest_trials_df_list[[i]][1, 11]$trialname, path_distance = path_dist, path_duration = path_dur))
+  
+}
 
 
 
