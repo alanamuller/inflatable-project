@@ -1,4 +1,7 @@
+##### You need to run the stress_processing_script.R before running this script
+
 library(sp)
+library(raster)
 
 # define the extent of the area you want to cover
 xmin <- -400
@@ -7,8 +10,8 @@ ymin <- -400
 ymax <- 400
 
 # define the number of cells in the x and y directions
-ncellx <- 37
-ncelly <- 37
+ncellx <- 10 # 37
+ncelly <- 10 # 37
 
 cellsize <- ((xmax - xmin)/ ncellx)
 
@@ -19,25 +22,21 @@ area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax
 grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
 grid_sp <- SpatialGrid(grid)
 
-# generate path1 x-y coordinates within the area
-#points1_df <- data.frame(x = c(1,2,10), y = c(1,2,3))
-#points1_sp <- SpatialPoints(points1_df)
-
-# generate path2 x-y coordinates within the area
-#points2_df <- data.frame(x = c(10,9,8,7,6,5,4,3,2,1,0), y = c(0,1,2,3,4,5,6,7,8,9,10))
-#points2_sp <- SpatialPoints(points2_df)
-
-# my own data for path 1
-points1_df <- data.frame(x = first_x1, y = first_z1)
+# outer path actual (active learning phase)
+points1_df <- data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X, y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
 points1_sp <- SpatialPoints(points1_df)
 
-# my own data for path 2
-points2_df <- data.frame(x = second_x2, y = second_z2)
+# outer path traveled (outer navInOrder part)
+points2_df <- data.frame(x = outer_navInOrder_all_dfs$pos_X, y = outer_navInOrder_all_dfs$pos_Z)
 points2_sp <- SpatialPoints(points2_df)
 
 # use the "over()" function to find which grid cells contain the x-y coordinates
 points1_grid <- over(points1_sp, grid_sp)
 points2_grid <- over(points2_sp, grid_sp)
+
+# find the unique numbers for each of the paths representing the total grids the path uses
+unique_path1_grids <- unique(points1_grid)
+unique_path2_grids <- unique(points2_grid)
 
 # plot the grid and the x-y coordinates within the area
 plot(grid_sp)
@@ -50,11 +49,11 @@ plot(points2_sp, add = TRUE, col = "red")
 overlapping_indices <- intersect(points1_grid, points2_grid)
 
 # Get the indices of the non-overlapping grid cells for points1
-# aka grids that exist in path1 but not path2
+# aka grids that exist in path1 (actual) but not path2 (traveled)
 non_overlapping_indices_1 <- setdiff(points1_grid, union(overlapping_indices, points2_grid))
 
 # Get the indices of the non-overlapping grid cells for points2
-# aka grids that exist in path2 but not path1
+# aka grids that exist in path2 (traveled) but not path1 (actual)
 non_overlapping_indices_2 <- setdiff(points2_grid, union(overlapping_indices, points1_grid))
 
 # Count the number of overlapping and non-overlapping grid cells
@@ -67,8 +66,28 @@ cat("Number of overlapping grid cells: ", num_overlapping, "\n")
 cat("Number of non-overlapping grid cells for points1: ", num_non_overlapping_1, "\n")
 cat("Number of non-overlapping grid cells for points2: ", num_non_overlapping_2, "\n")
 
+################ make a plot shading in the cells that 
+
+# create a matrix of zeros with ncellx and ncelly
+grid_matrix <- matrix(0, nrow = ncelly, ncol = ncellx)
+
+# define the indices to color
+color_indices_path1 <- unique_path1_grids
+color_indices_path2 <- unique_path2_grids
+
+# set the values at the color indices to 1
+path1_matrix <- grid_matrix[color_indices_path1] <- 1
+path2_matrix <- grid_matrix[color_indices_path2] <- 1
+
+# define the color palette
+colors <- c("white", "gray")
+
+# plot the image with flipped y-axis
+path1_image <- image(1:ncellx, 1:ncelly, grid_matrix, col = colors, ylim = c(ncelly + .5, 0.5))
+path2_image <- image(1:ncellx, 1:ncelly, grid_matrix, col = colors, ylim = c(ncelly + .5, 0.5))
 
 
+########################################################################################################
 
 
 
