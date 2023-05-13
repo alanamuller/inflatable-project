@@ -34,8 +34,9 @@ input_file <- paste(subject_num, ".log", sep = "")
 input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
-# set working directory to save pics
-setwd("E:/Nav Stress Pilot Data/P001")
+# set working directory to save pics - make sure a new folder is created alread for the subject's pics
+folder_name <- paste("E:/Nav Stress Pilot Data/", subject_num, sep = "")
+setwd(folder_name)
 
 ###################### Functions ######################
 
@@ -767,6 +768,11 @@ p <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
 jpeg("all_navTest_trials.jpeg", width = 7, height = 6, units = 'in', res = 500)
 p
 dev.off()
+
+############# Make another dataframe pulling the numbers that Mike generated in the avatar log
+
+
+
 
 
 ####################### Make another dataframe with total path length, excess path length, and duration values #######################
