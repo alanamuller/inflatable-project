@@ -25,7 +25,7 @@ library(openxlsx)
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 ##### Change this to run next subject
-subject_num <- "P001"
+subject_num <- "P002"
  
 # Load the data
 input_file <- paste(subject_num, ".log", sep = "")
@@ -35,7 +35,7 @@ input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
 # set working directory to save pics - make sure a new folder is created alread for the subject's pics
-folder_name <- paste("E:/Nav Stress Pilot Data/", subject_num, sep = "")
+folder_name <- paste("E:/Nav Stress Pilot Data/pics/", subject_num, sep = "")
 setwd(folder_name)
 
 ###################### Functions ######################
