@@ -21,7 +21,7 @@ library(openxlsx)
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
- setwd("E:/Nav Stress Pilot Data") # for desktop
+ setwd("D:/Nav Stress Pilot Data") # for hard drive
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 ##### Change this to run next subject
@@ -35,7 +35,7 @@ input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
 # set working directory to save pics - make sure a new folder is created alread for the subject's pics
-folder_name <- paste("E:/Nav Stress Pilot Data/", subject_num, sep = "")
+folder_name <- paste("D:/Nav Stress Pilot Data/pics/", subject_num, sep = "")
 setwd(folder_name)
 
 ###################### Functions ######################
@@ -777,9 +777,6 @@ log_data <- input_data
 # Convert the data to a tibble
 log_data <- tibble(log_data = str_split(log_data, "\n")[[1]])
 
-# Add a column for subject ID
-log_data$subjectID <- subject_num
-
 # Extract the line after "task block trial"
 log_data <- log_data %>%
   mutate(line = str_extract(log_data, "^TASK_NavigationTest.*$"))
@@ -796,6 +793,12 @@ log_data <- log_data %>%
   mutate(across(7:10, as.numeric))
 
 log_data <- log_data[, -1]
+
+# Add a column for subject ID
+log_data$subjectID <- subject_num
+
+# Make the subjectID column the first column
+log_data <- log_data[c(ncol(log_data), 1:ncol(log_data)-1)]
 
 # write dataframe to an excel file
 
