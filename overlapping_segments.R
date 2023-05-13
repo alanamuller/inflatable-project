@@ -61,6 +61,13 @@ num_overlapping <- length(overlapping_indices)
 num_non_overlapping_1 <- length(non_overlapping_indices_1)
 num_non_overlapping_2 <- length(non_overlapping_indices_2)
 
+# Create a dataframe to put the data in
+overlap_counts_df <- path_dist_df <- data.frame(overlap = numeric(), nonoverlap_path1 = numeric(), nonoverlap_path2 = numeric(), stringsAsFactors = FALSE)
+
+# Add data to the dataframe
+overlap_counts_df <- rbind(overlap_counts_df, data.frame(overlap = num_overlapping, nonoverlap_path1 = num_non_overlapping_1, nonoverlap_path2 = num_non_overlapping_2))
+
+
 # Print the results
 cat("Number of overlapping grid cells: ", num_overlapping, "\n")
 cat("Number of non-overlapping grid cells for points1: ", num_non_overlapping_1, "\n")

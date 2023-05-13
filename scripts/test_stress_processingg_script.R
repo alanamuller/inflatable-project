@@ -16,20 +16,26 @@ library(dplyr)
 #points(145.79, -231.68)
 #points(-130.43, -112.92)
 
+# run for pilot Ss: 1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20, 22
+
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
  setwd("E:/Nav Stress Pilot Data") # for desktop
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
+##### Change this to run next subject
+subject_num <- "P001"
+ 
+ 
 # Load the data
-input_file <- "navStress_P001_city1_navigation_23-03-24D_10.18.47T.log"
+input_file <- paste(subject_num, ".log", sep = "")
 # input_file <- "mini_test_log.txt"
 # input_file <- "environment_corner_coordinates.log"
 input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
 # set working directory to save pics
-setwd("E:/Nav Stress Pilot Data/pics")
+setwd("E:/Nav Stress Pilot Data/P001")
 
 ###################### Functions ######################
 
@@ -106,22 +112,7 @@ for (i in seq_along(outer_passive_df_list)) {
   
 }
 
-x <- outer_passive_df_list[[1]]$pos_X
-z <- outer_passive_df_list[[1]]$pos_Z
-plot(x,z)
-
-x <- outer_passive_df_list[[2]]$pos_X
-z <- outer_passive_df_list[[2]]$pos_Z
-plot(x,z)
-
-x <- outer_passive_df_list[[3]]$pos_X
-z <- outer_passive_df_list[[3]]$pos_Z
-plot(x,z)
-
-x <- outer_passive_df_list[[4]]$pos_X
-z <- outer_passive_df_list[[4]]$pos_Z
-plot(x,z)
-
+# make and save a graph
 p <- ggplot(outer_passive_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
@@ -202,7 +193,9 @@ for (i in seq_along(outer_active_df_list)) {
   
 }
 
-p <- ggplot(outer_active_df_list[[4]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+# make and save graph of last outer active
+plot_name <- paste("outer_active", length(outer_active_df_list), ".jpg",sep = "")
+p <- ggplot(outer_active_df_list[[length(outer_active_df_list)]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
   labs(x = "X", y = "Y", color = "Time (s)", title = "Outer Path Active Learning 4") +
@@ -218,17 +211,9 @@ p <- ggplot(outer_active_df_list[[4]], aes(x = pos_X, y = pos_Z, color = time_se
   geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
   geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
-jpeg("outer_active4.jpeg", width = 7, height = 6, units = 'in', res = 500)
+jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
 p
 dev.off()
-
-
-# Use the last active learning trial as the actual whole outer path length
-x <- outer_active_df_list[[4]]$pos_X
-z <- outer_active_df_list[[4]]$pos_Z
-plot(x,z)
-
-
 
 # Use last trial as the actual whole path length
 outer_actual_dist <- totDist(outer_active_df_list[[length(outer_active_df_list)]]$pos_X, outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
@@ -297,9 +282,9 @@ for (i in seq_along(outer_navInOrder_df_list)) {
 outer_navInOrder_all_dfs <- do.call(rbind, outer_navInOrder_df_list)
 
 # this is the participant's whole traveled path (segments combined together)
-x <- outer_navInOrder_all_dfs$pos_X
-z <- outer_navInOrder_all_dfs$pos_Z
-plot(x,z)
+#x <- outer_navInOrder_all_dfs$pos_X
+#z <- outer_navInOrder_all_dfs$pos_Z
+#plot(x,z)
 
 p <- ggplot(outer_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
@@ -389,14 +374,6 @@ for (i in seq_along(inner_passive_df_list)) {
   
 }
 
-x <- inner_passive_df_list[[1]]$pos_X
-z <- inner_passive_df_list[[1]]$pos_Z
-plot(x,z)
-
-x <- inner_passive_df_list[[2]]$pos_X
-z <- inner_passive_df_list[[2]]$pos_Z
-plot(x,z)
-
 p <- ggplot(inner_passive_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
@@ -476,16 +453,8 @@ for (i in seq_along(inner_active_df_list)) {
   
 }
 
-x <- inner_active_df_list[[1]]$pos_X
-z <- inner_active_df_list[[1]]$pos_Z
-plot(x,z)
-
-# this will be the inner whole actual path
-x <- inner_active_df_list[[2]]$pos_X
-z <- inner_active_df_list[[2]]$pos_Z
-plot(x,z)
-
-p <- ggplot(inner_active_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+plot_name <- paste("inner_active", length(inner_active_df_list), ".jpg", sep = "")
+p <- ggplot(inner_active_df_list[[length(inner_active_df_list)]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
   labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Active Learning 1") +
@@ -501,7 +470,7 @@ p <- ggplot(inner_active_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_se
   geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
   geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
-jpeg("inner_active1.jpeg", width = 7, height = 6, units = 'in', res = 500)
+jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
 p
 dev.off()
 
@@ -571,14 +540,14 @@ for (i in seq_along(inner_navInOrder_df_list)) {
 inner_navInOrder_all_dfs <- do.call(rbind, inner_navInOrder_df_list)
 
 # participant's whole path
-x <- inner_navInOrder_all_dfs$pos_X
-z <- inner_navInOrder_all_dfs$pos_Z
-plot(x,z)
+#x <- inner_navInOrder_all_dfs$pos_X
+#z <- inner_navInOrder_all_dfs$pos_Z
+#plot(x,z)
 
 p <- ggplot(inner_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Navigate") +
+  # labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Navigate") +
   theme(plot.title = element_text(hjust = 0.5, size = 16), 
         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
@@ -597,10 +566,10 @@ dev.off()
 
 ##################### Getting the closest points to separate the whole active path into four segments #####################
 
-########### OUTER PATH ###########
-
 # Define the points to search for (these are the store coordinates)
 search_points <- data.frame(x = c(207.3, 145.79, -130.43, -249.37), y = c(99.9, -231.68, -112.92, 279.16))
+
+########### OUTER PATH ###########
 
 # Find the closest point to each search point
 outer_closest_points <- lapply(1:nrow(search_points), function(i) {
@@ -678,6 +647,10 @@ inner_closest_points_df <- do.call(rbind, inner_closest_points)
 # Print the closest points
 print(inner_closest_points_df)
 
+### Make a list of dataframes to segment one path into four paths
+
+# Initialize the dataframe
+inner_active_seg_list <- list()
 
 # Store 1 to store 2
 inner_active_seg_list[[1]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
@@ -938,7 +911,39 @@ for (i in 1:length(navTest_trials_df_list)) {
 
 library(openxlsx)
 
-write.xlsx(path_dist_df, "pilot_data.xlsx", rowNames = FALSE)
+file_name <- paste(subject_num, "_pilot_data.xlsx", sep = "")
+
+write.xlsx(path_dist_df, file_name, rowNames = FALSE)
+
+####################### Make 24 plots for each nav test trial #######################
+
+# loop through a dataframe list to generate a plot for each trial
+for (i in seq_along(navTest_trials_df_list)) {
+  # create the plot title name
+  plot_title <- paste("Navigation Test Trial ", i)
+  # create the ggplot object for the current data frame
+  gg <- ggplot(navTest_trials_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+    geom_point() +
+    scale_color_gradient(low = "lightblue", high = "darkblue") +
+    labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
+    theme(plot.title = element_text(hjust = 0.5, size = 16), 
+          axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+          legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+    geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+    geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+    geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+    geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+    geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
+    geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
+    geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
+    geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+  
+  
+  # save the plot with a file name based on the index of the data frame
+  ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 7, height = 6, units = 'in', dpi = 500)
+}
+
+
 
 ##############################################################################################
 
@@ -948,6 +953,10 @@ write.xlsx(path_dist_df, "pilot_data.xlsx", rowNames = FALSE)
 ###############################################################################
 
 ######################## Experimental ChatGPT Stuff ###########################
+
+
+
+
 
 
 
