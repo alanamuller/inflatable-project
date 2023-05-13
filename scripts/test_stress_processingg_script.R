@@ -1,6 +1,7 @@
 library(stringr)
 library(tidyverse)
 library(dplyr)
+library(openxlsx)
 
 # Made by Alana Muller with a lot of help from ChatGPT
 
@@ -25,7 +26,6 @@ library(dplyr)
 
 ##### Change this to run next subject
 subject_num <- "P001"
- 
  
 # Load the data
 input_file <- paste(subject_num, ".log", sep = "")
@@ -769,11 +769,38 @@ jpeg("all_navTest_trials.jpeg", width = 7, height = 6, units = 'in', res = 500)
 p
 dev.off()
 
-############# Make another dataframe pulling the numbers that Mike generated in the avatar log
+############# Make another dataframe pulling the numbers that Mike generated in the avatar log (has optimal path)
 
+# Get the dataframe from the list
+log_data <- input_data
 
+# Convert the data to a tibble
+log_data <- tibble(log_data = str_split(log_data, "\n")[[1]])
 
+# Add a column for subject ID
+log_data$subjectID <- subject_num
 
+# Extract the line after "task block trial"
+log_data <- log_data %>%
+  mutate(line = str_extract(log_data, "^TASK_NavigationTest.*$"))
+
+# Split the line into separate columns
+log_data <- log_data %>%
+  separate(line, into = c("task", "block", "trial", "catchTrial", "Navigate_target", "Navigate_actualPath", "Navigate_optimalPath", "Navigate_excessPath", "Navigate_duration"), sep = "\\t+")
+
+# Remove the rows with NAs
+log_data <- na.omit(log_data)
+
+# Convert the columns to numeric
+log_data <- log_data %>%
+  mutate(across(7:10, as.numeric))
+
+log_data <- log_data[, -1]
+
+# write dataframe to an excel file
+
+file_name <- paste(subject_num, "_landmarks_data.xlsx", sep = "")
+write.xlsx(log_data, file_name, rowNames = FALSE)
 
 ####################### Make another dataframe with total path length, excess path length, and duration values #######################
 
@@ -915,10 +942,7 @@ for (i in 1:length(navTest_trials_df_list)) {
 
 # write dataframe to an excel file
 
-library(openxlsx)
-
-file_name <- paste(subject_num, "_pilot_data.xlsx", sep = "")
-
+file_name <- paste(subject_num, "_data.xlsx", sep = "")
 write.xlsx(path_dist_df, file_name, rowNames = FALSE)
 
 ####################### Make 24 plots for each nav test trial #######################
