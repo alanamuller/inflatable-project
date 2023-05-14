@@ -27,7 +27,7 @@ rm(list = ls())
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 ##### Change this to run next subject
-subject_num <- "P004"
+subject_num <- "P022"
  
 # Load the data
 input_file <- paste(subject_num, ".log", sep = "")
@@ -546,6 +546,7 @@ inner_navInOrder_all_dfs <- do.call(rbind, inner_navInOrder_df_list)
 #x <- inner_navInOrder_all_dfs$pos_X
 #z <- inner_navInOrder_all_dfs$pos_Z
 #plot(x,z)
+
 
 p <- ggplot(inner_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
