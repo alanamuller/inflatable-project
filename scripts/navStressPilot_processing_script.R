@@ -27,7 +27,7 @@ rm(list = ls())
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 ##### Change this to run next subject
-subject_num <- "P001"
+subject_num <- "P004"
  
 # Load the data
 input_file <- paste(subject_num, ".log", sep = "")
@@ -771,7 +771,7 @@ p
 dev.off()
 
 ############# Make another dataframe pulling the numbers that Mike generated in the avatar log (has optimal path)
-############# This data frame combines with the overlaping segment code at the bottom
+############# This data frame combines with the overlapping segment code at the bottom
 
 # Get the dataframe from the list
 log_data <- input_data
@@ -802,7 +802,7 @@ log_data$subjectID <- subject_num
 # Make the subjectID column the first column
 log_data <- log_data[c(ncol(log_data), 1:ncol(log_data)-1)]
 
-####################### Make another dataframe with total path length, excess path length, and duration values #######################
+####################### Make another dataframe with learning trials: total path length, excess path length, and duration values
 # But this total path distance is comparing the learned path to the traveled path
 
 # Make an empty dataframe to put the path distance values into
@@ -924,20 +924,11 @@ for (i in 1:length(inner_navInOrder_df_list)) {
   
 }
 
-########## NAV TEST ##########
-for (i in 1:length(navTest_trials_df_list)) {
-  
-  # calculate the total path distance
-  path_dist <- totDist(navTest_trials_df_list[[i]]$pos_X, navTest_trials_df_list[[i]]$pos_Z)
-  
-  # grab the last value of the time in seconds for path duration
-  path_dur <- max(navTest_trials_df_list[[i]]$time_sec)
-  
-  # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = navTest_trials_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "TBD", path_duration = path_dur))
-  
-}
+# Add a column for subject ID
+path_dist_df$subjectID <- subject_num
 
+# Make the subjectID column the first column
+path_dist_df <- path_dist_df[c(ncol(path_dist_df), 1:ncol(path_dist_df)-1)]
 
 # write dataframe to an excel file
 
@@ -996,6 +987,9 @@ area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax
 # create a SpatialGrid object to represent the grid over the area
 grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
 grid_sp <- SpatialGrid(grid)
+
+
+################### For navigation test trials ###################
 
 # outer path actual (active learning phase)
 outerPath_df <- data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X, y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
@@ -1070,15 +1064,52 @@ pilot_data_processed <- cbind(log_data, overlap_counts_df)
 file_name <- paste(subject_num, "_navTestTrials.xlsx", sep = "")
 write.xlsx(pilot_data_processed, file_name, rowNames = FALSE)
 
-###############################################################################
+################### For navInOrder learning trials ###################
 
-######################## Experimental ChatGPT Stuff ###########################
+# Create a dataframe to put the data in
+overlap_navInOrder_df <- data.frame(trial = character(), overlap_outer = numeric(), overlap_inner = numeric(), total_navInOrder_grids = numeric(), total_actual_path_grids = numeric(), stringsAsFactors = FALSE)
 
+# define outer path
+outer_navInOrder <- data.frame(x = outer_navInOrder_all_dfs$pos_X, y = outer_navInOrder_all_dfs$pos_Z)
+outer_navInOrder_sp <- SpatialPoints(outer_navInOrder)
 
+# define inner path
+inner_navInOrder <- data.frame(x = inner_navInOrder_all_dfs$pos_X, y = inner_navInOrder_all_dfs$pos_Z)
+inner_navInOrder_sp <- SpatialPoints(inner_navInOrder)
 
+# use the "over()" function to find which grids contain the x-y coordinates
+outer_navInOrder_grid <- over(outer_navInOrder_sp, grid_sp)
+inner_navInOrder_grid <- over(inner_navInOrder_sp, grid_sp)
 
+# find the unique numbers for each of the paths representing the total grids the path uses
+unique_outer_navInOrder_grids <- unique(outer_navInOrder_grid)
+unique_inner_navInOrder_grids <- unique(inner_navInOrder_grid)
 
+# find the total number of grids each path uses
+grid_total_outer_navInOrder <- length(unique_outer_navInOrder_grids)
+grid_total_inner_navInOrder <- length(unique_inner_navInOrder_grids)
 
+# Get the indices of the overlapping grids of the outer and inner paths
+outer_navInOrder_overlap <- intersect(outer_navInOrder_grid, outerPath_grid)
+inner_navInOrder_overlap <- intersect(inner_navInOrder_grid, innerPath_grid)
 
+# Count the number of overlapping segments for outer and inner path - should be 0
+num_outer_navInOrder_overlap <- length(outer_navInOrder_overlap)
+num_inner_navInOrder_overlap <- length(inner_navInOrder_overlap)
 
+# Add data to the dataframe
+overlap_navInOrder_df <- rbind(overlap_navInOrder_df, data.frame(trial = "outer", overlap_outer = num_outer_navInOrder_overlap, overlap_inner = "N/A", 
+                                                                 total_navInOrder_grids = grid_total_outer_navInOrder, total_actual_path_grids = grid_total_outer))
+overlap_navInOrder_df <- rbind(overlap_navInOrder_df, data.frame(trial = "inner", overlap_outer = "N/A", overlap_inner = num_inner_navInOrder_overlap, 
+                                                                 total_navInOrder_grids = grid_total_inner_navInOrder, total_actual_path_grids = grid_total_inner))
+
+# Add a column for subject ID
+overlap_navInOrder_df$subjectID <- subject_num
+
+# Make the subjectID column the first column
+overlap_navInOrder_df <- overlap_navInOrder_df[c(ncol(overlap_navInOrder_df), 1:ncol(overlap_navInOrder_df)-1)]
+
+# write dataframe to an excel file
+file_name <- paste(subject_num, "_overlapLearningTrials.xlsx", sep = "")
+write.xlsx(overlap_navInOrder_df, file_name, rowNames = FALSE)
 
