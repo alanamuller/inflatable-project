@@ -3,7 +3,9 @@ library(gtools)
 
 rm(list = ls())
 
-setwd("C:/Users/Updates/Desktop/Alana/UA/R_projects/inflatable-project")
+# setwd("C:/Users/Updates/Desktop/Alana/UA/R_projects/inflatable-project")
+setwd("C:/Users/amuller/Desktop/Alana/UA/R_projects/inflatable-project")
+
 
 letterAndNumberList <- function(lanl) {
   wall_high <- c("A","B","C")
