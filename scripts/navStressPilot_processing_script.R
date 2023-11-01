@@ -23,15 +23,12 @@ rm(list = ls())
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
- setwd("D:/Nav Stress Pilot Data") # for hard drive
+ setwd("E:/Nav Stress Pilot Data") # for hard drive
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 ##### Change this to run next subject
-<<<<<<< HEAD:scripts/test_stress_processingg_script.R
-subject_num <- "P002"
-=======
-subject_num <- "P022"
->>>>>>> 23133724efe5e14e149909794f9604a9d798d0fd:scripts/navStressPilot_processing_script.R
+
+subject_num <- "P012"
  
 # Load the data
 input_file <- paste(subject_num, ".log", sep = "")
@@ -40,12 +37,9 @@ input_file <- paste(subject_num, ".log", sep = "")
 input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
-# set working directory to save pics - make sure a new folder is created alread for the subject's pics
-<<<<<<< HEAD:scripts/test_stress_processingg_script.R
+# set working directory to save pics - make sure a new folder is created already for the subject's pics
 folder_name <- paste("E:/Nav Stress Pilot Data/pics/", subject_num, sep = "")
-=======
-folder_name <- paste("D:/Nav Stress Pilot Data/pics/", subject_num, sep = "")
->>>>>>> 23133724efe5e14e149909794f9604a9d798d0fd:scripts/navStressPilot_processing_script.R
+
 setwd(folder_name)
 
 ###################### Functions ######################
