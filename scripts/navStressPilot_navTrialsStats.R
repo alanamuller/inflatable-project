@@ -132,3 +132,18 @@ plot_left <- ggplot(subset(overlap_melt, first_route_learned == "Outer"), aes(x 
 plot_right <- ggplot(subset(overlap_melt, first_route_learned == "Inner"), aes(x = path_type, y = overlap_percent, fill = inner_outer_non)) +
   geom_boxplot() + labs(title = "Inner Route Learned First") + theme_classic()
 grid.arrange(plot_left, plot_right, ncol=2)
+
+##### Stats
+
+### mixed model anova for nav excess path
+
+# create dataframe for stats
+excessPath_df <- cd[c("subjectID", )]
+
+
+
+
+
+
+
+
