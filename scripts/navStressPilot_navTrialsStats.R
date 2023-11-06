@@ -3,10 +3,13 @@ library(tidyverse)
 library(ggplot2)
 library(reshape2)
 library(gridExtra)
+library(ez)
+library(ggpubr)
+library(rstatix)
 
 
 # Set the directory where the Excel files are stored
-setwd("E:/Nav Stress Pilot Data")
+setwd("D:/Nav Stress Pilot Data")
 
 import_data <- read_excel("pilot_navTestTrials.xlsx", sheet = "Sheet 1")
 
@@ -15,7 +18,7 @@ df <- import_data
 
 # Fix structure of the data: columns 1:11 should be factors
 df <- df %>%
-  mutate_at(vars(1:11), as.factor)
+  mutate_at(vars(1:12), as.factor)
 
 ### Delete the trials that have a duration less than 1 because those are mistakes
 # Count trials to be deleted
@@ -27,6 +30,7 @@ cd <- subset(df, Navigate_duration > 1) # cd stands for "clean data"
 ### Make some histograms - see the spread of the data
 hist(df$Navigate_actualPath)
 hist(df$Navigate_optimalPath)
+hist(df$Navigate_excessPath)
 hist(df$Navigate_duration)
 hist(df$overlap_outer)
 hist(df$overlap_inner)
@@ -36,6 +40,9 @@ hist(df$total_grids_trial)
 cd$overlap_outer_percent <- (cd$overlap_outer/cd$total_grids)*100
 cd$overlap_inner_percent <- (cd$overlap_inner/cd$total_grids)*100
 cd$nonoverlap_percent <- (cd$nonoverlap/cd$total_grids)*100
+
+# Make column for overlap outer-inner
+cd$outerMinusInner <- (cd$overlap_outer_percent - cd$overlap_inner_percent)
 
 ### Make some graphs
 
@@ -135,15 +142,40 @@ grid.arrange(plot_left, plot_right, ncol=2)
 
 ##### Stats
 
-### mixed model anova for nav excess path
+### 2 way anova for nav excess path
 
 # create dataframe for stats
-excessPath_df <- cd[c("subjectID", )]
+excessPath_df <- cd[c("subjectID", "first_route_learned", "rep_condition","Navigate_excessPath")]
+ep_df <- excessPath_df %>%
+  group_by(subjectID, first_route_learned, rep_condition) %>%
+  summarise(
+    mean = mean(Navigate_excessPath, na.rm = TRUE)
+  )
 
+aov <- aov(mean ~ first_route_learned * rep_condition, data = ep_df)
+summary(aov)
 
+ggboxplot(ep_df, x = "first_route_learned", y = "mean", color = "rep_condition")
 
+# anova for inner, outer, and nonoverlap
+overlap_df <- cd[c("subjectID", "overlap_outer_percent", "overlap_inner_percent", "nonoverlap_percent")]
+overlap_melt <- melt(overlap_df, id.vars = "subjectID", variable.name = "route_type", value.name = "overlap_percent")
 
+overlap_aov <- overlap_melt %>%
+  group_by(subjectID, route_type) %>%
+  summarise(
+    mean_overlap_percent = mean(overlap_percent)
+  )
 
+ggboxplot(overlap_aov, x = "route_type", y = "mean_overlap_percent")
 
+# Perform paired one-way ANOVA
+result <- aov(mean_overlap_percent ~ route_type + Error(subjectID/route_type), data = overlap_aov)
+summary(result)
 
-
+pwc <- overlap_melt %>%
+  pairwise_t_test(
+    overlap_percent ~ route_type, paired = TRUE,
+    p.adjust.method = "bonferroni"
+  )
+pwc
