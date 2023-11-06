@@ -8,7 +8,7 @@ library(rstatix)
 library(ggpubr)
 
 # Set the directory where the Excel files are stored
-setwd("D:/Nav Stress Pilot Data")
+setwd("E:/Nav Stress Pilot Data")
 
 learning_route_data <- read_excel("learned_trials_overlap_repetitions.xlsx", sheet = "Sheet1")
 
