@@ -44,7 +44,31 @@ cd$nonoverlap_percent <- (cd$nonoverlap/cd$total_grids)*100
 # Make column for overlap outer-inner
 cd$outerMinusInner <- (cd$overlap_outer_percent - cd$overlap_inner_percent)
 
+# Get rid of excess path outliers
+navExcess_mean <- mean(cd$Navigate_excessPath, na.rm = TRUE)
+navExcess_sd <- sd(cd$Navigate_excessPath, na.rm = TRUE)
+
+count <- sum(cd$Navigate_excessPath < (navExcess_mean - (3*navExcess_sd))) # none
+count <- sum(cd$Navigate_excessPath > (navExcess_mean + (3*navExcess_sd))) # 9
+
+cd <- subset(cd, !Navigate_excessPath > (navExcess_mean + (3*navExcess_sd)))
+
+
+# Get rid of actual path outliers
+actualPath_mean <- mean(cd$Navigate_actualPath, na.rm = TRUE)
+actualPath_sd <- sd(cd$Navigate_actualPath, na.rm = TRUE)
+
+count <- sum(cd$Navigate_actualPath < (actualPath_mean - (3*actualPath_sd))) # none
+count <- sum(cd$Navigate_actualPath > (actualPath_mean + (3*actualPath_sd))) # 9
+
+actualPath_cd <- subset(cd, !Navigate_actualPath > (actualPath_mean + (3*actualPath_sd)))
+
+
+
 ### Make some graphs
+
+# uncomment this to save manuscript-quality pics to this folder
+setwd("E:/Nav Stress Pilot Data/pics/SFN2023")
 
 # Navigation duration by block
 nav_dur <- cd %>%
@@ -64,6 +88,29 @@ ggplot(cd, aes(x = subjectID, y = Navigate_excessPath)) +
   theme(axis.text = element_text(size = 14), axis.title = element_text(size = 16), legend.position = "none") +
   scale_fill_brewer(palette = "Paired")
 
+# excess path by route first learned
+ggplot(overlap_melt, aes(x = subjectID, y = overlap_percent, fill = inner_outer_non)) +
+  geom_boxplot() +  theme_classic()
+
+# split by which path taught first
+plot_left <- ggplot(subset(cd, first_route_learned == "Outer"), aes(x = subjectID, y = Navigate_excessPath)) +
+  geom_boxplot() + labs(title = "Outer Route Learned First", x = "Subject Number", y = "Excess Path") + 
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
+plot_right <- ggplot(subset(cd, first_route_learned == "Inner"), aes(x = subjectID, y = Navigate_excessPath)) +
+  geom_boxplot() + labs(title = "Inner Route Learned First", x = "Subject Number", y = "Excess Path") + 
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
+excessPath_subj <- grid.arrange(plot_left, plot_right, ncol=2)
+
+ggsave("excessPath_subj.jpeg", excessPath_subj ,width = 12, height = 6, units = 'in', dpi = 500)
+
 # nav duration
 ggplot(cd, aes(x = subjectID, y = Navigate_duration)) +
   geom_boxplot() + 
@@ -71,6 +118,29 @@ ggplot(cd, aes(x = subjectID, y = Navigate_duration)) +
   theme_classic() +
   theme(axis.text = element_text(size = 14), axis.title = element_text(size = 16), legend.position = "none") +
   scale_fill_brewer(palette = "Paired")
+
+# split by which path taught first
+plot_left <- ggplot(subset(cd, first_route_learned == "Outer"), aes(x = subjectID, y = Navigate_duration)) +
+  geom_boxplot() + labs(title = "Outer Route Learned First", x = "Subject Number", y = "Duration") + 
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
+plot_right <- ggplot(subset(cd, first_route_learned == "Inner"), aes(x = subjectID, y = Navigate_duration)) +
+  geom_boxplot() + labs(title = "Inner Route Learned First", x = "Subject Number", y = "Duration") + 
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
+duration_subj <- grid.arrange(plot_left, plot_right, ncol=2)
+
+ggsave("duration_subj.jpeg", duration_subj ,width = 12, height = 6, units = 'in', dpi = 500)
+
+# navigation excess path and duration correlation
+cor(cd$Navigate_duration, cd$Navigate_excessPath)
+plot(cd$Navigate_duration, cd$Navigate_excessPath)
 
 # overlap outer path
 ggplot(cd, aes(x = subjectID, y = overlap_outer)) +
@@ -102,10 +172,28 @@ ggplot(overlap_melt, aes(x = subjectID, y = overlap_percent, fill = inner_outer_
 
 # split by which path taught first
 plot_left <- ggplot(subset(overlap_melt, first_route_learned == "Outer"), aes(x = subjectID, y = overlap_percent, fill = inner_outer_non)) +
-                      geom_boxplot() + labs(title = "Outer Route Learned First") + theme_classic() + guides(fill = FALSE)
+  geom_boxplot() + labs(title = "Outer Route Learned First", x = "Subject Number", y = "Overlap Percent") + 
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
 plot_right <- ggplot(subset(overlap_melt, first_route_learned == "Inner"), aes(x = subjectID, y = overlap_percent, fill = inner_outer_non)) +
-  geom_boxplot() + labs(title = "Inner Route Learned First") + theme_classic() + guides(fill = FALSE)
-grid.arrange(plot_left, plot_right, ncol=2)
+  geom_boxplot() + labs(title = "Inner Route Learned First", x = "Subject Number", y = "Overlap Percent", fill = "Overlap Type") + 
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
+overlap_subj <- grid.arrange(plot_left, plot_right, ncol=2)
+
+ggsave("overlap_subj.jpeg", overlap_subj ,width = 12, height = 5.5, units = 'in', dpi = 500)
+
+
+# Uncomment below if you need to change the labels in the legend 
+#scale_fill_discrete(labels = c("Outer Percent", "Inner Percent", "Nonoverlap Percent"))
+
+
 
 # split by which path taught first and how many reps it got
 plot11 <- ggplot(subset(overlap_melt, first_route_learned == "Outer" & outer_reps == "2"), 
@@ -137,12 +225,34 @@ ggplot(overlap_melt, aes(x = path_type, y = overlap_percent, fill = inner_outer_
 
 # split by which path was taught first
 plot_left <- ggplot(subset(overlap_melt, first_route_learned == "Outer"), aes(x = path_type, y = overlap_percent, fill = inner_outer_non)) +
-  geom_boxplot() + labs(title = "Outer Route Learned First") + theme_classic() + guides(fill = FALSE)
+  geom_boxplot() + labs(title = "Outer Route Learned First", x = "Path Type", y = "Overlap Percent") + 
+  scale_x_discrete(labels = c("Backward","Diagonal","Forward")) +
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
 plot_right <- ggplot(subset(overlap_melt, first_route_learned == "Inner"), aes(x = path_type, y = overlap_percent, fill = inner_outer_non)) +
-  geom_boxplot() + labs(title = "Inner Route Learned First") + theme_classic()
-grid.arrange(plot_left, plot_right, ncol=2)
+  geom_boxplot() + labs(title = "Inner Route Learned First", x = "Path Type", y = "Overlap Percent") + 
+  scale_x_discrete(labels = c("Backward","Diagonal","Forward")) +
+  theme_classic() + guides(fill = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15))
+
+overlap_pathType <- grid.arrange(plot_left, plot_right, ncol=2)
+
+ggsave("overlap_pathType.jpeg", overlap_pathType ,width = 9, height = 6, units = 'in', dpi = 500)
 
 ##### Navigate excess path dv analyses
+
+navExcess_mean <- mean(cd$Navigate_excessPath, na.rm = TRUE)
+navExcess_sd <- sd(cd$Navigate_excessPath, na.rm = TRUE)
+
+count <- sum(cd$Navigate_excessPath < (navExcess_mean - (3*navExcess_sd))) # none
+count <- sum(cd$Navigate_excessPath > (navExcess_mean + (3*navExcess_sd))) # 9
+
+cd <- subset(cd, !Navigate_excessPath > (navExcess_mean + (3*navExcess_sd)))
 
 # split by which path taught first and how many reps it got
 plot11 <- ggplot(subset(overlap_melt, first_route_learned == "Outer" & outer_reps == "2"), 
@@ -166,9 +276,9 @@ grid.arrange(plot11, plot12, plot21, plot22, plot31, plot32, plot41, plot42, nco
 # Outer and inner excess path
 
 # Stats for a t-test
-t.test_df <- cd[c("subjectID", "first_route_learned", "Navigate_excessPath")]
+t.test_df <- cd[c("subjectID", "first_route_learned", "rep_condition", "Navigate_excessPath")]
 t.test_df <- t.test_df %>%
-  group_by(subjectID, first_route_learned) %>%
+  group_by(subjectID, first_route_learned, rep_condition) %>%
   summarise(
     mean_nav_excessPath = mean(Navigate_excessPath)
   )
@@ -177,12 +287,39 @@ wide_df <- wide_df[, -1]
 
 t.test(wide_df$Outer, wide_df$Inner) # not sig
 
-ggplot(t.test_df, aes(x = first_route_learned, y = mean_nav_excessPath)) +
+navExcess <- ggplot(t.test_df, aes(x = first_route_learned, y = mean_nav_excessPath, fill = rep_condition)) +
   geom_boxplot() + 
-  geom_jitter(color="gray", size=1, width = 0.15) +
+  labs(x = "First Route Learned", y = "Excess Path (mean)", fill = "Repetition Condition") +
+  scale_fill_discrete(labels = c("2/4", "3/6")) +
   theme_classic() +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 16), legend.position = "none") +
-  scale_fill_brewer(palette = "Paired")
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15),
+        legend.position = "top")
+
+ggsave("navExcess.jpeg", navExcess ,width = 6, height = 6, units = 'in', dpi = 500)
+
+### Actual path travelled
+
+ap_df <- actualPath_cd[c("subjectID", "first_route_learned", "rep_condition", "Navigate_actualPath")]
+ap_df <- ap_df %>%
+  group_by(subjectID, first_route_learned, rep_condition) %>%
+  summarise(
+    mean_nav_actualPath = mean(Navigate_actualPath)
+  )
+
+navExcess <- ggplot(ap_df, aes(x = first_route_learned, y = mean_nav_actualPath, fill = rep_condition)) +
+  geom_boxplot() + 
+  labs(x = "First Route Learned", y = "Actual Path (mean)", fill = "Repetition Condition") +
+  scale_fill_discrete(labels = c("2/4", "3/6")) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+        axis.title = element_text(size = 18), axis.text = element_text(size = 15), 
+        legend.title = element_text(size = 18), legend.text = element_text(size = 15),
+        legend.position = "top")
+
+ggsave("navExcess.jpeg", navExcess ,width = 6, height = 6, units = 'in', dpi = 500)
+
 
 ##### Stats
 

@@ -305,10 +305,10 @@ p <- ggplot(outer_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec
   geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
   geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -250, y = 315, label = "Store 1"), size = 7, color = "black") +
-  geom_text(aes(x = 270, y = 135, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 210, y = -275, label = "Store 3"), size = 7, color = "black") +
-  geom_text(aes(x = -220, y = -130, label = "Store 4"), size = 7, color = "black")
+  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
 jpeg("outer_navInOrderSFN.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
@@ -556,18 +556,21 @@ inner_navInOrder_all_dfs <- do.call(rbind, inner_navInOrder_df_list)
 p <- ggplot(inner_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Navigate") +
+  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreate Inner Path") +
   theme(plot.title = element_text(hjust = 0.5, size = 20), 
         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+  scale_y_continuous(breaks = seq(-400,400,100)) +
+  scale_x_continuous(breaks = seq(-400,400,100)) +
   geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
   geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
   geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -250, y = 310, label = "Store 1"), size = 7, color = "black") +
-  geom_text(aes(x = 260, y = 130, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 200, y = -275, label = "Store 3"), size = 7, color = "black") +
-  geom_text(aes(x = -200, y = -130, label = "Store 4"), size = 7, color = "black")
+  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
 jpeg("Inner_navInOrderSFN.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
@@ -760,19 +763,22 @@ p <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
   labs(x = "X", y = "Y", color = "Time (s)", title = "All Navigation Test Trials") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+  scale_y_continuous(breaks = seq(-400,400,100)) +
+  scale_x_continuous(breaks = seq(-400,400,100)) +
   geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
   geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
   geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
-jpeg("all_navTest_trials.jpeg", width = 7, height = 6, units = 'in', res = 500)
+jpeg("all_navTest_trialsSFN.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
 dev.off()
 
@@ -952,23 +958,24 @@ for (i in seq_along(navTest_trials_df_list)) {
     geom_point() +
     scale_color_gradient(low = "lightblue", high = "darkblue") +
     labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
-    theme(plot.title = element_text(hjust = 0.5, size = 16), 
+    theme(plot.title = element_text(hjust = 0.5, size = 20), 
           axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
           legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+    coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+    scale_y_continuous(breaks = seq(-400,400,100)) +
+    scale_x_continuous(breaks = seq(-400,400,100)) +
     geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
     geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
     geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
     geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-    geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-    geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-    geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-    geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
-  
+    geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+    geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+    geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+    geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
   
   # save the plot with a file name based on the index of the data frame
-  ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 7, height = 6, units = 'in', dpi = 500)
+  ggsave(paste0("SFNnavTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
 }
-
 
 ######################## Calculate overlapping grids ###########################
 
