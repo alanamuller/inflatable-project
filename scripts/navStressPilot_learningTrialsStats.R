@@ -24,7 +24,7 @@ learning_route_data <- rename(learning_route_data, outer_overlap = overlap_outer
 learning_route_data <- rename(learning_route_data, inner_overlap = overlap_inner)
 
 # Set working directory again to grab more files
-setwd("D:/Nav Stress Pilot Data/navTestTrials_datasheets")
+setwd("E:/Nav Stress Pilot Data/navTestTrials_datasheets")
 
 # Get a list of all the Excel files in the directory
 excel_files <- list.files(pattern = "\\.xlsx$", full.names = TRUE)
@@ -59,10 +59,16 @@ learning_long_data$path_type <- as.factor(learning_long_data$path_type)
 # add percent of 
 learning_long_data$percent_overlap <- (learning_long_data$overlap / learning_long_data$actual_path_grid_tot) * 100
 
+# uncomment this to save manuscript-quality pics to this folder
+setwd("E:/Nav Stress Pilot Data/pics/SFN2023")
+
 ####################### STATS TIME: Learning Phase #######################
 # Did participants learn the routes they were supposed to?
 
 # overlap by reps
+boxplot(overlap~reps,data=learning_long_data)
+
+# nav excess by reps ### THIS DOESN'T EXIST IN THE DATA SHEET YET PLEASE ADD IT SOON MAYBE BEFORE SFN 2023
 boxplot(overlap~reps,data=learning_long_data)
 
 # overlap by path_type
@@ -89,10 +95,20 @@ aov_means <- learning_long_data %>%
 bxp <- ggboxplot(
   aov_data, x = "path_type", y = "mean", 
   color = "reps", add = "jitter",
-  xlab = "Path type", ylab = "Percent overlap",
-  legend = "right", legend.title = "Route Repeats")
+  xlab = "Path Type", ylab = "Percent Overlap",
+  legend = "right", legend.title = "Route Repeats", 
+  linetype = 1, size = 1) +
+  theme(axis.text.x = element_text(size = 20), 
+        axis.text.y = element_text(size = 20), 
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        legend.title = element_text(size = 20)) +
+  scale_y_continuous(breaks = seq(0,100,5)) + 
+  coord_cartesian(ylim = c(70,100)) +
+  scale_x_discrete(labels = c("Inner", "Outer"))
 
-#jpeg("movement_viewpoint_bxp.jpeg", width = 7, height = 6, units = 'in', res = 500)
+#jpeg("pathType_by_rep.jpeg", width = 8.25, height = 5.75, units = 'in', res = 500)
 bxp
 #dev.off()
 
@@ -136,9 +152,9 @@ bxp <- ggplot(sm_navTestTrials_path_long, aes(x = DV, y = Value)) +
   geom_boxplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 14), 
         axis.text.y = element_text(size = 14))
-jpeg("path_variables.jpeg", width = 5, height = 5, units = 'in', res = 500)
+#jpeg("path_variables.jpeg", width = 5, height = 5, units = 'in', res = 500)
 bxp
-dev.off()
+#dev.off()
 
 # Create faceted plot for overlap by trial type
 bxp <- ggplot(sm_navTestTrials_path_long, aes(x = DV, y = Value)) +
@@ -146,9 +162,9 @@ bxp <- ggplot(sm_navTestTrials_path_long, aes(x = DV, y = Value)) +
   facet_wrap(~ trialType, scales = "free_y", ncol = 2) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
         axis.text.y = element_text(size = 14))
-jpeg("path_variables_trialType.jpeg", width = 5, height = 5, units = 'in', res = 500)
+#jpeg("path_variables_trialType.jpeg", width = 5, height = 5, units = 'in', res = 500)
 bxp
-dev.off()
+#dev.off()
 
 
 
