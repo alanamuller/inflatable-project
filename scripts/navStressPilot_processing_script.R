@@ -298,14 +298,17 @@ p <- ggplot(outer_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec
   theme(plot.title = element_text(hjust = 0.5, size = 20), 
         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+  scale_y_continuous(breaks = seq(-400,400,100)) +
+  scale_x_continuous(breaks = seq(-400,400,100)) +
   geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
   geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
   geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -250, y = 310, label = "Store 1"), size = 7, color = "black") +
-  geom_text(aes(x = 260, y = 130, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 200, y = -2, label = "Store 3"), size = 7, color = "black") +
-  geom_text(aes(x = -200, y = -130, label = "Store 4"), size = 7, color = "black")
+  geom_text(aes(x = -250, y = 315, label = "Store 1"), size = 7, color = "black") +
+  geom_text(aes(x = 270, y = 135, label = "Store 2"), size = 7, color = "black") +
+  geom_text(aes(x = 210, y = -275, label = "Store 3"), size = 7, color = "black") +
+  geom_text(aes(x = -220, y = -130, label = "Store 4"), size = 7, color = "black")
 
 jpeg("outer_navInOrderSFN.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
@@ -563,7 +566,7 @@ p <- ggplot(inner_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec
   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
   geom_text(aes(x = -250, y = 310, label = "Store 1"), size = 7, color = "black") +
   geom_text(aes(x = 260, y = 130, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 200, y = -2, label = "Store 3"), size = 7, color = "black") +
+  geom_text(aes(x = 200, y = -275, label = "Store 3"), size = 7, color = "black") +
   geom_text(aes(x = -200, y = -130, label = "Store 4"), size = 7, color = "black")
 
 jpeg("Inner_navInOrderSFN.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
