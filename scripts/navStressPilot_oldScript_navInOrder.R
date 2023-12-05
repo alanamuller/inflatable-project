@@ -23,13 +23,13 @@ rm(list = ls())
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
- setwd("E:/Nav Stress Pilot Data/pilot2") # for hard drive
+setwd("E:/Nav Stress Pilot Data/pilot2") # for hard drive
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
 ##### Change this to run next subject
 
 subject_num <- "P2_001"
- 
+
 # Load the data
 input_file <- paste(subject_num, ".log", sep = "")
 # input_file <- "mini_test_log.txt"
@@ -144,6 +144,9 @@ matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+LearnActivePath\\s+Ac
 outer_active_df <- data.frame(matches, stringsAsFactors = FALSE)
 colnames(outer_active_df)[1] <- "outer_active_task"
 
+outer_active_df_list <- lapply(seq_len(nrow(outer_active_df)), function(i) data.frame(value = outer_active_df[i, ]))
+
+
 # Loop through each of the dataframes in the list to do the stuff below
 
 for (i in seq_along(outer_active_df_list)) {
@@ -221,18 +224,20 @@ dev.off()
 outer_actual_dist <- totDist(outer_active_df_list[[length(outer_active_df_list)]]$pos_X, outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
 
 
-############# Extract all lines between TASK_START Exploration	NavigationTask and TASK_END Exploration NavigationTask	
+############# Extract all lines between TASK_START Navigate	NavigationTask and TASK_END Navigate NavigationTask	
 
-matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+Exploration\\s+NavigationTask.*?TASK_END\\s+Exploration\\s+NavigationTask")
-outer_recreate1_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(outer_recreate1_df)[1] <- "outer_recreate1_task"
+matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
+outer_navInOrder_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(outer_navInOrder_df)[1] <- "outer_navInOrder_task"
 
-outer_recreate1_df_list <- lapply(seq_len(nrow(outer_recreate1_df)), function(i) data.frame(value = outer_recreate1_df[i, ]))
+outer_navInOrder_df_list <- lapply(seq_len(nrow(outer_navInOrder_df)), function(i) data.frame(value = outer_navInOrder_df[i, ]))
 
-# Run the code below for the one dataframe with the recreated path
+# Loop through each of the dataframes in the list to do the stuff below
 
+for (i in seq_along(outer_navInOrder_df_list)) {
+  
   # Get the dataframe from the list
-  data_df <- outer_recreate1_df
+  data_df <- outer_navInOrder_df_list[[i]]
   
   # Convert the data to a tibble
   data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
@@ -270,16 +275,23 @@ outer_recreate1_df_list <- lapply(seq_len(nrow(outer_recreate1_df)), function(i)
     mutate(time_ms = avatar_number - avatar_initial_number,
            time_sec = time_ms/1000)
   
-  # Update the dataframe in the list
-  outer_recreate1_df <- data_df
+  # Add a column to mark the condition and trial name and number (e.g. outer_passive1)
+  data_df$trialname <- paste0("outer_navInOrder", i)
   
+  # Update the dataframe in the list
+  outer_navInOrder_df_list[[i]] <- data_df
+  
+}
+
+# make one big dataframe with all outer nav in order x z values
+outer_navInOrder_all_dfs <- do.call(rbind, outer_navInOrder_df_list)
 
 # this is the participant's whole traveled path (segments combined together)
-#x <- outer_recreate1_df$pos_X
-#z <- outer_recreate1_df$pos_Z
+#x <- outer_navInOrder_all_dfs$pos_X
+#z <- outer_navInOrder_all_dfs$pos_Z
 #plot(x,z)
 
-p <- ggplot(outer_recreate1_df, aes(x = pos_X, y = pos_Z, color = time_sec)) +
+p <- ggplot(outer_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
   labs(x = "X", y = "Y", color = "Time (s)", title = "Recreated Outer Path") +
@@ -298,7 +310,7 @@ p <- ggplot(outer_recreate1_df, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
   geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
-jpeg("outer_recreate1.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
+jpeg("outer_navInOrder.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
 dev.off()
 
@@ -473,108 +485,20 @@ dev.off()
 # inner path actual path length
 inner_actual_dist <- totDist(inner_active_df_list[[length(inner_active_df_list)]]$pos_X, inner_active_df_list[[length(inner_active_df_list)]]$pos_Z)
 
-############# Extract all lines between TASK_START Exploration	NavigationTask and TASK_END Exploration NavigationTask	
+############# Extract all lines between TASK_START Navigate	NavigationTask and TASK_END Navigate NavigationTask	
 
-matches <- str_extract_all(inner_df[1], "(?s)TASK_START\\s+Exploration\\s+NavigationTask.*?TASK_END\\s+Exploration\\s+NavigationTask")
-inner_recreate1_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(inner_recreate1_df)[1] <- "inner_recreate1_task"
+matches <- str_extract_all(inner_df[1], "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
+inner_navInOrder_df <- data.frame(matches, stringsAsFactors = FALSE)
+colnames(inner_navInOrder_df)[1] <- "inner_navInOrder_task"
 
-# Run the code below for the one dataframe with the recreated path
-
-# Get the dataframe from the list
-data_df <- inner_recreate1_df
-
-# Convert the data to a tibble
-data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
-
-# Use regular expressions to extract the number before "Avatar:"
-data_df <- data_df %>%
-  mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
-
-# Use regular expressions to extract the three numbers after "Position (xyz):"
-data_df <- data_df %>%
-  mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-
-# Split the numbers column into three separate columns
-data_df <- data_df %>%
-  separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
-
-# Use regular expressions to extract the three numbers after "Rotation (xyz):"
-data_df <- data_df %>%
-  mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-
-# Split the numbers column into three separate columns
-data_df <- data_df %>%
-  separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
-
-# Convert the columns to numeric
-data_df <- data_df %>%
-  mutate(across(2:8, as.numeric))
-
-# Remove the rows with NAs
-data_df <- na.omit(data_df)
-
-# Make column for time stamp by making avatar number start from 0
-avatar_initial_number <- data_df$avatar_number[1]
-data_df <- data_df %>%
-  mutate(time_ms = avatar_number - avatar_initial_number,
-         time_sec = time_ms/1000)
-
-# Update the dataframe in the list
-inner_recreate1_df <- data_df
-
-# participant's whole path
-x <- inner_recreate1_df$pos_X
-z <- inner_recreate1_df$pos_Z
-plot(x,z)
-
-
-p <- ggplot(inner_recreate1_df, aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreate Inner Path") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
-  scale_y_continuous(breaks = seq(-400,400,100)) +
-  scale_x_continuous(breaks = seq(-400,400,100)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
-  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
-  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
-
-jpeg("Inner_recreate1.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
-p
-dev.off()
-
-
-##################### Recreating the path at the end of the experiment ##################### 
-
-############# Extract all lines between TASK_START TASK_RecreatePathsAgain and TASK_END TASK_RecreatePathsAgain
-
-matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_RecreatePathsAgain\\s+(.*?)\\s+TASK_END\\s+TASK_RecreatePathsAgain") # finds the data between the start and end point
-recreate2_df <- data.frame(matches, stringsAsFactors = FALSE) # make one big dataframe for recreated paths at the end of experiment
-colnames(recreate2_df)[1] <- "recreate2"
-
-############# Extract all lines between TASK_START Exploration	NavigationTask and TASK_END Exploration NavigationTask	
-
-matches <- str_extract_all(recreate2_df[1], "(?s)TASK_START\\s+Exploration\\s+NavigationTask.*?TASK_END\\s+Exploration\\s+NavigationTask")
-recreate2_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(recreate2_df)[1] <- "recreate2_task"
-
-recreate2_df_list <- lapply(seq_len(nrow(recreate2_df)), function(i) data.frame(value = recreate2_df[i, ]))
+inner_navInOrder_df_list <- lapply(seq_len(nrow(inner_navInOrder_df)), function(i) data.frame(value = inner_navInOrder_df[i, ]))
 
 # Loop through each of the dataframes in the list to do the stuff below
 
-for (i in seq_along(recreate2_df_list)) {
+for (i in seq_along(inner_navInOrder_df_list)) {
   
   # Get the dataframe from the list
-  data_df <- recreate2_df_list[[i]]
+  data_df <- inner_navInOrder_df_list[[i]]
   
   # Convert the data to a tibble
   data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
@@ -613,56 +537,44 @@ for (i in seq_along(recreate2_df_list)) {
            time_sec = time_ms/1000)
   
   # Add a column to mark the condition and trial name and number (e.g. inner_passive1)
-  data_df$trialname <- paste0("inner_active", i)
+  data_df$trialname <- paste0("inner_navInOrder", i)
   
   # Update the dataframe in the list
-  recreate2_df_list[[i]] <- data_df
+  inner_navInOrder_df_list[[i]] <- data_df
   
 }
 
-plot_name <- paste("recreated_path", "1", ".jpg", sep = "")
-p <- ggplot(recreate2_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+# make one big dataframe with all inner nav in order x z values
+inner_navInOrder_all_dfs <- do.call(rbind, inner_navInOrder_df_list)
+
+# participant's whole path
+#x <- inner_navInOrder_all_dfs$pos_X
+#z <- inner_navInOrder_all_dfs$pos_Z
+#plot(x,z)
+
+
+p <- ggplot(inner_navInOrder_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreated Path 1") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreate Inner Path") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20), 
         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+  scale_y_continuous(breaks = seq(-400,400,100)) +
+  scale_x_continuous(breaks = seq(-400,400,100)) +
   geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
   geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
   geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
-jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
+jpeg("Inner_navInOrder.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
 dev.off()
-
-
-plot_name <- paste("recreated_path", "2", ".jpg", sep = "")
-p <- ggplot(recreate2_df_list[[2]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreated Path 2") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
-
-jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
-p
-dev.off()
-
 
 ##################### Getting the closest points to separate the whole active path into four segments #####################
 
@@ -721,7 +633,7 @@ for (i in seq_along(outer_active_seg_list)) {
   # put info in dataframe
   outer_actual_seg_dist <- rbind(outer_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
   
-  }
+}
 
 ########### INNER PATH ###########
 
@@ -973,7 +885,7 @@ for (i in 1:length(inner_passive_df_list)) {
   path_dist <- totDist(inner_passive_df_list[[i]]$pos_X, inner_passive_df_list[[i]]$pos_Z)
   
   # no excess path distance to calculate here
-
+  
   # grab the last value of the time in seconds for path duration
   path_dur <- max(inner_passive_df_list[[i]]$time_sec)
   
