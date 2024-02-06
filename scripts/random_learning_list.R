@@ -19,4 +19,3 @@ rando_list <- sample(list)
 
 print(rando_list)
 
-
