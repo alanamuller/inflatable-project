@@ -663,9 +663,11 @@ log_data <- log_data %>%
 log_data <- log_data %>%
   mutate(target_store_num = if_else(target_store_num == Target04, replaceTarget04, target_store_num))
 
-##### Add column to indicate the starting and ending stores so categorize trials
-log_data$startEnd_store <- 
+# Add column to indicate the starting and ending stores so categorize trials
+log_data$startEnd_store <- paste(lag(log_data$target_store_num), log_data$target_store_num, sep = " ")
 
+# Fix the first entry in the startEnd_store column
+log_data$startEnd_store[1] <- paste(log_data$target_store_num[12], log_data$target_store_num[1], sep = " ")
 
 ####################### Make another dataframe with learning trials: total path length, excess path length, and duration values
 # But this total path distance is comparing the learned path to the traveled path
