@@ -7,32 +7,46 @@ library(openxlsx)
 
 rm(list = ls())
 
-# Store coordinates
-
+# City 1 - Store Coordinates
+#-----------------------------
+# Store 1 - (X,Z): -249.37, 279.16
 # Store 2 - (X,Z): 207.3, 99.9
 # Store 3 - (X,Z): 145.79, -231.68
 # Store 4 - (X,Z): -130.43, -112.92
-# Store 1 - (X,Z): -249.37, 279.16
 
 #points(-249.37, 279.16)
 #points(207.3, 99.9)
 #points(145.79, -231.68)
 #points(-130.43, -112.92)
 
-# run for Ss:
+# City 2 - Store Coordinates
+#-----------------------------
+# Store 1 - (X,Z): -95.22, 107.39
+# Store 2 - (X,Z): 111.44, 246.8
+# Store 3 - (X,Z): 169.62, -79.86
+# Store 4 - (X,Z): -213.14,	-234.83
 
-# Set working directory
-# setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
- setwd("E:/Nav Stress Data/Participant_data/01") # for hard drive
-# setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
+# City 3 - Store Coordinates
+#-----------------------------
+# Store 1 - (X,Z): -152.56, 162.41
+# Store 2 - (X,Z): 209.17, 221.62
+# Store 3 - (X,Z): 266.59, -234.67
+# Store 4 - (X,Z): -249.76, -115.34
 
 ##### Change this to run next subject
 
 subject_num <- "01"
+subject_city <- "city1" # options are "city1", "city2", and "city3"
+
+
+# Set working directory
+# setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
+setwd(paste("E:/Nav Stress Data/Participant_data/", subject_num, sep = ""))
+# setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
+
  
 # Load the data
-# input_file <- paste(subject_num, ".log", sep = "")
-input_file <- "navStress_01_city1_navigation_24-01-31D_13.12.45T.log"
+input_file <- paste(subject_num, "_", subject_city, ".log", sep = "")
 input_data <- paste(readLines(input_file), collapse="\n")
 text <- input_data
 
@@ -744,11 +758,11 @@ for (i in 1:length(inner_active_df_list)) {
 ####################### Make 24 plots for each nav test trial #######################
 
 # loop through a dataframe list to generate a plot for each trial
-for (i in seq_along(navTest_trials_df_list)) {
+for (i in seq_along(navTestTrials_df_list)) {
   # create the plot title name
   plot_title <- paste("Navigation Test Trial ", i)
   # create the ggplot object for the current data frame
-  gg <- ggplot(navTest_trials_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+  gg <- ggplot(navTestTrials_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
     geom_point() +
     scale_color_gradient(low = "lightblue", high = "darkblue") +
     labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
@@ -768,10 +782,8 @@ for (i in seq_along(navTest_trials_df_list)) {
     geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
   
   # save the plot with a file name based on the index of the data frame
-  ggsave(paste0("SFNnavTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
+  ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
 }
-
-
 
 
 
