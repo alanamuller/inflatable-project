@@ -14,6 +14,9 @@ setwd("E:/Nav Stress Data/Salimetrics reports") # for hard drive
 samples9Data <- readxl::read_excel("saliva_data_bySubject.xlsx", sheet = "9samples")
 samples12Data <- readxl::read_excel("saliva_data_bySubject.xlsx", sheet = "12samples")
 
+samples9Data$cort_nmol_L <- samples9Data$mean_cort*276
+samples12Data$cort_nmol_L <- samples12Data$mean_cort*276
+
 small_data <- samples9Data %>% 
   filter(subjNum >= 2 & subjNum <= 3)
 
@@ -34,20 +37,20 @@ summaryStats <- samples9Data%>%
 level_order <- c('pre', 'post1', 'post15', 'post30')
 
 # Plot with all participant separated by condition and time
-ggplot(data = samples9Data, aes(x=factor(time, level = level_order), y=mean_cort)) +
+ggplot(data = samples9Data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
   geom_boxplot() +
   geom_jitter() +
   facet_wrap(vars(condition)) +
   labs(x = "Time", y = "Cortisol")
 
-ggplot(data = samples9Data, aes(x=factor(time, level = level_order), y=mean_cort)) +
+ggplot(data = samples9Data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
   geom_point() +
   geom_line(aes(group = subjNum)) +
   facet_grid(vars(condition)) +
   labs(x = "Time", y = "Cortisol")
 
 
-ggplot(data = small_data, aes(x = factor(time, level = level_order), y = mean_cort, group = condition)) +
+ggplot(data = small_data, aes(x = factor(time, level = level_order), y = cort_nmol_L, group = condition)) +
   geom_point() +
   geom_line(aes(color = condition)) +
   labs(x = "Time", y = "Cortisol")
@@ -55,13 +58,13 @@ ggplot(data = small_data, aes(x = factor(time, level = level_order), y = mean_co
 # Checking for outliers
 samples9Data %>%
   group_by(time) %>%
-  identify_outliers(mean_cort)
+  identify_outliers(cort_nmol_L)
 
 # Checking normality
 samples9Data %>%
   group_by(time) %>%
-  shapiro_test(mean_cort)
+  shapiro_test(cort_nmol_L)
 
 # quick and dirty anova
-res.aov <- anova_test(data = data_fire, dv = mean_cort, wid = subjNum, within = time)
+res.aov <- anova_test(data = data_fire, dv = cort_nmol_L, wid = subjNum, within = time)
 get_anova_table(res.aov)

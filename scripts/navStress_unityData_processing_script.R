@@ -408,112 +408,22 @@ p
 inner_actual_dist <- totDist(inner_active_df_list[[length(inner_active_df_list)]]$pos_X, inner_active_df_list[[length(inner_active_df_list)]]$pos_Z)
 
 
-############# Extract all lines between TASK_START Exploration	NavigationTask and TASK_END Exploration NavigationTask	
+##################################### EXTRACT PATH RECREATION DATA #####################################
 
-matches <- str_extract_all(outer_df[1], "(?s)TASK_START\\s+Exploration\\s+NavigationTask.*?TASK_END\\s+Exploration\\s+NavigationTask")
-outer_recreate1_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(outer_recreate1_df)[1] <- "outer_recreate1_task"
+############# Extract all lines between TASK_START TASK_ExplorationTask and TASK_END TASK_ExplorationTask
 
-outer_recreate1_df_list <- lapply(seq_len(nrow(outer_recreate1_df)), function(i) data.frame(value = outer_recreate1_df[i, ]))
+matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_ExplorationTask\\s+(.*?)\\s+TASK_END\\s+TASK_ExplorationTask") # finds the data between the start and end point
+recreatePath_df <- data.frame(matches, stringsAsFactors = FALSE) # puts each instance into a dataframe - there should be 2 or 4 observations
+colnames(recreatePath_df)[1] <- "recreate_paths"
 
-# Run the code below for the one dataframe with the recreated path
-
-  # Get the dataframe from the list
-  data_df <- outer_recreate1_df
-  
-  # Convert the data to a tibble
-  data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
-  
-  # Use regular expressions to extract the number before "Avatar:"
-  data_df <- data_df %>%
-    mutate(avatar_number = str_extract(data_df, "\\d+(?=\\tAvatar:)"))
-  
-  # Use regular expressions to extract the three numbers after "Position (xyz):"
-  data_df <- data_df %>%
-    mutate(numbers = str_extract_all(data_df, "(?<=Position \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-  
-  # Split the numbers column into three separate columns
-  data_df <- data_df %>%
-    separate(numbers, into = c("pos_X", "pos_Y", "pos_Z"), sep = "\t")
-  
-  # Use regular expressions to extract the three numbers after "Rotation (xyz):"
-  data_df <- data_df %>%
-    mutate(numbers = str_extract_all(data_df, "(?<=Rotation \\(xyz\\): \\s)[0-9.eE+-]+\\s+[0-9.eE+-]+\\s+[0-9.eE+-]+"))
-  
-  # Split the numbers column into three separate columns
-  data_df <- data_df %>%
-    separate(numbers, into = c("rot_X", "rot_Y", "rot_Z"), sep = "\t")
-  
-  # Convert the columns to numeric
-  data_df <- data_df %>%
-    mutate(across(2:8, as.numeric))
-  
-  # Remove the rows with NAs
-  data_df <- na.omit(data_df)
-  
-  # Make column for time stamp by making avatar number start from 0
-  avatar_initial_number <- data_df$avatar_number[1]
-  data_df <- data_df %>%
-    mutate(time_ms = avatar_number - avatar_initial_number,
-           time_sec = time_ms/1000)
-  
-  # Update the dataframe in the list
-  outer_recreate1_df <- data_df
-  
-
-# this is the participant's whole traveled path (segments combined together)
-#x <- outer_recreate1_df$pos_X
-#z <- outer_recreate1_df$pos_Z
-#plot(x,z)
-
-p <- ggplot(outer_recreate1_df, aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreated Outer Path") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
-  scale_y_continuous(breaks = seq(-400,400,100)) +
-  scale_x_continuous(breaks = seq(-400,400,100)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
-  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
-  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
-
-jpeg("outer_recreate1.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
-p
-dev.off()
-
-
-
-
-##################### Recreating the path at the end of the experiment ##################### 
-
-############# Extract all lines between TASK_START TASK_RecreatePathsAgain and TASK_END TASK_RecreatePathsAgain
-
-matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_RecreatePathsAgain\\s+(.*?)\\s+TASK_END\\s+TASK_RecreatePathsAgain") # finds the data between the start and end point
-recreate2_df <- data.frame(matches, stringsAsFactors = FALSE) # make one big dataframe for recreated paths at the end of experiment
-colnames(recreate2_df)[1] <- "recreate2"
-
-############# Extract all lines between TASK_START Exploration	NavigationTask and TASK_END Exploration NavigationTask	
-
-matches <- str_extract_all(recreate2_df[1], "(?s)TASK_START\\s+Exploration\\s+NavigationTask.*?TASK_END\\s+Exploration\\s+NavigationTask")
-recreate2_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(recreate2_df)[1] <- "recreate2_task"
-
-recreate2_df_list <- lapply(seq_len(nrow(recreate2_df)), function(i) data.frame(value = recreate2_df[i, ]))
+recreatePath_df_list <- lapply(seq_len(nrow(recreatePath_df)), function(i) data.frame(value = recreatePath_df[i, ]))
 
 # Loop through each of the dataframes in the list to do the stuff below
 
-for (i in seq_along(recreate2_df_list)) {
+for (i in seq_along(recreatePath_df_list)) {
   
   # Get the dataframe from the list
-  data_df <- recreate2_df_list[[i]]
+  data_df <- recreatePath_df_list[[i]]
   
   # Convert the data to a tibble
   data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
@@ -552,18 +462,18 @@ for (i in seq_along(recreate2_df_list)) {
            time_sec = time_ms/1000)
   
   # Add a column to mark the condition and trial name and number (e.g. inner_passive1)
-  data_df$trialname <- paste0("inner_active", i)
+  data_df$trialname <- paste0("recreatePath", i)
   
   # Update the dataframe in the list
-  recreate2_df_list[[i]] <- data_df
+  recreatePath_df_list[[i]] <- data_df
   
 }
 
-plot_name <- paste("recreated_path", "1", ".jpg", sep = "")
-p <- ggplot(recreate2_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+# make and save a graph
+p <- ggplot(recreatePath_df_list[[4]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
   scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreated Path 1") +
+  labs(x = "X", y = "Y", color = "Time (s)", title = "Path Recreation") +
   theme(plot.title = element_text(hjust = 0.5, size = 16), 
         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
@@ -576,168 +486,33 @@ p <- ggplot(recreate2_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec))
   geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
   geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
-jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
+#jpeg("inner_passive1.jpeg", width = 7, height = 6, units = 'in', res = 500)
 p
-dev.off()
+#dev.off()
 
-
-plot_name <- paste("recreated_path", "2", ".jpg", sep = "")
-p <- ggplot(recreate2_df_list[[2]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Recreated Path 2") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
-
-jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
-p
-dev.off()
-
-
-##################### Getting the closest points to separate the whole active path into four segments #####################
-
-# Define the points to search for (these are the store coordinates)
-search_points <- data.frame(x = c(207.3, 145.79, -130.43, -249.37), y = c(99.9, -231.68, -112.92, 279.16))
-
-########### OUTER PATH ###########
-
-# Find the closest point to each search point
-outer_closest_points <- lapply(1:nrow(search_points), function(i) {
-  
-  # Calculate distances to all points in data frame
-  distances <- sqrt((outer_active_df_list[[length(outer_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (outer_active_df_list[[length(outer_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
-  
-  # Get index of minimum distance
-  min_index <- which.min(distances)
-  
-  # Return x-y values and index of closest point
-  return(data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X[min_index], 
-                    y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z[min_index], 
-                    index = min_index,
-                    time = outer_active_df_list[[length(outer_active_df_list)]]$time_sec[min_index]))
-})
-
-# Combine the closest points into a single data frame
-outer_closest_points_df <- do.call(rbind, outer_closest_points)
-
-# Print the closest points
-print(outer_closest_points_df)
-
-### Make a list of dataframes to segment one path into four paths
-
-# Initialize the dataframe
-outer_active_seg_list <- list()
-
-# Store 1 to store 2
-outer_active_seg_list[[1]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
-  filter(time_sec <= outer_closest_points_df$time[1])
-# Store 2 to store 3
-outer_active_seg_list[[2]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
-  filter(time_sec > outer_closest_points_df$time[1] & time_sec <= outer_closest_points_df$time[2])
-# Store 3 to store 4
-outer_active_seg_list[[3]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
-  filter(time_sec > outer_closest_points_df$time[2] & time_sec <= outer_closest_points_df$time[3])
-# Store 4 to store 1
-outer_active_seg_list[[4]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
-  filter(time_sec > outer_closest_points_df$time[3])
-
-# Make an empty dataframe to put the path segment distance values into
-outer_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
-
-# Fill dataframe with actual path distance values for each segment
-for (i in seq_along(outer_active_seg_list)) {
-  actual_seg_dist <- totDist(outer_active_seg_list[[i]]$pos_X, outer_active_seg_list[[i]]$pos_Z)
-  
-  # put info in dataframe
-  outer_actual_seg_dist <- rbind(outer_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
-  
-  }
-
-########### INNER PATH ###########
-
-# Find the closest point to each search point
-inner_closest_points <- lapply(1:nrow(search_points), function(i) {
-  
-  # Calculate distances to all points in data frame
-  distances <- sqrt((inner_active_df_list[[length(inner_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (inner_active_df_list[[length(inner_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
-  
-  # Get index of minimum distance
-  min_index <- which.min(distances)
-  
-  # Return x-y values and index of closest point
-  return(data.frame(x = inner_active_df_list[[length(inner_active_df_list)]]$pos_X[min_index], 
-                    y = inner_active_df_list[[length(inner_active_df_list)]]$pos_Z[min_index], 
-                    index = min_index,
-                    time = inner_active_df_list[[length(inner_active_df_list)]]$time_sec[min_index]))
-})
-
-# Combine the closest points into a single data frame
-inner_closest_points_df <- do.call(rbind, inner_closest_points)
-
-# Print the closest points
-print(inner_closest_points_df)
-
-### Make a list of dataframes to segment one path into four paths
-
-# Initialize the dataframe
-inner_active_seg_list <- list()
-
-# Store 1 to store 2
-inner_active_seg_list[[1]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
-  filter(time_sec <= inner_closest_points_df$time[1])
-# Store 2 to store 3
-inner_active_seg_list[[2]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
-  filter(time_sec > inner_closest_points_df$time[1] & time_sec <= inner_closest_points_df$time[2])
-# Store 3 to store 4
-inner_active_seg_list[[3]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
-  filter(time_sec > inner_closest_points_df$time[2] & time_sec <= inner_closest_points_df$time[3])
-# Store 4 to store 1
-inner_active_seg_list[[4]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
-  filter(time_sec > inner_closest_points_df$time[3])
-
-# Make an empty dataframe to put the path segment distance values into
-inner_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
-
-# Fill dataframe with actual path distance values for each segment
-for (i in seq_along(inner_active_seg_list)) {
-  actual_seg_dist <- totDist(inner_active_seg_list[[i]]$pos_X, inner_active_seg_list[[i]]$pos_Z)
-  
-  # put info in dataframe
-  inner_actual_seg_dist <- rbind(inner_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
-  
-}
 
 ##################################### RETRIEVE: NAVIGATION TASK #####################################
 
-############# Extract all lines between TASK_START TASK_NavigationTest and TASK_END TASK_NavigationTest
+############# Extract all lines between TASK_START NavigationTrials and TASK_END NavigationTrials
 
-matches <- str_extract_all(text, "(?s)TASK_START\\s+TASK_NavigationTest\\s+(.*?)\\s+TASK_END\\s+TASK_NavigationTest") # finds the data between the start and end point
-navTest_df <- data.frame(matches, stringsAsFactors = FALSE) # creates a dataframe with a row being each chunk of data 
-colnames(navTest_df)[1] <- "navInOrder_task" # renames the first column
+matches <- str_extract_all(text, "(?s)TASK_START\\s+NavigationTrials\\s+(.*?)\\s+TASK_END\\s+NavigationTrials") # finds the data between the start and end point
+navTestBlocks_df <- data.frame(matches, stringsAsFactors = FALSE) # creates a dataframe with a row being each chunk of data 
+colnames(navTestBlocks_df)[1] <- "navTestBlocks" # renames the first column
 
-############# Extract all lines between TASK_START	Navigate	NavigationTask and TASK_END	Navigate	NavigationTask
+############# Extract all lines between TASK_START	Navigate and TASK_END	Navigate
 
-matches <- str_extract_all(navTest_df[1], "(?s)TASK_START\\s+Navigate\\s+NavigationTask.*?TASK_END\\s+Navigate\\s+NavigationTask")
-navTest_trials_df <- data.frame(matches, stringsAsFactors = FALSE)
-colnames(navTest_trials_df)[1] <- "navTest_trials_task"
+matches <- str_extract_all(text, "(?s)TASK_START\\s+Navigate\\s+(.*?)\\s+TASK_END\\s+Navigate") # finds the data between the start and end point
+navTestTrials_df <- data.frame(matches, stringsAsFactors = FALSE) # creates a dataframe with a row being each chunk of data 
+colnames(navTestTrials_df)[1] <- "navTestTrials" # renames the first column
 
-navTest_trials_df_list <- lapply(seq_len(nrow(navTest_trials_df)), function(i) data.frame(value = navTest_trials_df[i, ]))
+navTestTrials_df_list <- lapply(seq_len(nrow(navTestTrials_df)), function(i) data.frame(value = navTestTrials_df[i, ]))
 
 # Loop through each of the dataframes in the list to do the stuff below
 
-for (i in seq_along(navTest_trials_df_list)) {
+for (i in seq_along(navTestTrials_df_list)) {
   
   # Get the dataframe from the list
-  data_df <- navTest_trials_df_list[[i]]
+  data_df <- navTestTrials_df_list[[i]]
   
   # Convert the data to a tibble
   data_df <- tibble(data_df = str_split(data_df, "\n")[[1]])
@@ -779,12 +554,12 @@ for (i in seq_along(navTest_trials_df_list)) {
   data_df$trialname <- paste0("navTest_trials", i)
   
   # Update the dataframe in the list
-  navTest_trials_df_list[[i]] <- data_df
+  navTestTrials_df_list[[i]] <- data_df
   
 }
 
-# make one big dataframe with all nav trials' x z values
-navTest_all_dfs <- do.call(rbind, navTest_trials_df_list)
+# make one big dataframe with all nav trials' x z values to make a graph
+navTest_all_dfs <- do.call(rbind, navTestTrials_df_list)
 
 p <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_point() +
@@ -805,9 +580,9 @@ p <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
   geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
   geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
-jpeg("all_navTest_trials.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
+#jpeg("all_navTest_trials.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
 p
-dev.off()
+#dev.off()
 
 ############# Make another dataframe pulling the numbers that Mike generated in the avatar log (has optimal path)
 ############# This data frame combines with the overlapping segment code at the bottom
@@ -840,6 +615,57 @@ log_data$subjectID <- subject_num
 
 # Make the subjectID column the first column
 log_data <- log_data[c(ncol(log_data), 1:ncol(log_data)-1)]
+
+############### Add store numbers to log_data
+
+# Make a duplicate column of Navigate_target so we can replace the names with store numbers
+log_data$target_store_num <- log_data$Navigate_target
+
+# Get store names for Targets 01-04
+pattern <- "Target01:\\s*(.*?)\\s*Position:" # Find the words between "Target01:" and "Position:"
+hits <- regmatches(text, gregexpr(pattern, text, perl = TRUE)) # Extract the words between "Target01:" and "Position:"
+combined_matches <- paste(unlist(hits), collapse = " ") # Combine all matches into a single entry
+extracted_text <- gsub("Target01:\\s*|\\s*Position:", "", combined_matches) # Remove "Target01:" and "Position:" from the combined matches
+Target01 <- extracted_text
+replaceTarget01 <- "Store1"
+
+pattern <- "Target02:\\s*(.*?)\\s*Position:" # Find the words between "Target02:" and "Position:"
+hits <- regmatches(text, gregexpr(pattern, text, perl = TRUE)) # Extract the words between "Target02:" and "Position:"
+combined_matches <- paste(unlist(hits), collapse = " ") # Combine all matches into a single entry
+extracted_text <- gsub("Target02:\\s*|\\s*Position:", "", combined_matches) # Remove "Target02:" and "Position:" from the combined matches
+Target02 <- extracted_text
+replaceTarget02 <- "Store2"
+
+pattern <- "Target03:\\s*(.*?)\\s*Position:" # Find the words between "Target03:" and "Position:"
+hits <- regmatches(text, gregexpr(pattern, text, perl = TRUE)) # Extract the words between "Target03:" and "Position:"
+combined_matches <- paste(unlist(hits), collapse = " ") # Combine all matches into a single entry
+extracted_text <- gsub("Target03:\\s*|\\s*Position:", "", combined_matches) # Remove "Target03:" and "Position:" from the combined matches
+Target03 <- extracted_text
+replaceTarget03 <- "Store3"
+
+pattern <- "Target04:\\s*(.*?)\\s*Position:" # Find the words between "Target04:" and "Position:"
+hits <- regmatches(text, gregexpr(pattern, text, perl = TRUE)) # Extract the words between "Target04:" and "Position:"
+combined_matches <- paste(unlist(hits), collapse = " ") # Combine all matches into a single entry
+extracted_text <- gsub("Target04:\\s*|\\s*Position:", "", combined_matches) # Remove "Target04:" and "Position:" from the combined matches
+Target04 <- extracted_text
+replaceTarget04 <- "Store4"
+
+# Replace Target number with Store number
+log_data <- log_data %>%
+  mutate(target_store_num = if_else(target_store_num == Target01, replaceTarget01, target_store_num))
+
+log_data <- log_data %>%
+  mutate(target_store_num = if_else(target_store_num == Target02, replaceTarget02, target_store_num))
+
+log_data <- log_data %>%
+  mutate(target_store_num = if_else(target_store_num == Target03, replaceTarget03, target_store_num))
+
+log_data <- log_data %>%
+  mutate(target_store_num = if_else(target_store_num == Target04, replaceTarget04, target_store_num))
+
+##### Add column to indicate the starting and ending stores so categorize trials
+log_data$startEnd_store <- 
+
 
 ####################### Make another dataframe with learning trials: total path length, excess path length, and duration values
 # But this total path distance is comparing the learned path to the traveled path
@@ -880,31 +706,6 @@ for (i in 1:length(outer_active_df_list)) {
   
 }
 
-########## OUTER NAV IN ORDER WHOLE PATH ##########
-path_dist <- totDist(outer_navInOrder_all_dfs$pos_X, outer_navInOrder_all_dfs$pos_Z)
-excess_path <- path_dist - outer_actual_dist
-path_dur <- sum(max(outer_navInOrder_df_list[[1]]$time_sec), max(outer_navInOrder_df_list[[2]]$time_sec),
-                max(outer_navInOrder_df_list[[3]]$time_sec), max(outer_navInOrder_df_list[[4]]$time_sec))
-
-path_dist_df <- rbind(path_dist_df, data.frame(trialname = "outer_navInOrder_all", total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
-
-########## OUTER NAV IN ORDER SEGMENTS ##########
-for (i in 1:length(outer_navInOrder_df_list)) {
-  
-  # calculate the total path distance
-  path_dist <- totDist(outer_navInOrder_df_list[[i]]$pos_X, outer_navInOrder_df_list[[i]]$pos_Z)
-  
-  # calculate excess path distances
-  excess_path = path_dist - outer_actual_seg_dist[i, 1]
-  
-  # grab the last value of the time in seconds for path duration
-  path_dur <- max(outer_navInOrder_df_list[[i]]$time_sec)
-  
-  # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_navInOrder_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
-  
-}
-
 ########## INNER PASSIVE ##########
 for (i in 1:length(inner_passive_df_list)) {
   
@@ -938,42 +739,6 @@ for (i in 1:length(inner_active_df_list)) {
   
 }
 
-########## INNER NAV IN ORDER WHOLE PATH ##########
-path_dist <- totDist(inner_navInOrder_all_dfs$pos_X, inner_navInOrder_all_dfs$pos_Z)
-excess_path <- path_dist - inner_actual_dist
-path_dur <- sum(max(inner_navInOrder_df_list[[1]]$time_sec), max(inner_navInOrder_df_list[[2]]$time_sec),
-                max(inner_navInOrder_df_list[[3]]$time_sec), max(inner_navInOrder_df_list[[4]]$time_sec))
-
-path_dist_df <- rbind(path_dist_df, data.frame(trialname = "inner_navInOrder_all", total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
-
-########## INNER NAV IN ORDER SEGMENTS ##########
-for (i in 1:length(inner_navInOrder_df_list)) {
-  
-  # calculate the total path distance
-  path_dist <- totDist(inner_navInOrder_df_list[[i]]$pos_X, inner_navInOrder_df_list[[i]]$pos_Z)
-  
-  # calculate excess path distances
-  excess_path = path_dist - inner_actual_seg_dist[i, 1]
-  
-  # grab the last value of the time in seconds for path duration
-  path_dur <- max(inner_navInOrder_df_list[[i]]$time_sec)
-  
-  # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_navInOrder_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
-  
-}
-
-# Add a column for subject ID
-path_dist_df$subjectID <- subject_num
-
-# Make the subjectID column the first column
-path_dist_df <- path_dist_df[c(ncol(path_dist_df), 1:ncol(path_dist_df)-1)]
-
-# write dataframe to an excel file
-
-file_name <- paste(subject_num, "_partial_data.xlsx", sep = "")
-write.xlsx(path_dist_df, file_name, rowNames = FALSE)
-
 ####################### Make 24 plots for each nav test trial #######################
 
 # loop through a dataframe list to generate a plot for each trial
@@ -1003,6 +768,12 @@ for (i in seq_along(navTest_trials_df_list)) {
   # save the plot with a file name based on the index of the data frame
   ggsave(paste0("SFNnavTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
 }
+
+
+
+
+
+
 
 ######################## Calculate overlapping grids ###########################
 
@@ -1153,3 +924,116 @@ overlap_navInOrder_df <- overlap_navInOrder_df[c(ncol(overlap_navInOrder_df), 1:
 file_name <- paste(subject_num, "_overlapLearningTrials.xlsx", sep = "")
 write.xlsx(overlap_navInOrder_df, file_name, rowNames = FALSE)
 
+
+##################### Getting the closest points to separate the whole active path into four segments #####################
+
+# Define the points to search for (these are the store coordinates)
+search_points <- data.frame(x = c(207.3, 145.79, -130.43, -249.37), y = c(99.9, -231.68, -112.92, 279.16))
+
+########### OUTER PATH ###########
+
+# Find the closest point to each search point
+outer_closest_points <- lapply(1:nrow(search_points), function(i) {
+  
+  # Calculate distances to all points in data frame
+  distances <- sqrt((outer_active_df_list[[length(outer_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (outer_active_df_list[[length(outer_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
+  
+  # Get index of minimum distance
+  min_index <- which.min(distances)
+  
+  # Return x-y values and index of closest point
+  return(data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X[min_index], 
+                    y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z[min_index], 
+                    index = min_index,
+                    time = outer_active_df_list[[length(outer_active_df_list)]]$time_sec[min_index]))
+})
+
+# Combine the closest points into a single data frame
+outer_closest_points_df <- do.call(rbind, outer_closest_points)
+
+# Print the closest points
+print(outer_closest_points_df)
+
+### Make a list of dataframes to segment one path into four paths
+
+# Initialize the dataframe
+outer_active_seg_list <- list()
+
+# Store 1 to store 2
+outer_active_seg_list[[1]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec <= outer_closest_points_df$time[1])
+# Store 2 to store 3
+outer_active_seg_list[[2]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[1] & time_sec <= outer_closest_points_df$time[2])
+# Store 3 to store 4
+outer_active_seg_list[[3]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[2] & time_sec <= outer_closest_points_df$time[3])
+# Store 4 to store 1
+outer_active_seg_list[[4]] <- outer_active_df_list[[length(outer_active_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[3])
+
+# Make an empty dataframe to put the path segment distance values into
+outer_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
+
+# Fill dataframe with actual path distance values for each segment
+for (i in seq_along(outer_active_seg_list)) {
+  actual_seg_dist <- totDist(outer_active_seg_list[[i]]$pos_X, outer_active_seg_list[[i]]$pos_Z)
+  
+  # put info in dataframe
+  outer_actual_seg_dist <- rbind(outer_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
+  
+}
+
+########### INNER PATH ###########
+
+# Find the closest point to each search point
+inner_closest_points <- lapply(1:nrow(search_points), function(i) {
+  
+  # Calculate distances to all points in data frame
+  distances <- sqrt((inner_active_df_list[[length(inner_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (inner_active_df_list[[length(inner_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
+  
+  # Get index of minimum distance
+  min_index <- which.min(distances)
+  
+  # Return x-y values and index of closest point
+  return(data.frame(x = inner_active_df_list[[length(inner_active_df_list)]]$pos_X[min_index], 
+                    y = inner_active_df_list[[length(inner_active_df_list)]]$pos_Z[min_index], 
+                    index = min_index,
+                    time = inner_active_df_list[[length(inner_active_df_list)]]$time_sec[min_index]))
+})
+
+# Combine the closest points into a single data frame
+inner_closest_points_df <- do.call(rbind, inner_closest_points)
+
+# Print the closest points
+print(inner_closest_points_df)
+
+### Make a list of dataframes to segment one path into four paths
+
+# Initialize the dataframe
+inner_active_seg_list <- list()
+
+# Store 1 to store 2
+inner_active_seg_list[[1]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec <= inner_closest_points_df$time[1])
+# Store 2 to store 3
+inner_active_seg_list[[2]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[1] & time_sec <= inner_closest_points_df$time[2])
+# Store 3 to store 4
+inner_active_seg_list[[3]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[2] & time_sec <= inner_closest_points_df$time[3])
+# Store 4 to store 1
+inner_active_seg_list[[4]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[3])
+
+# Make an empty dataframe to put the path segment distance values into
+inner_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
+
+# Fill dataframe with actual path distance values for each segment
+for (i in seq_along(inner_active_seg_list)) {
+  actual_seg_dist <- totDist(inner_active_seg_list[[i]]$pos_X, inner_active_seg_list[[i]]$pos_Z)
+  
+  # put info in dataframe
+  inner_actual_seg_dist <- rbind(inner_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
+  
+}
