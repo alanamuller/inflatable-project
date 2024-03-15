@@ -2,8 +2,9 @@ library(stringr)
 library(tidyverse)
 library(dplyr)
 library(openxlsx)
+library(longitudinalData)
 
-# Made by Alana Muller with a lot of help from ChatGPT
+# Made blongitudinalData# Made by Alana Muller with a lot of help from ChatGPT
 
 rm(list = ls())
 
@@ -33,11 +34,16 @@ rm(list = ls())
 # Store 3 - (X,Z): 266.59, -234.67
 # Store 4 - (X,Z): -249.76, -115.34
 
+
+##### Read in file with subject, condition, and city data
+setwd("E:/Nav Stress Data/") # set working directory
+
+subj_cond_city_data <- read.xlsx("subj_cond_city.xlsx") # read in file
+
 ##### Change this to run next subject
 
-subject_num <- "01"
+subject_num <- "1"
 subject_city <- "city1" # options are "city1", "city2", and "city3"
-
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
@@ -683,6 +689,12 @@ log_data$startEnd_store <- paste(lag(log_data$target_store_num), log_data$target
 # Fix the first entry in the startEnd_store column
 log_data$startEnd_store[1] <- paste(log_data$target_store_num[12], log_data$target_store_num[1], sep = " ")
 
+##### Add a column to the log_data sheet indicating the condition
+# Get the condition name from the subj_cond_city_data
+condition_name <- subj_cond_city_data$condition[subj_cond_city_data$subjectID == as.numeric(subject_num) & subj_cond_city_data$cityNum == subject_city]
+
+log_data$condition <- condition_name # add the column to log_data
+
 ####################### Make another dataframe with learning trials: total path length, excess path length, and duration values
 # But this total path distance is comparing the learned path to the traveled path
 
@@ -755,7 +767,7 @@ for (i in 1:length(inner_active_df_list)) {
   
 }
 
-####################### Make 24 plots for each nav test trial #######################
+####################### Make plots for each nav test trial #######################
 
 # loop through a dataframe list to generate a plot for each trial
 for (i in seq_along(navTestTrials_df_list)) {
@@ -785,7 +797,13 @@ for (i in seq_along(navTestTrials_df_list)) {
   ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
 }
 
+############# Frechet's distance analyses
+# (path 1 time, path 1 values of trajectory, path 2 time, path 2 values of trajectory)
 
+p1t <- outer_passive_df_list[[1]]$time_sec
+p1vot <- tibble(column1 = outer_passive_df_list[[1]]$pos_X, column2 = outer_passive_df_list[[1]]$pos_Z)
 
+p2t <- outer_passive_df_list[[2]]$time_sec
+p2vot <- tibble(column1 = outer_passive_df_list[[2]]$pos_X, column2 = outer_passive_df_list[[2]]$pos_Z)
 
-
+distFrechet(p1t, p1vot, p2t, p2vot)
