@@ -7,6 +7,7 @@
 
 library(sp)
 library(raster)
+library(sf)
 
 # define the extent of the area you want to cover
 xmin <- -400
@@ -26,7 +27,6 @@ area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax
 # create a SpatialGrid object to represent the grid over the area
 grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
 grid_sp <- SpatialGrid(grid)
-
 
 ################### For navigation test trials ###################
 
@@ -52,10 +52,37 @@ grid_total_inner <- length(unique_innerPath_grids)
 
 # plot the grid and the x-y coordinates within the area
 plot(grid_sp)
-plot(outerPath_sp, add = TRUE, col = "red")
+plot(outerPath_sp, add = TRUE, col = "red", cex = 0.1)
 
 plot(grid_sp)
-plot(innerPath_sp, add = TRUE, col = "red")
+plot(innerPath_sp, add = TRUE, col = "red", cex = 0.1)
+
+
+
+
+##################################################### just testing some stuff #######################################
+
+grid_poly <- as(grid_sp, "SpatialPolygons")
+
+# Define the group of indices you want to color red
+indices_to_color_red <- c(5, 10, 15)  # Example: indices 5, 10, and 15
+
+# Extract polygons corresponding to the selected indices
+selected_polygons <- grid_poly[indices_to_color_red]
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
+plot(grid_poly, add = TRUE)
+
+# Plot the selected polygons in red
+plot(selected_polygons, col = "red", add = TRUE)
+
+
+
+
+
+#####################################################################################################################
+
 
 # Get the indices of the overlapping grids of the inner and outer paths
 inner_outer_overlap <- intersect(outerPath_grid, innerPath_grid)

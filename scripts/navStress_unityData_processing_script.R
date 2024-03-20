@@ -3,6 +3,10 @@ library(tidyverse)
 library(dplyr)
 library(openxlsx)
 library(longitudinalData)
+library(RDP)
+library(ggpubr)
+library(ggplot2)
+
 
 # Made blongitudinalData# Made by Alana Muller with a lot of help from ChatGPT
 
@@ -42,8 +46,10 @@ subj_cond_city_data <- read.xlsx("subj_cond_city.xlsx") # read in file
 
 ##### Change this to run next subject
 
-subject_num <- "1"
-subject_city <- "city1" # options are "city1", "city2", and "city3"
+# for my presentation, 1-13 except 4
+
+subject_num <- "13"
+subject_city <- "city3" # options are "city1", "city2", and "city3"
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
@@ -140,24 +146,24 @@ for (i in seq_along(outer_passive_df_list)) {
 }
 
 # make and save a graph
-p <- ggplot(outer_passive_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Outer Path Passive Learning 1") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+#p <- ggplot(outer_passive_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+#  geom_point() +
+#  scale_color_gradient(low = "lightblue", high = "darkblue") +
+#  labs(x = "X", y = "Y", color = "Time (s)", title = "Outer Path Passive Learning 1") +
+#  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+#        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+#  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+#  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+#  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+#  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+#  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
+#  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
+#  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
+#  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
 #jpeg("outer_passive1.jpeg", width = 7, height = 6, units = 'in', res = 500)
-p
+#p
 #dev.off()
 
 ############# Extract all lines between TASK_START LearnActivePath and TASK_END LearnActivePath
@@ -223,25 +229,25 @@ for (i in seq_along(outer_active_df_list)) {
 }
 
 # make and save graph of last outer active
-plot_name <- paste("outer_active", length(outer_active_df_list), ".jpg",sep = "")
-p <- ggplot(outer_active_df_list[[length(outer_active_df_list)]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Outer Path Active Learning 4") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+#plot_name <- paste("outer_active", length(outer_active_df_list), ".jpg",sep = "")
+#p <- ggplot(outer_active_df_list[[length(outer_active_df_list)]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+#  geom_point() +
+#  scale_color_gradient(low = "lightblue", high = "darkblue") +
+#  labs(x = "X", y = "Y", color = "Time (s)", title = "Outer Path Active Learning 4") +
+#  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+#        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+#  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+#  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+#  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+#  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+#  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
+#  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
+#  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
+#  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
 #jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
-p
+#p
 #dev.off()
 
 # Use last trial as the actual whole path length
@@ -320,24 +326,24 @@ for (i in seq_along(inner_passive_df_list)) {
 }
 
 # make and save a graph
-p <- ggplot(inner_passive_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Passive Learning 1") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+#p <- ggplot(inner_passive_df_list[[1]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+#  geom_point() +
+#  scale_color_gradient(low = "lightblue", high = "darkblue") +
+#  labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Passive Learning 1") +
+#  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+#        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+#  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+#  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+#  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+#  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+#  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
+#  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
+#  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
+#  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
 #jpeg("inner_passive1.jpeg", width = 7, height = 6, units = 'in', res = 500)
-p
+#p
 #dev.off()
 
 ############# Extract all lines between TASK_START LearnActivePath and TASK_END LearnActivePath
@@ -403,25 +409,25 @@ for (i in seq_along(inner_active_df_list)) {
 }
 
 # make and save graph of last inner active
-plot_name <- paste("inner_active", length(inner_active_df_list), ".jpg",sep = "")
-p <- ggplot(inner_active_df_list[[length(inner_active_df_list)]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Active Learning 4") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+#plot_name <- paste("inner_active", length(inner_active_df_list), ".jpg",sep = "")
+#p <- ggplot(inner_active_df_list[[length(inner_active_df_list)]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+#  geom_point() +
+#  scale_color_gradient(low = "lightblue", high = "darkblue") +
+#  labs(x = "X", y = "Y", color = "Time (s)", title = "Inner Path Active Learning 4") +
+#  theme(plot.title = element_text(hjust = 0.5, size = 16), 
+#        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+#  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+#  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+#  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+#  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+#  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
+#  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
+#  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
+#  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
 #jpeg(plot_name, width = 7, height = 6, units = 'in', res = 500)
-p
+#p
 #dev.off()
 
 # Use last trial as the actual whole path length
@@ -489,27 +495,32 @@ for (i in seq_along(recreatePath_df_list)) {
   
 }
 
+# Loop through each path recreation and generate a plot for each one
 # make and save a graph
-p <- ggplot(recreatePath_df_list[[3]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "Path Recreation") +
-  theme(plot.title = element_text(hjust = 0.5, size = 16), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
-  geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
-  geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
-  geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
 
-#jpeg("inner_passive1.jpeg", width = 7, height = 6, units = 'in', res = 500)
-p
-#dev.off()
-
+#for (i in seq_along(recreatePath_df_list)) {
+  # Create the plot title name
+#  plot_title <- paste("Path Recreation " , i, sep = "")
+  # Create plot
+#  gg <- ggplot(recreatePath_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+#   geom_point() +
+#   scale_color_gradient(low = "lightblue", high = "darkblue") +
+#   labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
+#   theme(plot.title = element_text(hjust = 0.5, size = 16), 
+#         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+#   geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+#   geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+#   geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+#   geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+#   geom_text(aes(x = -280, y = 300, label = "Store 1"), size = 4, color = "black") +
+#   geom_text(aes(x = 255, y = 110, label = "Store 2"), size = 4, color = "black") +
+#   geom_text(aes(x = 200, y = -235, label = "Store 3"), size = 4, color = "black") +
+#   geom_text(aes(x = -160, y = -135, label = "Store 4"), size = 4, color = "black")
+  
+  # Save the plot
+# ggsave(paste0("path_recreate", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
+#}
 
 ##################################### RETRIEVE: NAVIGATION TASK #####################################
 
@@ -579,30 +590,29 @@ for (i in seq_along(navTestTrials_df_list)) {
 }
 
 # make one big dataframe with all nav trials' x z values to make a graph
-navTest_all_dfs <- do.call(rbind, navTestTrials_df_list)
+#navTest_all_dfs <- do.call(rbind, navTestTrials_df_list)
 
-p <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
-  geom_point() +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "X", y = "Y", color = "Time (s)", title = "All Navigation Test Trials") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20), 
-        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
-  scale_y_continuous(breaks = seq(-400,400,100)) +
-  scale_x_continuous(breaks = seq(-400,400,100)) +
-  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
-  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
-  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
-  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
+#all_nav_plot <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
+# geom_point() +
+# scale_color_gradient(low = "lightblue", high = "darkblue") +
+# labs(x = "X", y = "Y", color = "Time (s)", title = "All Navigation Test Trials") +
+# theme(plot.title = element_text(hjust = 0.5, size = 20), 
+#       axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#       legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+# coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+# scale_y_continuous(breaks = seq(-400,400,100)) +
+# scale_x_continuous(breaks = seq(-400,400,100)) +
+# geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+# geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+# geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+# geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+# geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+# geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+# geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+# geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
 
-#jpeg("all_navTest_trials.jpeg", width = 6.5, height = 5.5, units = 'in', res = 500)
-p
-#dev.off()
+#ggsave("all_navTest_trials.jpeg", all_nav_plot, width = 6.5, height = 5.5, units = 'in', dpi = 500)
+
 
 ############# Make another dataframe pulling the numbers that Mike generated in the avatar log (has optimal path)
 ############# This data frame combines with the overlapping segment code at the bottom
@@ -695,11 +705,16 @@ condition_name <- subj_cond_city_data$condition[subj_cond_city_data$subjectID ==
 
 log_data$condition <- condition_name # add the column to log_data
 
+log_data$city <- subject_city
+
+# Save log_data to csv file
+write.csv(log_data, paste("E:/Nav Stress Data/Participant_data/navTrialsLogData", subject_num, "_", subject_city, ".csv", sep = ""), row.names = FALSE)
+
 ####################### Make another dataframe with learning trials: total path length, excess path length, and duration values
 # But this total path distance is comparing the learned path to the traveled path
 
 # Make an empty dataframe to put the path distance values into
-path_dist_df <- data.frame(trialname = character(), total_path_distance = numeric(), excess_path_distance = numeric(), path_duration = numeric(), stringsAsFactors = FALSE)
+learning_path_df <- data.frame(trialname = character(), total_path_distance = numeric(), excess_path_distance = numeric(), path_duration = numeric(), stringsAsFactors = FALSE)
 
 ########## OUTER PASSIVE ##########
 for (i in 1:length(outer_passive_df_list)) {
@@ -713,7 +728,7 @@ for (i in 1:length(outer_passive_df_list)) {
   path_dur <- max(outer_passive_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_passive_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "N/A", path_duration = path_dur))
+  learning_path_df <- rbind(learning_path_df, data.frame(trialname = outer_passive_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "N/A", path_duration = path_dur))
   
 }
 
@@ -730,7 +745,7 @@ for (i in 1:length(outer_active_df_list)) {
   path_dur <- max(outer_active_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = outer_active_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
+  learning_path_df <- rbind(learning_path_df, data.frame(trialname = outer_active_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
   
 }
 
@@ -746,7 +761,7 @@ for (i in 1:length(inner_passive_df_list)) {
   path_dur <- max(inner_passive_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_passive_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "N/A", path_duration = path_dur))
+  learning_path_df <- rbind(learning_path_df, data.frame(trialname = inner_passive_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = "N/A", path_duration = path_dur))
   
 }
 
@@ -763,47 +778,40 @@ for (i in 1:length(inner_active_df_list)) {
   path_dur <- max(inner_active_df_list[[i]]$time_sec)
   
   # put all the info together, including trial name
-  path_dist_df <- rbind(path_dist_df, data.frame(trialname = inner_active_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
+  learning_path_df <- rbind(learning_path_df, data.frame(trialname = inner_active_df_list[[i]][1, 11]$trialname, total_path_distance = path_dist, excess_path_distance = excess_path, path_duration = path_dur))
   
 }
+
+# Save learning_path_df to csv file
+write.csv(learning_path_df, paste("E:/Nav Stress Data/Participant_data/learningTrialsLogData_", subject_num, "_", subject_city, ".csv", sep = ""), row.names = FALSE)
+
 
 ####################### Make plots for each nav test trial #######################
 
 # loop through a dataframe list to generate a plot for each trial
-for (i in seq_along(navTestTrials_df_list)) {
+#for (i in seq_along(navTestTrials_df_list)) {
   # create the plot title name
-  plot_title <- paste("Navigation Test Trial ", i)
+  #plot_title <- paste("Navigation Test Trial ", i)
   # create the ggplot object for the current data frame
-  gg <- ggplot(navTestTrials_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-    geom_point() +
-    scale_color_gradient(low = "lightblue", high = "darkblue") +
-    labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
-    theme(plot.title = element_text(hjust = 0.5, size = 20), 
-          axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-          legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-    coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
-    scale_y_continuous(breaks = seq(-400,400,100)) +
-    scale_x_continuous(breaks = seq(-400,400,100)) +
-    geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
-    geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
-    geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
-    geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
-    geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
-    geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
-    geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
-    geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
+  #gg <- ggplot(navTestTrials_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+  #  geom_point() +
+  #  scale_color_gradient(low = "lightblue", high = "darkblue") +
+  #  labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
+  #  theme(plot.title = element_text(hjust = 0.5, size = 20), 
+  #        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+  #        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+  #  coord_cartesian(ylim = c(-350,350), xlim = c(-350,350)) +
+  #  scale_y_continuous(breaks = seq(-400,400,100)) +
+  #  scale_x_continuous(breaks = seq(-400,400,100)) +
+  #  geom_point(aes(x = -249.37, y = 279.16), size = 5, color = "red") +
+  #  geom_point(aes(x = 207.3, y = 99.9), size = 5, color = "red") +
+  #  geom_point(aes(x = 145.79, y = -231.68), size = 5, color = "red") +
+  #  geom_point(aes(x = -130.43, y = -112.92), size = 5, color = "red") +
+  #  geom_text(aes(x = -300, y = 350, label = "Store 1"), size = 7, color = "black") +
+  #  geom_text(aes(x = 280, y = 140, label = "Store 2"), size = 7, color = "black") +
+  #  geom_text(aes(x = 220, y = -275, label = "Store 3"), size = 7, color = "black") +
+  #  geom_text(aes(x = -230, y = -130, label = "Store 4"), size = 7, color = "black")
   
   # save the plot with a file name based on the index of the data frame
-  ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
-}
-
-############# Frechet's distance analyses
-# (path 1 time, path 1 values of trajectory, path 2 time, path 2 values of trajectory)
-
-p1t <- outer_passive_df_list[[1]]$time_sec
-p1vot <- tibble(column1 = outer_passive_df_list[[1]]$pos_X, column2 = outer_passive_df_list[[1]]$pos_Z)
-
-p2t <- outer_passive_df_list[[2]]$time_sec
-p2vot <- tibble(column1 = outer_passive_df_list[[2]]$pos_X, column2 = outer_passive_df_list[[2]]$pos_Z)
-
-distFrechet(p1t, p1vot, p2t, p2vot)
+  #ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
+#}

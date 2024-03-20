@@ -3,6 +3,7 @@ library(ggpubr)
 library(rstatix)
 library(readxl)
 library(magrittr)
+library(dplyr)
 
 # Start fresh by removing everything from the environment
 rm(list = ls())
@@ -16,6 +17,8 @@ samples12Data <- readxl::read_excel("saliva_data_bySubject.xlsx", sheet = "12sam
 
 samples9Data$cort_nmol_L <- samples9Data$mean_cort*276
 samples12Data$cort_nmol_L <- samples12Data$mean_cort*276
+
+all_data <- rbind(samples9Data, samples12Data)
 
 small_data <- samples9Data %>% 
   filter(subjNum >= 2 & subjNum <= 3)
@@ -36,6 +39,30 @@ summaryStats <- samples9Data%>%
 # Set the order of the x-axis
 level_order <- c('pre', 'post1', 'post15', 'post30')
 
+
+##### Pics of all data
+
+# Plot with all participant separated by condition and time
+ggplot(data = all_data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
+  geom_boxplot() +
+  geom_jitter() +
+  facet_wrap(vars(condition)) +
+  labs(x = "Time", y = "Cortisol (nmol/L)" )
+
+ggplot(data = all_data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
+  geom_point() +
+  geom_line(aes(group = subjNum)) +
+  facet_grid(vars(condition)) +
+  labs(x = "Time", y = "Cortisol (nmol/L)" )
+
+bxp <- ggboxplot(
+  all_data, x = "time", y = "cort_nmol_L", 
+  color = "condition"
+)
+bxp
+
+##### Pics of 9 sample data
+
 # Plot with all participant separated by condition and time
 ggplot(data = samples9Data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
   geom_boxplot() +
@@ -49,22 +76,46 @@ ggplot(data = samples9Data, aes(x=factor(time, level = level_order), y=cort_nmol
   facet_grid(vars(condition)) +
   labs(x = "Time", y = "Cortisol")
 
+##### Pics of 12 sample data
 
-ggplot(data = small_data, aes(x = factor(time, level = level_order), y = cort_nmol_L, group = condition)) +
-  geom_point() +
-  geom_line(aes(color = condition)) +
+# Plot with all participant separated by condition and time
+ggplot(data = samples12Data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
+  geom_boxplot() +
+  geom_jitter() +
+  facet_wrap(vars(condition)) +
   labs(x = "Time", y = "Cortisol")
 
-# Checking for outliers
-samples9Data %>%
-  group_by(time) %>%
+ggplot(data = samples12Data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
+  geom_point() +
+  geom_line(aes(group = subjNum)) +
+  facet_grid(vars(condition)) +
+  labs(x = "Time", y = "Cortisol")
+
+########## Checking assumptions
+
+##### All data
+
+# all_data outliers
+outliers_allData <- all_data %>%
+  group_by(time, condition) %>%
   identify_outliers(cort_nmol_L)
 
+mean_cort <- mean(all_data$cort_nmol_L)
+sd_cort <- sd(all_data$cort_nmol_L)
+
+no_outliers_allData <- subset(all_data, all_data$cort_nmol_L > mean_cort - sd_cort*2.5 & all_data$cort_nmol_L < mean_cort + sd_cort*2.5)
+
+no_outliers_allData$log_cort <- log(no_outliers_allData$cort_nmol_L)
+
 # Checking normality
-samples9Data %>%
+ggqqplot(no_outliers_allData$cort_nmol_L)
+hist(no_outliers_allData$cort_nmol_L)
+hist(log(no_outliers_allData$cort_nmol_L))
+
+normality_allData <- no_outliers_allData %>%
   group_by(time) %>%
-  shapiro_test(cort_nmol_L)
+  shapiro_test(log_cort)
 
 # quick and dirty anova
-res.aov <- anova_test(data = data_fire, dv = cort_nmol_L, wid = subjNum, within = time)
+res.aov <- anova_test(data = no_outliers_allData, dv = log_cort, wid = subjNum, within = c(condition,time))
 get_anova_table(res.aov)
