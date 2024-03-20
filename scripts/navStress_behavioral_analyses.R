@@ -12,6 +12,8 @@ rm(list = ls())
 setwd("E:/Nav Stress Data/Participant_data/") # set working directory
 
 myData <- read.xlsx("navTrialsLog.xlsx") # read in file
+sotData <- read.xlsx("SOT_data.xlsx") # read in SOT data
+
 
 # Make some columns factors
 myData$subjectID <- as.factor(myData$subjectID)
@@ -120,5 +122,75 @@ bxp_trialType_dur <- ggboxplot(
   color = "block", add = "jitter")
 bxp_trialType_dur
 
+########## SOT corr with excess path and duration
+small_data <- cleanData %>%
+  group_by(subjectID) %>%
+  summarize(mean_log_excess = mean(log_excessPath, na.rm = TRUE), 
+            sd_log_excess = sd(log_excessPath, na.rm = TRUE),
+            mean_log_dur = mean(log_duration, na.rm = TRUE), 
+            sd_log_dur = sd(log_duration, na.rm = TRUE))
+  
+# combine the data from SOT to the small data frame to make sure data from the same subjects are paired
+small_data$SOT_average <- sotData$SOT_average
+small_data$SOT_stdev <- sotData$SOT_stdev
 
+# get rid of outliers
+outliers_small_data <- small_data %>%
+  identify_outliers(SOT_average)
 
+mean_SOT <- mean(small_data$SOT_average)
+sd_SOT <- sd(small_data$SOT_average)
+
+NO_small_data <- subset(small_data, small_data$SOT_average > mean_SOT - sd_SOT*2.5 & small_data$SOT_average < mean_SOT + sd_SOT*2.5)
+
+# plot SOT by mean log excess path
+x <- NO_small_data$SOT_average
+y <- NO_small_data$mean_log_excess
+
+ggplot(NO_small_data, aes(x = x, y = y)) +
+  geom_point() +
+  theme_classic() +
+  labs(x = "Average SOT Score", y = "Mean Log Excess Path") +
+  stat_cor(method = "pearson", label.x = 30, label.y = 6) +
+  stat_smooth(method = "lm",
+              formula = y ~ x, 
+              geom = "smooth")
+
+# plot SOT by sd log excess path
+x <- NO_small_data$SOT_average
+y <- NO_small_data$sd_log_excess
+
+ggplot(NO_small_data, aes(x = x, y = y)) +
+  geom_point() +
+  theme_classic() +
+  labs(x = "Average SOT Score", y = "SD Log Excess Path") +
+  stat_cor(method = "pearson", label.x = 30, label.y = 1.5) +
+  stat_smooth(method = "lm",
+              formula = y ~ x, 
+              geom = "smooth")
+
+# plot SOT by mean log duration
+x <- NO_small_data$SOT_average
+y <- NO_small_data$mean_log_dur
+
+ggplot(NO_small_data, aes(x = x, y = y)) +
+  geom_point() +
+  theme_classic() +
+  labs(x = "Average SOT Score", y = "Mean Log Duration") +
+  stat_cor(method = "pearson", label.x = 30, label.y = 4) +
+  stat_smooth(method = "lm",
+              formula = y ~ x, 
+              geom = "smooth")
+
+# plot SOT by sd log duration
+x <- NO_small_data$SOT_average
+y <- NO_small_data$sd_log_dur
+
+ggplot(NO_small_data, aes(x = x, y = y)) +
+  geom_point() +
+  theme_classic() +
+  labs(x = "Average SOT Score", y = "SD Log Duration") +
+  stat_cor(method = "pearson", label.x = 30, label.y = 1) +
+  stat_smooth(method = "lm",
+              formula = y ~ x, 
+              geom = "smooth")
