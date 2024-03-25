@@ -40,7 +40,8 @@ rm(list = ls())
 
 
 ##### Read in file with subject, condition, and city data
-setwd("E:/Nav Stress Data/") # set working directory
+#setwd("E:/Nav Stress Data/") # set working directory
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress shortcuts") # for developing
 
 subj_cond_city_data <- read.xlsx("subj_cond_city.xlsx") # read in file
 
@@ -48,12 +49,12 @@ subj_cond_city_data <- read.xlsx("subj_cond_city.xlsx") # read in file
 
 # for my presentation, 1-13 except 4
 
-subject_num <- "13"
-subject_city <- "city3" # options are "city1", "city2", and "city3"
+subject_num <- "1"
+subject_city <- "city1" # options are "city1", "city2", and "city3"
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
-setwd(paste("E:/Nav Stress Data/Participant_data/", subject_num, sep = ""))
+#setwd(paste("E:/Nav Stress Data/Participant_data/", subject_num, sep = ""))
 # setwd("C:/Users/almul/OneDrive/Desktop/Alana/UA/HSCL/Stress Shortcuts")
 
  

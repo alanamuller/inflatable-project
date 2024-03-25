@@ -27,7 +27,7 @@ area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax
 # create a SpatialGrid object to represent the grid over the area
 grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
 grid_sp <- SpatialGrid(grid)
-
+plot(grid_sp)
 ################### For navigation test trials ###################
 
 # outer path actual (active learning phase)
@@ -46,6 +46,9 @@ innerPath_grid <- over(innerPath_sp, grid_sp)
 unique_outerPath_grids <- unique(outerPath_grid)
 unique_innerPath_grids <- unique(innerPath_grid)
 
+# find the shared indices between the two paths
+shared_indices <- intersect(unique_outerPath_grids, unique_innerPath_grids)
+
 # find the total number of grids each path uses
 grid_total_outer <- length(unique_outerPath_grids)
 grid_total_inner <- length(unique_innerPath_grids)
@@ -57,29 +60,87 @@ plot(outerPath_sp, add = TRUE, col = "red", cex = 0.1)
 plot(grid_sp)
 plot(innerPath_sp, add = TRUE, col = "red", cex = 0.1)
 
-
-
-
-##################################################### just testing some stuff #######################################
+##### Fill in the grids of where participants navigated
 
 grid_poly <- as(grid_sp, "SpatialPolygons")
 
 # Define the group of indices you want to color red
-indices_to_color_red <- c(5, 10, 15)  # Example: indices 5, 10, and 15
+indices_to_color_red <- unique_outerPath_grids # Example: indices 5, 10, and 15
+indices_to_color_blue <- unique_innerPath_grids
+indices_to_color_purple <- shared_indices
 
-# Extract polygons corresponding to the selected indices
-selected_polygons <- grid_poly[indices_to_color_red]
+#  Extract polygons corresponding to the selected indices
+selected_polygons_red <- grid_poly[indices_to_color_red]
+selected_polygons_blue <- grid_poly[indices_to_color_blue]
+selected_polygons_purple <- grid_poly[shared_indices]
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
 plot(grid_poly, add = TRUE)
 
 # Plot the selected polygons in red
-plot(selected_polygons, col = "red", add = TRUE)
+plot(selected_polygons_red, col = "red", add = TRUE)
+plot(selected_polygons_blue, col = "blue", add = TRUE)
+plot(selected_polygons_purple, col = "purple", add = TRUE)
 
+# Add index numbers to each cell - this is just to make sure the correct cells are plotted
+for (i in 1:ncellx) {
+  for (j in 1:ncelly) {
+    cell_index <- (j - 1) * ncellx + i  # Calculate the index of the current cell
+    cell_center_x <- xmin + (i - 0.5) * cellsize
+    cell_center_y <- ymax - (j - 0.5) * cellsize  # Calculate the y-coordinate to move down the rows
+    text(cell_center_x, cell_center_y, labels = cell_index, cex = 0.4)
+  }
+}
 
+######### Testing two outer passive paths
 
+# outer path actual (active learning phase)
+outerPassive1_df <- data.frame(x = outer_passive_df_list[[1]]$pos_X, y = outer_passive_df_list[[1]]$pos_Z)
+outerPassive1_sp <- SpatialPoints(outerPassive1_df)
 
+# inner path actual (active learning phase)
+outerPassive2_df <- data.frame(x = outer_passive_df_list[[2]]$pos_X, y = outer_passive_df_list[[2]]$pos_Z)
+outerPassive2_sp <- SpatialPoints(outerPassive2_df)
+
+# use the "over()" function to find which grids contain the x-y coordinates
+outerPassive1_grid <- over(outerPassive1_sp, grid_sp)
+outerPassive2_grid <- over(outerPassive2_sp, grid_sp)
+
+# find the unique numbers for each of the paths representing the total grids the path uses
+unique_outerPassive1_grids <- unique(outerPassive1_grid)
+unique_outerPassive2_grids <- unique(outerPassive2_grid)
+
+# find the total number of grids each path uses
+grid_total_outerPassive1 <- length(unique_outerPassive1_grids)
+grid_total_outerPassive2 <- length(unique_outerPassive2_grids)
+
+# plot the grid and the x-y coordinates within the area
+plot(grid_sp)
+plot(outerPassive1_sp, add = TRUE, col = "red", cex = 0.1)
+
+plot(grid_sp)
+plot(outerPassive2_sp, add = TRUE, col = "red", cex = 0.1)
+
+##### Fill in the grids of where participants navigated
+
+grid_poly <- as(grid_sp, "SpatialPolygons")
+
+# Define the group of indices you want to color red
+indices_to_color_red <- unique_outerPassive1_grids
+indices_to_color_blue <- unique_outerPassive2_grids
+
+# Extract polygons corresponding to the selected indices
+selected_polygons_red <- grid_poly[indices_to_color_red]
+selected_polygons_blue <- grid_poly[indices_to_color_blue]
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
+plot(grid_poly, add = TRUE)
+
+# Plot the selected polygons in red
+plot(selected_polygons_red, col = "red", add = TRUE)
+plot(selected_polygons_blue, col = "blue", add = TRUE)
 
 #####################################################################################################################
 
