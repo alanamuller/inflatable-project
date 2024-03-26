@@ -816,3 +816,363 @@ write.csv(learning_path_df, paste("E:/Nav Stress Data/Participant_data/learningT
   # save the plot with a file name based on the index of the data frame
   #ggsave(paste0("navTest_trial", i, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
 #}
+
+
+################################################################################
+######################## Calculate overlapping grids ###########################
+
+library(sp)
+library(raster)
+library(sf)
+
+# define the extent of the area you want to cover - used the corners of the environment output by unity
+xmin <- -361
+xmax <- 379
+ymin <- -346
+ymax <- 393
+
+# define the number of cells in the x and y directions
+ncellx <- 37 # 37
+ncelly <- 37 # 37
+
+cellsize <- ((xmax - xmin)/ ncellx)
+
+# create a SpatialPolygons object to represent the area
+area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax, xmin), c(ymin, ymin, ymax, ymax)))), ID = "1")))
+
+# create a SpatialGrid object to represent the grid over the area
+grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
+grid_sp <- SpatialGrid(grid)
+
+################### For navigation test trials ###################
+
+# outer path actual (active learning phase)
+outerPath_df <- data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X, y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
+outerPath_sp <- SpatialPoints(outerPath_df)
+
+# inner path actual (active learning phase)
+innerPath_df <- data.frame(x = inner_active_df_list[[length(inner_active_df_list)]]$pos_X, y = inner_active_df_list[[length(inner_active_df_list)]]$pos_Z)
+innerPath_sp <- SpatialPoints(innerPath_df)
+
+# use the "over()" function to find which grids contain the x-y coordinates
+outerPath_grid <- over(outerPath_sp, grid_sp)
+innerPath_grid <- over(innerPath_sp, grid_sp)
+
+# find the unique numbers for each of the paths representing the total grids the path uses
+unique_outerPath_grids <- unique(outerPath_grid)
+unique_innerPath_grids <- unique(innerPath_grid)
+
+# find the shared indices between the two paths
+shared_indices <- intersect(unique_outerPath_grids, unique_innerPath_grids)
+
+# find the total number of grids each path uses
+grid_total_outer <- length(unique_outerPath_grids)
+grid_total_inner <- length(unique_innerPath_grids)
+
+##### Fill in the grids of where participants navigated
+
+grid_poly <- as(grid_sp, "SpatialPolygons")
+
+# Define the group of indices you want to color red
+indices_to_color_red <- unique_outerPath_grids # Example: indices 5, 10, and 15
+indices_to_color_blue <- unique_innerPath_grids
+indices_to_color_purple <- shared_indices
+
+#  Extract polygons corresponding to the selected indices
+selected_polygons_red <- grid_poly[indices_to_color_red]
+selected_polygons_blue <- grid_poly[indices_to_color_blue]
+selected_polygons_purple <- grid_poly[shared_indices]
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
+plot(grid_poly, add = TRUE)
+
+# Plot the selected polygons in red
+plot(selected_polygons_red, col = "red", add = TRUE)
+plot(selected_polygons_blue, col = "blue", add = TRUE)
+plot(selected_polygons_purple, col = "purple", add = TRUE)
+
+# Add index numbers to each cell - this is just to make sure the correct cells are plotted
+#for (i in 1:ncellx) {
+#  for (j in 1:ncelly) {
+#    cell_index <- (j - 1) * ncellx + i  # Calculate the index of the current cell
+#    cell_center_x <- xmin + (i - 0.5) * cellsize
+#    cell_center_y <- ymax - (j - 0.5) * cellsize  # Calculate the y-coordinate to move down the rows
+#    text(cell_center_x, cell_center_y, labels = cell_index, cex = 0.4)
+#  }
+#}
+
+######### Testing two outer passive paths
+
+# outer path actual (active learning phase)
+outerPassive1_df <- data.frame(x = outer_passive_df_list[[1]]$pos_X, y = outer_passive_df_list[[1]]$pos_Z)
+outerPassive1_sp <- SpatialPoints(outerPassive1_df)
+
+# inner path actual (active learning phase)
+outerPassive2_df <- data.frame(x = outer_passive_df_list[[2]]$pos_X, y = outer_passive_df_list[[2]]$pos_Z)
+outerPassive2_sp <- SpatialPoints(outerPassive2_df)
+
+# use the "over()" function to find which grids contain the x-y coordinates
+outerPassive1_grid <- over(outerPassive1_sp, grid_sp)
+outerPassive2_grid <- over(outerPassive2_sp, grid_sp)
+
+# find the unique numbers for each of the paths representing the total grids the path uses
+unique_outerPassive1_grids <- unique(outerPassive1_grid)
+unique_outerPassive2_grids <- unique(outerPassive2_grid)
+
+# find the shared indices between the two paths
+shared_indices <- intersect(outerPassive1_grid, outerPassive2_grid)
+
+# find the total number of grids each path uses
+grid_total_outerPassive1 <- length(unique_outerPassive1_grids)
+grid_total_outerPassive2 <- length(unique_outerPassive2_grids)
+
+##### Fill in the grids of where participants navigated
+
+grid_poly <- as(grid_sp, "SpatialPolygons")
+
+# Define the group of indices you want to color red
+indices_to_color_red <- unique_outerPassive1_grids
+indices_to_color_blue <- unique_outerPassive2_grids
+indices_to_color_purple <- shared_indices
+
+# Extract polygons corresponding to the selected indices
+selected_polygons_red <- grid_poly[indices_to_color_red]
+selected_polygons_blue <- grid_poly[indices_to_color_blue]
+selected_polygons_purple <- grid_poly[indices_to_color_purple]
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
+plot(grid_poly, add = TRUE)
+
+# Plot the selected polygons in red
+plot(selected_polygons_red, col = "red", add = TRUE)
+plot(selected_polygons_blue, col = "blue", add = TRUE)
+plot(selected_polygons_purple, col = "purple", add = TRUE)
+
+#####################################################################################################################
+# This section needs working on #
+
+
+# Get the indices of the overlapping grids of the inner and outer paths
+inner_outer_overlap <- intersect(outerPath_grid, innerPath_grid)
+
+# Count the number of overlapping segments for outer and inner path - should be 0
+num_inner_outer_overlap <- length(inner_outer_overlap)
+
+# Create a dataframe to put the data in
+overlap_counts_df <- data.frame(overlap_outer = numeric(), overlap_inner = numeric(), nonoverlapping_grid_num = numeric(), total_grids_trial = numeric(), stringsAsFactors = FALSE)
+
+# do a loop to count the overlaps and put it in a dataframe
+
+for (i in 1:length(navTest_trials_df_list)) {
+  
+  # traveled path (Navigation Test 24 trials)
+  navTestTrial_df <- data.frame(x = navTest_trials_df_list[[i]]$pos_X, y = navTest_trials_df_list[[i]]$pos_Z)
+  navTestTrial_sp <- SpatialPoints(navTestTrial_df)
+  
+  # use the "over()" function to find which grids contain the x-y coordinates
+  navTestTrial_grid <- over(navTestTrial_sp, grid_sp)
+  
+  # find the unique numbers for each of the paths representing the total grids the path uses
+  unique_navTestTrial_grids <- unique(navTestTrial_grid)
+  
+  # find the total number of grids each path uses
+  grid_total_trial <- length(unique_navTestTrial_grids)
+  
+  # Get the indices of the overlapping grids with outer and inner paths
+  overlap_outer_indices <- intersect(outerPath_grid, navTestTrial_grid)
+  overlap_inner_indices <- intersect(innerPath_grid, navTestTrial_grid)
+  
+  # Count the number of overlapping and non-overlapping grids
+  num_overlapping_outer <- length(overlap_outer_indices)
+  num_overlapping_inner <- length(overlap_inner_indices)
+  non_overlapping <- grid_total_trial - (length(overlap_outer_indices) + length(overlap_inner_indices))
+  
+  # Add data to the dataframe
+  overlap_counts_df <- rbind(overlap_counts_df, data.frame(overlap_outer = num_overlapping_outer, overlap_inner = num_overlapping_inner, 
+                                                           nonoverlapping_grid_num = non_overlapping, total_grids_trial = grid_total_trial))
+}
+
+pilot_data_processed <- cbind(log_data, overlap_counts_df)
+
+# write dataframe to an excel file
+file_name <- paste(subject_num, "_navTestTrials.xlsx", sep = "")
+write.xlsx(pilot_data_processed, file_name, rowNames = FALSE)
+
+
+
+
+##################### Getting the closest points to separate the whole passive path into four segments #####################
+##################### To find out which paths people found the shortcuts
+
+# Define the points to search for (these are the City 1 store coordinates)
+search_points <- data.frame(x = c(-249.37, 207.3, 145.79, -130.43), y = c(279.16, 99.9, -231.68, -112.92))
+
+########### OUTER PATH ###########
+
+# Find the closest point to each search point
+outer_closest_points <- lapply(1:nrow(search_points), function(i) {
+  
+  # Calculate distances to all points in data frame
+  distances <- sqrt((outer_passive_df_list[[length(outer_passive_df_list)]]$pos_X - search_points[i, "x"])^2 + (outer_passive_df_list[[length(outer_passive_df_list)]]$pos_Z - search_points[i, "y"])^2)
+  
+  # Get index of minimum distance
+  min_index <- which.min(distances)
+  
+  # Return x-y values and index of closest point
+  return(data.frame(x = outer_passive_df_list[[length(outer_passive_df_list)]]$pos_X[min_index], 
+                    y = outer_passive_df_list[[length(outer_passive_df_list)]]$pos_Z[min_index], 
+                    index = min_index,
+                    time = outer_passive_df_list[[length(outer_passive_df_list)]]$time_sec[min_index]))
+})
+
+# Combine the closest points into a single data frame
+outer_closest_points_df <- do.call(rbind, outer_closest_points)
+
+### Make a list of dataframes to segment one path into four paths
+
+# Initialize the dataframe
+outer_passive_seg_list <- list()
+
+# Store 1 to store 2
+outer_passive_seg_list[[1]] <- outer_passive_df_list[[length(outer_passive_df_list)]] %>%
+  filter(time_sec <= outer_closest_points_df$time[2])
+# Store 2 to store 3
+outer_passive_seg_list[[2]] <- outer_passive_df_list[[length(outer_passive_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[2] & time_sec <= outer_closest_points_df$time[3])
+# Store 3 to store 4
+outer_passive_seg_list[[3]] <- outer_passive_df_list[[length(outer_passive_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[3] & time_sec <= outer_closest_points_df$time[4])
+# Store 4 to store 1
+outer_passive_seg_list[[4]] <- outer_passive_df_list[[length(outer_passive_df_list)]] %>%
+  filter(time_sec > outer_closest_points_df$time[4])
+
+# Make an empty dataframe to put the path segment distance values into
+outer_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
+
+# Fill dataframe with actual path distance values for each segment # Might not need this anymore
+for (i in seq_along(outer_passive_seg_list)) {
+  actual_seg_dist <- totDist(outer_passive_seg_list[[i]]$pos_X, outer_passive_seg_list[[i]]$pos_Z)
+  
+  # put info in dataframe
+  outer_actual_seg_dist <- rbind(outer_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
+}
+
+##### Store 1 to Store 2 path
+out_s1s2_df <- data.frame(x = outer_passive_seg_list[[1]]$pos_X, y = outer_passive_seg_list[[1]]$pos_Z) # define the dataframe
+out_s1s2_sp <- SpatialPoints(out_s1s2_df) # turn it into spatial data
+out_s1s2_grid <- over(out_s1s2_sp, grid_sp) # use the "over()" function to find which grids contain the x-y coordinates
+unique_out_s1s2_grids <- unique(out_s1s2_grid) # find the unique numbers for each of the paths representing the total grids the path uses
+grid_total_out_s1s2 <- length(unique_out_s1s2_grids) # find the total number of grids each path uses
+indices_to_color_red <- unique_out_s1s2_grids # Define the group of indices you want to color red
+selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corresponding to the selected indices
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
+plot(grid_poly, add = TRUE) # plot grid
+plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
+
+##### Store 2 to Store 3 path
+out_s2s3_df <- data.frame(x = outer_passive_seg_list[[2]]$pos_X, y = outer_passive_seg_list[[2]]$pos_Z) # define the dataframe
+out_s2s3_sp <- SpatialPoints(out_s2s3_df) # turn it into spatial data
+out_s2s3_grid <- over(out_s2s3_sp, grid_sp) # use the "over()" function to find which grids contain the x-y coordinates
+unique_out_s2s3_grids <- unique(out_s2s3_grid) # find the unique numbers for each of the paths representing the total grids the path uses
+grid_total_out_s2s3 <- length(unique_out_s2s3_grids) # find the total number of grids each path uses
+indices_to_color_red <- unique_out_s2s3_grids # Define the group of indices you want to color red
+selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corresponding to the selected indices
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
+plot(grid_poly, add = TRUE) # plot grid
+plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
+
+##### Store 3 to Store 4 path
+out_s3s4_df <- data.frame(x = outer_passive_seg_list[[3]]$pos_X, y = outer_passive_seg_list[[3]]$pos_Z) # define the dataframe
+out_s3s4_sp <- SpatialPoints(out_s3s4_df) # turn it into spatial data
+out_s3s4_grid <- over(out_s3s4_sp, grid_sp) # use the "over()" function to find which grids contain the x-y coordinates
+unique_out_s3s4_grids <- unique(out_s3s4_grid) # find the unique numbers for each of the paths representing the total grids the path uses
+grid_total_out_s3s4 <- length(unique_out_s3s4_grids) # find the total number of grids each path uses
+indices_to_color_red <- unique_out_s3s4_grids # Define the group of indices you want to color red
+selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corresponding to the selected indices
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
+plot(grid_poly, add = TRUE) # plot grid
+plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
+
+##### Store 4 to Store 1 path
+out_s4s1_df <- data.frame(x = outer_passive_seg_list[[4]]$pos_X, y = outer_passive_seg_list[[4]]$pos_Z) # define the dataframe
+out_s4s1_sp <- SpatialPoints(out_s4s1_df) # turn it into spatial data
+out_s4s1_grid <- over(out_s4s1_sp, grid_sp) # use the "over()" function to find which grids contain the x-y coordinates
+unique_out_s4s1_grids <- unique(out_s4s1_grid) # find the unique numbers for each of the paths representing the total grids the path uses
+grid_total_out_s4s1 <- length(unique_out_s4s1_grids) # find the total number of grids each path uses
+indices_to_color_red <- unique_out_s4s1_grids # Define the group of indices you want to color red
+selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corresponding to the selected indices
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
+plot(grid_poly, add = TRUE) # plot grid
+plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
+
+
+
+
+
+
+
+########### INNER PATH ###########
+
+# Find the closest point to each search point
+inner_closest_points <- lapply(1:nrow(search_points), function(i) {
+  
+  # Calculate distances to all points in data frame
+  distances <- sqrt((inner_active_df_list[[length(inner_active_df_list)]]$pos_X - search_points[i, "x"])^2 + (inner_active_df_list[[length(inner_active_df_list)]]$pos_Z - search_points[i, "y"])^2)
+  
+  # Get index of minimum distance
+  min_index <- which.min(distances)
+  
+  # Return x-y values and index of closest point
+  return(data.frame(x = inner_active_df_list[[length(inner_active_df_list)]]$pos_X[min_index], 
+                    y = inner_active_df_list[[length(inner_active_df_list)]]$pos_Z[min_index], 
+                    index = min_index,
+                    time = inner_active_df_list[[length(inner_active_df_list)]]$time_sec[min_index]))
+})
+
+# Combine the closest points into a single data frame
+inner_closest_points_df <- do.call(rbind, inner_closest_points)
+
+# Print the closest points
+print(inner_closest_points_df)
+
+### Make a list of dataframes to segment one path into four paths
+
+# Initialize the dataframe
+inner_active_seg_list <- list()
+
+# Store 1 to store 2
+inner_active_seg_list[[1]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec <= inner_closest_points_df$time[1])
+# Store 2 to store 3
+inner_active_seg_list[[2]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[1] & time_sec <= inner_closest_points_df$time[2])
+# Store 3 to store 4
+inner_active_seg_list[[3]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[2] & time_sec <= inner_closest_points_df$time[3])
+# Store 4 to store 1
+inner_active_seg_list[[4]] <- inner_active_df_list[[length(inner_active_df_list)]] %>%
+  filter(time_sec > inner_closest_points_df$time[3])
+
+# Make an empty dataframe to put the path segment distance values into
+inner_actual_seg_dist <- data.frame(segment_distance = numeric(), stringsAsFactors = FALSE)
+
+# Fill dataframe with actual path distance values for each segment
+for (i in seq_along(inner_active_seg_list)) {
+  actual_seg_dist <- totDist(inner_active_seg_list[[i]]$pos_X, inner_active_seg_list[[i]]$pos_Z)
+  
+  # put info in dataframe
+  inner_actual_seg_dist <- rbind(inner_actual_seg_dist, data.frame(segment_distance = actual_seg_dist))
+  
+}
+
+
