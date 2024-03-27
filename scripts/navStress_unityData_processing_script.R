@@ -735,7 +735,7 @@ log_data$city <- subject_city
 
 # Make an empty dataframe to put the data into
 recreate_paths_log <- data.frame(trialname = character(), total_path_distance = numeric(), excess_path_outer_dist = numeric(), 
-                                 excess_path_inner_dist = numeric(), path_duration = numeric(), stringsAsFactors = FALSE)
+                                 excess_path_inner_dist = numeric(), path_duration = numeric())
 
 for (i in 1:length(recreatePath_df_list)) {
   
@@ -756,6 +756,7 @@ for (i in 1:length(recreatePath_df_list)) {
                                                              excess_path_outer_dist = excess_path_outer, excess_path_inner_dist = excess_path_inner, 
                                                              path_duration = path_dur))
 }
+
 
 ####################### Make another dataframe with learning trials: total path length, excess path length, and duration values
 # But this total path distance is comparing the learned path to the traveled path
@@ -885,10 +886,6 @@ area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax
 grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
 grid_sp <- SpatialGrid(grid)
 
-
-
-
-
 # outer path actual (passive learning phase)
 outerPath_df <- data.frame(x = outer_passive_df_list[[1]]$pos_X, y = outer_passive_df_list[[1]]$pos_Z)
 outerPath_sp <- SpatialPoints(outerPath_df)
@@ -897,48 +894,43 @@ outerPath_sp <- SpatialPoints(outerPath_df)
 innerPath_df <- data.frame(x = inner_passive_df_list[[1]]$pos_X, y = inner_passive_df_list[[1]]$pos_Z)
 innerPath_sp <- SpatialPoints(innerPath_df)
 
-
-
-
-# recreated paths
-recreate1_df <- data.frame(x = recreatePath_df_list[[1]]$pos_X, y = recreatePath_df_list[[1]]$pos_Z)
-recreate1_sp <- SpatialPoints(recreate1_df)
-
-recreate2_df <- data.frame(x = recreatePath_df_list[[2]]$pos_X, y = recreatePath_df_list[[2]]$pos_Z)
-recreate2_sp <- SpatialPoints(recreate2_df)
-
-recreate3_df <- data.frame(x = recreatePath_df_list[[3]]$pos_X, y = recreatePath_df_list[[3]]$pos_Z)
-recreate3_sp <- SpatialPoints(recreate3_df)
-
-recreate4_df <- data.frame(x = recreatePath_df_list[[4]]$pos_X, y = recreatePath_df_list[[4]]$pos_Z)
-recreate4_sp <- SpatialPoints(recreate4_df)
-
 # use the "over()" function to find which grid indices contain the x-y coordinates (all path block indices)
 outerPath_grid <- over(outerPath_sp, grid_sp)
 innerPath_grid <- over(innerPath_sp, grid_sp)
-
-recreate1_grid <- over(recreate1_sp, grid_sp)
-recreate2_grid <- over(recreate2_sp, grid_sp)
-recreate3_grid <- over(recreate3_sp, grid_sp)
-recreate4_grid <- over(recreate4_sp, grid_sp)
 
 # find the unique indices for the paths (unique block indices)
 unique_outerPath_grids <- unique(outerPath_grid)
 unique_innerPath_grids <- unique(innerPath_grid)
 
-unique_recreate1_grids <- unique(recreate1_grid)
-unique_recreate2_grids <- unique(recreate2_grid)
-unique_recreate3_grids <- unique(recreate3_grid)
-unique_recreate4_grids <- unique(recreate4_grid)
-
 # find the total number of unique grids each path uses (number of unique blocks)
 outer_grid_total <- length(unique_outerPath_grids)
 inner_grid_total <- length(unique_innerPath_grids)
 
-recreate1_grid_total <- length(unique_recreate1_grids)
-recreate2_grid_total <- length(unique_recreate2_grids)
-recreate3_grid_total <- length(unique_recreate3_grids)
-recreate4_grid_total <- length(unique_recreate4_grids)
+##### Add to the recreate_paths_log file with overlapping block numbers
+
+for (i in 1:length(recreatePath_df_list)) {
+  recreate_df <- data.frame(x = recreatePath_df_list[[i]]$pos_X, y = recreatePath_df_list[[i]]$pos_Z)
+  recreate_sp <- SpatialPoints(recreate_df)
+  
+  # use the "over()" function to find which grid indices contain the x-y coordinates (all path block indices) 
+  recreate_grid <- over(recreate_sp, grid_sp)
+  
+  # find the unique indices for the paths (unique block indices)
+  unique_recreate_grids <- unique(recreate_grid)
+  
+  # find the total number of unique grids each path uses (number of unique blocks)
+  recreate_grid_total <- length(unique_recreate_grids)
+  
+  # find overlap with outer path
+  overlap_outer <- length(intersect(unique_outerPath_grids, unique_recreate_grids))
+  
+  # find overlap with inner path
+  overlap_inner <- length(intersect(unique_innerPath_grids, unique_recreate_grids))
+}
+
+
+
+
 
 ##### Fill in the grids of where participants navigated
 
