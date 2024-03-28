@@ -171,7 +171,7 @@ for (i in seq_along(outer_passive_df_list)) {
 }
 
 # Use first trial as the actual whole path length
-outer_actual_dist <- totDist(outer_passive_df_list[[1]]$pos_X, outer_active_df_list[[1]]$pos_Z)
+outer_actual_dist <- totDist(outer_passive_df_list[[1]]$pos_X, outer_passive_df_list[[1]]$pos_Z)
 
 
 # make and save a graph (only one passive path pic needed)
@@ -885,12 +885,13 @@ area_poly <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(xmin, xmax, xmax
 # create a SpatialGrid object to represent the grid over the area
 grid <- GridTopology(c(xmin + cellsize/2, ymin + cellsize/2), c(cellsize, cellsize), c(ncellx, ncelly))
 grid_sp <- SpatialGrid(grid)
+grid_poly <- as(grid_sp, "SpatialPolygons") # need for making plots
 
-# outer path actual (passive learning phase)
+# outer path actual (from passive learning phase)
 outerPath_df <- data.frame(x = outer_passive_df_list[[1]]$pos_X, y = outer_passive_df_list[[1]]$pos_Z)
 outerPath_sp <- SpatialPoints(outerPath_df)
 
-# inner path actual (passive learning phase)
+# inner path actual (from passive learning phase)
 innerPath_df <- data.frame(x = inner_passive_df_list[[1]]$pos_X, y = inner_passive_df_list[[1]]$pos_Z)
 innerPath_sp <- SpatialPoints(innerPath_df)
 
@@ -898,13 +899,26 @@ innerPath_sp <- SpatialPoints(innerPath_df)
 outerPath_grid <- over(outerPath_sp, grid_sp)
 innerPath_grid <- over(innerPath_sp, grid_sp)
 
-# find the unique indices for the paths (unique block indices)
+# find the unique indices for the paths (unique block indices) - use for plots to make them easier to read
 unique_outerPath_grids <- unique(outerPath_grid)
 unique_innerPath_grids <- unique(innerPath_grid)
 
-# find the total number of unique grids each path uses (number of unique blocks)
-outer_grid_total <- length(unique_outerPath_grids)
-inner_grid_total <- length(unique_innerPath_grids)
+# find the segments of the inner and outer path that overlap
+inner_outer_overlap <- intersect(unique_outerPath_grids, unique_innerPath_grids)
+
+# take out the overlapping grids from the outer and inner grid numbers (number of nonoverlapping unique blocks) - use for data analyses
+unique_outerPath_grids_no_Overlap <- unique_outerPath_grids[!unique_outerPath_grids %in% inner_outer_overlap]
+unique_innerPath_grids_no_Overlap <- unique_innerPath_grids[!unique_innerPath_grids %in% inner_outer_overlap]
+
+# Define the group of indices you want to color for making plots
+indices_outer_red <- unique_outerPath_grids
+indices_inner_red <- unique_innerPath_grids
+indices_innerOuterOverlap_gray <- inner_outer_overlap
+
+#  Extract polygons corresponding to the selected indices
+outer_red <- grid_poly[indices_outer_red]
+inner_red <- grid_poly[indices_inner_red]
+innerOuter_overlap_gray <- grid_poly[indices_innerOuterOverlap_gray]
 
 ##### Add to the recreate_paths_log file with overlapping block numbers
 
@@ -912,197 +926,78 @@ for (i in 1:length(recreatePath_df_list)) {
   recreate_df <- data.frame(x = recreatePath_df_list[[i]]$pos_X, y = recreatePath_df_list[[i]]$pos_Z)
   recreate_sp <- SpatialPoints(recreate_df)
   
-  # use the "over()" function to find which grid indices contain the x-y coordinates (all path block indices) 
+  # find the correct grid index for each x,z path value 
   recreate_grid <- over(recreate_sp, grid_sp)
   
-  # find the unique indices for the paths (unique block indices)
-  unique_recreate_grids <- unique(recreate_grid)
+  # find the unique indices for the path (unique block indices)
+  unique_recreate_grids <- unique(recreate_grid) # use this for making plots
   
-  # find the total number of unique grids each path uses (number of unique blocks)
-  recreate_grid_total <- length(unique_recreate_grids)
+  # remove the segments of the inner and outer path that overlap # this is for the data analysis
+  no_overlap_unique_recreate_grids <- unique_recreate_grids[!unique_recreate_grids %in% inner_outer_overlap]
   
-  # find overlap with outer path
-  overlap_outer <- length(intersect(unique_outerPath_grids, unique_recreate_grids))
+  # find the total amount of unique grids each path uses
+  recreate_grid_total <- length(no_overlap_unique_recreate_grids)
   
-  # find overlap with inner path
-  overlap_inner <- length(intersect(unique_innerPath_grids, unique_recreate_grids))
+  # find overlap with outer path and length - will add to data log
+  overlap_outer_indices <- intersect(unique_outerPath_grids_no_Overlap, no_overlap_unique_recreate_grids)
+  overlap_outer <- length(overlap_outer_indices)
+  
+  # find overlap with inner path and length - will add to data log
+  overlap_inner_indices <- intersect(unique_innerPath_grids_no_Overlap, no_overlap_unique_recreate_grids)
+  overlap_inner <- length(overlap_inner_indices)
+  
+  # add the three numbers above to the data log
+  recreate_paths_log$grid_count[i] <- recreate_grid_total
+  recreate_paths_log$grid_overlap_outer[i] <- overlap_outer
+  recreate_paths_log$grid_overlap_inner[i] <- overlap_inner
+  
+  # calculate the number of novel blocks they traveled
+  recreate_paths_log$novel_grids[i] <- recreate_grid_total - overlap_outer - overlap_inner
+  
+  # Define the group of indices you want to color for making plots
+  indices_recreate_blue <- unique_recreate_grids
+  indices_overlapOuter_purple <- overlap_outer_indices
+  indices_overlapInner_purple <- overlap_inner_indices
+
+  # Extract polygons corresponding to the selected indices
+  recreate_blue <- grid_poly[indices_recreate_blue]
+  overlapOuter_purple <- grid_poly[indices_overlapOuter_purple]
+  overlapInner_purple <- grid_poly[indices_overlapInner_purple]
+  
+  ### Make a plot for outer path overlap
+  plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
+  lines(grid_poly, col = "gray", add = TRUE)
+  
+  # Plot the selected polygons
+  plot(outer_red, col = "red", add = TRUE)
+  plot(recreate_blue, col = "blue", add = TRUE)
+  plot(overlapOuter_purple, col = "purple", add = TRUE)
+  plot(innerOuter_overlap_gray, col = "purple", add = TRUE) # this is purple to make the graph easier to read
+
+  outerOverlap_plot <- recordPlot() # capture the current plot
+  
+  jpeg(paste("Overlap_outer_recreated_", i, ".jpeg", sep = ""), width = 6.5, height = 5.5, units = 'in', res = 500) # save the plot
+  replayPlot(outerOverlap_plot)
+  dev.off()
+    
+  ### Make a plot for inner path overlap
+  plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
+  lines(grid_poly, col = "gray", add = TRUE)
+  
+  # Plot the selected polygons
+  plot(inner_red, col = "red", add = TRUE)
+  plot(recreate_blue, col = "blue", add = TRUE)
+  plot(overlapInner_purple, col = "purple", add = TRUE)
+  plot(innerOuter_overlap_gray, col = "purple", add = TRUE) # this is purple to make the graph easier to read
+  
+  innerOverlap_plot <- recordPlot() # capture the current plot
+  
+  jpeg(paste("Overlap_inner_recreated_", i, ".jpeg", sep = ""), width = 6.5, height = 5.5, units = 'in', res = 500) # save the plot
+  replayPlot(innerOverlap_plot)
+  dev.off()
 }
-
-
-
-
-
-##### Fill in the grids of where participants navigated
-
-# Create graphs for outer path
-
-grid_poly <- as(grid_sp, "SpatialPolygons")
-
-# Define the group of indices you want to color
-indices_to_color_red <- unique_outerPath_grids
-indices_to_color_blue <- unique_innerPath_grids
-indices_to_color_purple <- shared_indices
-
-#  Extract polygons corresponding to the selected indices
-selected_polygons_red <- grid_poly[indices_to_color_red]
-selected_polygons_blue <- grid_poly[indices_to_color_blue]
-selected_polygons_purple <- grid_poly[shared_indices]
-
-# Plot the grid
-plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
-plot(grid_poly, add = TRUE)
-
-# Plot the selected polygons in red
-plot(selected_polygons_red, col = "red", add = TRUE)
-plot(selected_polygons_blue, col = "blue", add = TRUE)
-plot(selected_polygons_purple, col = "purple", add = TRUE)
-
 
 ################### For navigation test trials ###################
-
-# outer path actual (active learning phase)
-outerPath_df <- data.frame(x = outer_active_df_list[[length(outer_active_df_list)]]$pos_X, y = outer_active_df_list[[length(outer_active_df_list)]]$pos_Z)
-outerPath_sp <- SpatialPoints(outerPath_df)
-
-# inner path actual (active learning phase)
-innerPath_df <- data.frame(x = inner_active_df_list[[length(inner_active_df_list)]]$pos_X, y = inner_active_df_list[[length(inner_active_df_list)]]$pos_Z)
-innerPath_sp <- SpatialPoints(innerPath_df)
-
-# use the "over()" function to find which grids contain the x-y coordinates
-outerPath_grid <- over(outerPath_sp, grid_sp)
-innerPath_grid <- over(innerPath_sp, grid_sp)
-
-# find the unique numbers for each of the paths representing the total grids the path uses
-unique_outerPath_grids <- unique(outerPath_grid)
-unique_innerPath_grids <- unique(innerPath_grid)
-
-# find the shared indices between the two paths
-shared_indices <- intersect(unique_outerPath_grids, unique_innerPath_grids)
-
-# find the total number of grids each path uses
-grid_total_outer <- length(unique_outerPath_grids)
-grid_total_inner <- length(unique_innerPath_grids)
-
-##### Fill in the grids of where participants navigated
-
-grid_poly <- as(grid_sp, "SpatialPolygons")
-
-# Define the group of indices you want to color
-indices_to_color_red <- unique_outerPath_grids
-indices_to_color_blue <- unique_innerPath_grids
-indices_to_color_purple <- shared_indices
-
-#  Extract polygons corresponding to the selected indices
-selected_polygons_red <- grid_poly[indices_to_color_red]
-selected_polygons_blue <- grid_poly[indices_to_color_blue]
-selected_polygons_purple <- grid_poly[shared_indices]
-
-# Plot the grid
-plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
-plot(grid_poly, add = TRUE)
-
-# Plot the selected polygons in red
-plot(selected_polygons_red, col = "red", add = TRUE)
-plot(selected_polygons_blue, col = "blue", add = TRUE)
-plot(selected_polygons_purple, col = "purple", add = TRUE)
-
-######### Testing two outer passive paths
-
-# outer path actual (active learning phase)
-outerPassive1_df <- data.frame(x = outer_passive_df_list[[1]]$pos_X, y = outer_passive_df_list[[1]]$pos_Z)
-outerPassive1_sp <- SpatialPoints(outerPassive1_df)
-
-# inner path actual (active learning phase)
-outerPassive2_df <- data.frame(x = outer_passive_df_list[[2]]$pos_X, y = outer_passive_df_list[[2]]$pos_Z)
-outerPassive2_sp <- SpatialPoints(outerPassive2_df)
-
-# use the "over()" function to find which grids contain the x-y coordinates
-outerPassive1_grid <- over(outerPassive1_sp, grid_sp)
-outerPassive2_grid <- over(outerPassive2_sp, grid_sp)
-
-# find the unique numbers for each of the paths representing the total grids the path uses
-unique_outerPassive1_grids <- unique(outerPassive1_grid)
-unique_outerPassive2_grids <- unique(outerPassive2_grid)
-
-# find the shared indices between the two paths
-shared_indices <- intersect(outerPassive1_grid, outerPassive2_grid)
-
-# find the total number of grids each path uses
-grid_total_outerPassive1 <- length(unique_outerPassive1_grids)
-grid_total_outerPassive2 <- length(unique_outerPassive2_grids)
-
-##### Fill in the grids of where participants navigated
-
-grid_poly <- as(grid_sp, "SpatialPolygons")
-
-# Define the group of indices you want to color red
-indices_to_color_red <- unique_outerPassive1_grids
-indices_to_color_blue <- unique_outerPassive2_grids
-indices_to_color_purple <- shared_indices
-
-# Extract polygons corresponding to the selected indices
-selected_polygons_red <- grid_poly[indices_to_color_red]
-selected_polygons_blue <- grid_poly[indices_to_color_blue]
-selected_polygons_purple <- grid_poly[indices_to_color_purple]
-
-# Plot the grid
-plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE)
-plot(grid_poly, add = TRUE)
-
-# Plot the selected polygons in red
-plot(selected_polygons_red, col = "red", add = TRUE)
-plot(selected_polygons_blue, col = "blue", add = TRUE)
-plot(selected_polygons_purple, col = "purple", add = TRUE)
-
-#####################################################################################################################
-# This section needs working on #
-
-
-# Get the indices of the overlapping grids of the inner and outer paths
-inner_outer_overlap <- intersect(outerPath_grid, innerPath_grid)
-
-# Count the number of overlapping segments for outer and inner path - should be 0
-num_inner_outer_overlap <- length(inner_outer_overlap)
-
-# Create a dataframe to put the data in
-overlap_counts_df <- data.frame(overlap_outer = numeric(), overlap_inner = numeric(), nonoverlapping_grid_num = numeric(), total_grids_trial = numeric(), stringsAsFactors = FALSE)
-
-# do a loop to count the overlaps and put it in a dataframe
-
-for (i in 1:length(navTest_trials_df_list)) {
-  
-  # traveled path (Navigation Test 24 trials)
-  navTestTrial_df <- data.frame(x = navTest_trials_df_list[[i]]$pos_X, y = navTest_trials_df_list[[i]]$pos_Z)
-  navTestTrial_sp <- SpatialPoints(navTestTrial_df)
-  
-  # use the "over()" function to find which grids contain the x-y coordinates
-  navTestTrial_grid <- over(navTestTrial_sp, grid_sp)
-  
-  # find the unique numbers for each of the paths representing the total grids the path uses
-  unique_navTestTrial_grids <- unique(navTestTrial_grid)
-  
-  # find the total number of grids each path uses
-  grid_total_trial <- length(unique_navTestTrial_grids)
-  
-  # Get the indices of the overlapping grids with outer and inner paths
-  overlap_outer_indices <- intersect(outerPath_grid, navTestTrial_grid)
-  overlap_inner_indices <- intersect(innerPath_grid, navTestTrial_grid)
-  
-  # Count the number of overlapping and non-overlapping grids
-  num_overlapping_outer <- length(overlap_outer_indices)
-  num_overlapping_inner <- length(overlap_inner_indices)
-  non_overlapping <- grid_total_trial - (length(overlap_outer_indices) + length(overlap_inner_indices))
-  
-  # Add data to the dataframe
-  overlap_counts_df <- rbind(overlap_counts_df, data.frame(overlap_outer = num_overlapping_outer, overlap_inner = num_overlapping_inner, 
-                                                           nonoverlapping_grid_num = non_overlapping, total_grids_trial = grid_total_trial))
-}
-
-pilot_data_processed <- cbind(log_data, overlap_counts_df)
-
-# write dataframe to an excel file
-file_name <- paste(subject_num, "_navTestTrials.xlsx", sep = "")
-write.xlsx(pilot_data_processed, file_name, rowNames = FALSE)
 
 
 ##################### Getting the closest points to separate the whole passive path into four segments #####################
@@ -1178,7 +1073,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ##### Store 2 to Store 3 path
@@ -1192,7 +1087,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ##### Store 3 to Store 4 path
@@ -1206,7 +1101,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ##### Store 4 to Store 1 path
@@ -1220,7 +1115,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ########### INNER PATH ###########
@@ -1284,7 +1179,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ##### Store 2 to Store 3 path
@@ -1298,7 +1193,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ##### Store 3 to Store 4 path
@@ -1312,7 +1207,7 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
 ##### Store 4 to Store 1 path
@@ -1326,9 +1221,87 @@ selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corr
 
 # Plot the grid
 plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
-plot(grid_poly, add = TRUE) # plot grid
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
 plot(selected_polygons_red, col = "red", add = TRUE) # plot the selected polygons in red
 
+##### Add overlapping blocks columns to log data
+
+for (i in 1:length(navTestTrials_df_list)) {
+  path_df <- data.frame(x = navTestTrials_df_list[[i]]$pos_X, y = navTestTrials_df_list[[i]]$pos_Z)
+  path_sp <- SpatialPoints(path_df)
+  
+  # find the correct grid index for each x,z path value 
+  path_grid <- over(path_sp, grid_sp)
+  
+  # find the unique indices for the path (unique block indices)
+  unique_path_grids <- unique(path_grid) # use this for making plots
+  
+  # remove the segments of the inner and outer path that overlap # this is for the data analysis
+  no_overlap_unique_path_grids <- unique_path_grids[!unique_path_grids %in% inner_outer_overlap]
+  
+  # find the total amount of unique grids each path uses
+  path_grid_total <- length(no_overlap_unique_path_grids)
+  
+  # find overlap with each outer store segment path and length - will add to data log
+  overlap_outer_seg1 <- intersect(no_overlap_unique_path_grids, unique_out_s1s2_grids)
+  overlap_outer_seg2 <- intersect(no_overlap_unique_path_grids, unique_out_s2s3_grids)
+  overlap_outer_seg3 <- intersect(no_overlap_unique_path_grids, unique_out_s3s4_grids)
+  overlap_outer_seg4 <- intersect(no_overlap_unique_path_grids, unique_out_s4s1_grids)
+  
+  overlap_outer_seg1_num <- length(overlap_outer_seg1)
+  overlap_outer_seg2_num <- length(overlap_outer_seg2)
+  overlap_outer_seg3_num <- length(overlap_outer_seg3)
+  overlap_outer_seg4_num <- length(overlap_outer_seg4)
+  
+  # find overlap with each inner store segment path and length - will add to data log
+  overlap_inner_seg1 <- intersect(no_overlap_unique_path_grids, unique_in_s1s2_grids)
+  overlap_inner_seg2 <- intersect(no_overlap_unique_path_grids, unique_in_s2s3_grids)
+  overlap_inner_seg3 <- intersect(no_overlap_unique_path_grids, unique_in_s3s4_grids)
+  overlap_inner_seg4 <- intersect(no_overlap_unique_path_grids, unique_in_s4s1_grids)
+  
+  overlap_inner_seg1_num <- length(overlap_inner_seg1)
+  overlap_inner_seg2_num <- length(overlap_inner_seg2)
+  overlap_inner_seg3_num <- length(overlap_inner_seg3)
+  overlap_inner_seg4_num <- length(overlap_inner_seg4)
+  
+  # add the numbers above to the data log
+  log_data$grid_count[i] <- path_grid_total
+  
+  log_data$grid_overlap_outer_seg1[i] <- overlap_outer_seg1_num
+  log_data$grid_overlap_outer_seg2[i] <- overlap_outer_seg2_num  
+  log_data$grid_overlap_outer_seg3[i] <- overlap_outer_seg3_num
+  log_data$grid_overlap_outer_seg4[i] <- overlap_outer_seg4_num
+  
+  log_data$grid_overlap_inner_seg1[i] <- overlap_inner_seg1_num
+  log_data$grid_overlap_inner_seg2[i] <- overlap_inner_seg2_num
+  log_data$grid_overlap_inner_seg3[i] <- overlap_inner_seg3_num
+  log_data$grid_overlap_inner_seg4[i] <- overlap_inner_seg4_num
+  
+  # calculate the number of novel blocks they traveled
+  log_data$novel_grids[i] <- path_grid_total - sum(overlap_outer_seg1_num, overlap_outer_seg2_num, overlap_outer_seg3_num,
+                                                   overlap_outer_seg4_num, overlap_inner_seg1_num, overlap_inner_seg2_num, 
+                                                   overlap_inner_seg3_num, overlap_inner_seg4_num)
+  
+
+}
+
+indices_to_color_red <- no_overlap_unique_path_grids # Define the group of indices you want to color red
+selected_polygons_red <- grid_poly[indices_to_color_red] # Extract polygons corresponding to the selected indices
+
+# Plot the grid
+plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE) # plot axes
+lines(grid_poly, col = "gray", add = TRUE) # plot grid
+plot(selected_polygons_red, col = "pink", add = TRUE) # plot the selected polygons in red
+
+# Add index numbers to each cell
+for (i in 1:ncellx) {
+  for (j in 1:ncelly) {
+    cell_index <- (j - 1) * ncellx + i  # Calculate the index of the current cell
+    cell_center_x <- xmin + (i - 0.5) * cellsize
+    cell_center_y <- ymax - (j - 0.5) * cellsize  # Calculate the y-coordinate to move down the rows
+    text(cell_center_x, cell_center_y, labels = cell_index, cex = 0.5)
+  }
+}
 
 
 ################################# Save log files #################################
