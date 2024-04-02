@@ -44,7 +44,7 @@ level_order <- c('pre', 'post1', 'post15', 'post30')
 
 # Plot with all participant separated by condition and time
 ggplot(data = all_data, aes(x=factor(time, level = level_order), y=cort_nmol_L)) +
-  geom_boxplot() +
+  geom_boxplot(outliers = FALSE) +
   geom_jitter() +
   facet_wrap(vars(condition)) +
   labs(x = "Time", y = "Cortisol (nmol/L)" )
@@ -95,7 +95,7 @@ ggplot(data = samples12Data, aes(x=factor(time, level = level_order), y=cort_nmo
 
 ##### All data
 
-# all_data outliers
+# all_data outliers - 4 outliers for now
 outliers_allData <- all_data %>%
   group_by(time, condition) %>%
   identify_outliers(cort_nmol_L)
@@ -119,3 +119,14 @@ normality_allData <- no_outliers_allData %>%
 # quick and dirty anova
 res.aov <- anova_test(data = no_outliers_allData, dv = log_cort, wid = subjNum, within = c(condition,time))
 get_anova_table(res.aov)
+
+# Make a plot
+cond.labs <- c("Cold Pressor", "Control Condition", "Fire Environment")
+names(cond.labs) <- c("cp", "ctrl", "fire")
+
+# Plot with all participant separated by condition and time
+ggplot(data = no_outliers_allData, aes(x=factor(time, level = level_order), y=log_cort)) +
+  geom_boxplot(outliers = FALSE) +
+  geom_jitter() +
+  facet_wrap(vars(condition), labeller = labeller(condition = cond.labs)) +
+  labs(x = "Time", y = " Log Cortisol (log nmol/L)" )
