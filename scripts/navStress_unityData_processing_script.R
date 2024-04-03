@@ -53,7 +53,7 @@ subj_cond_city_data <- read.xlsx("subj_cond_city.xlsx") # read in file
 
 # for my presentation, 1-13 except 4
 
-subject_num <- "2"
+subject_num <- "15"
 subject_city <- "city3" # options are "city1", "city2", and "city3"
 
 # Set working directory
@@ -266,7 +266,7 @@ for (i in seq_along(outer_active_df_list)) {
 # Make a save plots for each active learning trial (to make sure they followed directions)
 #for (i in seq_along(outer_active_df_list)) {
 # Create the plot title name
-#  plot_title <- paste("Outer Path Active Learning " , i, sep = "")
+#  plot_title <- paste("Outer Path Active Learning" , i, subject_city, sep = " ")
 # Create plot
 #  gg <- ggplot(outer_active_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
 #   geom_point() +
@@ -447,7 +447,7 @@ for (i in seq_along(inner_active_df_list)) {
 # Make a save plots for each active learning trial (to make sure they followed directions)
 #for (i in seq_along(inner_active_df_list)) {
   # Create the plot title name
-#  plot_title <- paste("Inner Path Active Learning " , i, sep = "")
+#  plot_title <- paste("Inner Path Active Learning" , i, subject_city, sep = " ")
   # Create plot
 #  gg <- ggplot(inner_active_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
 #    geom_point() +
@@ -532,29 +532,29 @@ for (i in seq_along(recreatePath_df_list)) {
 
 # Loop through each path recreation, make and save a plot for each one
 
-for (i in seq_along(recreatePath_df_list)) {
+#for (i in seq_along(recreatePath_df_list)) {
   # Create the plot title name
-  plot_title <- paste("Path Recreation " , i, sep = "")
+#  plot_title <- paste("Path Recreation", i, subject_city, sep = " ")
   # Create plot
-  gg <- ggplot(recreatePath_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
-   geom_point() +
-   scale_color_gradient(low = "lightblue", high = "darkblue") +
-   labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
-   theme(plot.title = element_text(hjust = 0.5, size = 16), 
-         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
-         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
-    geom_point(aes(x = store1x, y = store1y), size = 4, color = "red") +
-    geom_point(aes(x = store2x, y = store2y), size = 4, color = "red") +
-    geom_point(aes(x = store3x, y = store3y), size = 4, color = "red") +
-    geom_point(aes(x = store4x, y = store4y), size = 4, color = "red") +
-    geom_text(aes(x = store1x - 30, y = store1y + 20, label = "Store 1"), size = 4, color = "black") +
-    geom_text(aes(x = store2x + 30, y = store2y + 20, label = "Store 2"), size = 4, color = "black") +
-    geom_text(aes(x = store3x + 30, y = store3y - 20, label = "Store 3"), size = 4, color = "black") +
-    geom_text(aes(x = store4x - 30, y = store4y - 20, label = "Store 4"), size = 4, color = "black")
+#  gg <- ggplot(recreatePath_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
+#   geom_point() +
+#   scale_color_gradient(low = "lightblue", high = "darkblue") +
+#   labs(x = "X", y = "Y", color = "Time (s)", title = plot_title) +
+#   theme(plot.title = element_text(hjust = 0.5, size = 16), 
+#         axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
+#         legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
+#    geom_point(aes(x = store1x, y = store1y), size = 4, color = "red") +
+#    geom_point(aes(x = store2x, y = store2y), size = 4, color = "red") +
+#    geom_point(aes(x = store3x, y = store3y), size = 4, color = "red") +
+#    geom_point(aes(x = store4x, y = store4y), size = 4, color = "red") +
+#    geom_text(aes(x = store1x - 30, y = store1y + 20, label = "Store 1"), size = 4, color = "black") +
+#    geom_text(aes(x = store2x + 30, y = store2y + 20, label = "Store 2"), size = 4, color = "black") +
+#    geom_text(aes(x = store3x + 30, y = store3y - 20, label = "Store 3"), size = 4, color = "black") +
+#    geom_text(aes(x = store4x - 30, y = store4y - 20, label = "Store 4"), size = 4, color = "black")
   
   # Save the plot
- ggsave(paste0("path_recreate", i,"_", subject_city, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
-}
+# ggsave(paste0("path_recreate", i,"_", subject_city, ".jpg"), gg, width = 6.5, height = 5.5, units = 'in', dpi = 500)
+#}
 
 ##################################### RETRIEVE: NAVIGATION TASK #####################################
 
@@ -629,7 +629,7 @@ navTest_all_dfs <- do.call(rbind, navTestTrials_df_list)
 all_nav_plot <- ggplot(navTest_all_dfs, aes(x = pos_X, y = pos_Z, color = time_sec)) +
  geom_point() +
  scale_color_gradient(low = "lightblue", high = "darkblue") +
- labs(x = "X", y = "Y", color = "Time (s)", title = "All Navigation Test Trials") +
+ labs(x = "X", y = "Y", color = "Time (s)", title = paste("All Navigation Test Trials", subject_city, sep = " ")) +
  theme(plot.title = element_text(hjust = 0.5, size = 20), 
        axis.title = element_text(size = 13), axis.text = element_text(size = 12), 
        legend.title = element_text(size = 13), legend.text = element_text(size = 12)) +
@@ -858,7 +858,7 @@ learning_path_log$city <- subject_city
 # loop through a dataframe list to generate a plot for each trial
 #for (i in seq_along(navTestTrials_df_list)) {
   # create the plot title name
-#  plot_title <- paste("Navigation Test Trial ", i)
+#  plot_title <- paste("Navigation Test Trial", i, subject_city, sep = " ")
   # create the ggplot object for the current data frame
 #  gg <- ggplot(navTestTrials_df_list[[i]], aes(x = pos_X, y = pos_Z, color = time_sec)) +
 #    geom_point() +
@@ -996,7 +996,7 @@ for (i in 1:length(recreatePath_df_list)) {
   
   ### Make a plot for outer path overlap
   if (recreate_paths_log$path_recreated[i] == "outer") {
-    grid_plot_title <- paste("Recreated", recreate_paths_log$path_recreated[i], "path",  i, sep = " ")
+    grid_plot_title <- paste("Recreated", recreate_paths_log$path_recreated[i], "path",  i, subject_city, sep = " ")
     plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE, main = grid_plot_title)
     lines(grid_poly, col = "gray", add = TRUE)
     
@@ -1013,7 +1013,7 @@ for (i in 1:length(recreatePath_df_list)) {
     dev.off()
   } else if (recreate_paths_log$path_recreated[i] == "inner") {
       ### Make a plot for inner path overlap
-  grid_plot_title <- paste("Recreated", recreate_paths_log$path_recreated[i], "path",  i, sep = " ")
+  grid_plot_title <- paste("Recreated", recreate_paths_log$path_recreated[i], "path",  i, subject_city, sep = " ")
   plot(area_poly, xlim = c(xmin, xmax), ylim = c(ymin, ymax), axes = TRUE, main = grid_plot_title)
   lines(grid_poly, col = "gray", add = TRUE)
   
