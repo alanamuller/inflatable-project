@@ -120,6 +120,8 @@ normality_allData <- no_outliers_allData %>%
 res.aov <- anova_test(data = no_outliers_allData, dv = log_cort, wid = subjNum, within = c(condition,time))
 get_anova_table(res.aov)
 
+# testing main effects since the interaction wasn't sig
+
 # Make a plot
 cond.labs <- c("Cold Pressor", "Control Condition", "Fire Environment")
 names(cond.labs) <- c("cp", "ctrl", "fire")
@@ -130,3 +132,4 @@ ggplot(data = no_outliers_allData, aes(x=factor(time, level = level_order), y=lo
   geom_jitter() +
   facet_wrap(vars(condition), labeller = labeller(condition = cond.labs)) +
   labs(x = "Time", y = " Log Cortisol (log nmol/L)" )
+
