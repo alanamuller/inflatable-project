@@ -53,8 +53,8 @@ subj_cond_city_data <- read.xlsx("subj_cond_city.xlsx") # read in file
 
 # for my presentation, 1-13 except 4
 
-subject_num <- "1"
-subject_city <- "city3" # options are "city1", "city2", and "city3"
+subject_num <- "18"
+subject_city <- "city1" # options are "city1", "city2", and "city3"
 
 # Set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress Shortcuts/stress-shortcuts-collab/data/tmp")
@@ -745,13 +745,13 @@ log_data <- log_data %>%
 log_data$startEnd_store <- paste(lag(log_data$target_store_num), log_data$target_store_num, sep = " ")
 
 # Fix the first entry in the startEnd_store column
-# Cities 1 and 2 are fine but city 3 got messed up a little until Subject 23 when it was fixed
+# Cities 1 and 2 are fine but city 3 trial 13 got messed up a little until Subject 23 when it was fixed
 # So find the store closest to the beginning point and label it that
 
 # define the starting point
 starting_point <- c(navTestTrials_df_list[[1]]$pos_X[1], navTestTrials_df_list[[1]]$pos_Z[1])
 
-# calculate distances from starting opint to each store
+# calculate distances from starting point to each store
 distances <- sapply(store_coordinates, function(store_coord){
   euc_dist(starting_point, store_coord)
 })
@@ -1440,7 +1440,8 @@ write.csv(learning_path_log, paste("E:/Nav Stress Data/Participant_data/learning
 write.csv(recreate_paths_log, paste("E:/Nav Stress Data/Participant_data/recreatePathsLogData", 
                                    subject_num, "_", subject_city, ".csv", sep = ""), row.names = FALSE)
 
-
+# Now go look at the log file and manually correct the paths that say participants did the inner or outer path twice
+# and categorize one path as inner and the other as outer
 
 
 

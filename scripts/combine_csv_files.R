@@ -1,11 +1,14 @@
 # Script to combine csv files output from navStress_unityData_processing_script.R
 
+# Clear the work environment
+rm(list = ls())
+
 # Set working directory
 setwd("E:/Nav Stress Data/Participant_data/")
 
 # Define the pattern for the files you want to combine
 
-data_pattern <- "navTrialsLogData"
+#data_pattern <- "navTrialsLogData"
 #data_pattern <- "learningTrialsLogData"
 data_pattern <- "recreatePathsLogData"
 

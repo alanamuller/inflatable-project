@@ -11,6 +11,7 @@ library(tidyr)
 library(tidyverse)
 library(ggpubr)
 library(rstatix)
+library(ARTool)
 
 rm(list = ls())
 
@@ -18,13 +19,15 @@ rm(list = ls())
 setwd("E:/Nav Stress Data/") # set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress shortcuts") # for developing
 
-myData <- read.csv("combined_recreatePathsLogData.csv") # read in file
+myData <- read.csv("combined_recreatePathsLogData_ManualCheck.csv") # read in file
 
 # add column with percentages of how much of the path participants recreated (not including grids shared between inner and outer paths)
 # City 1 <- outer: 124; inner: 110
 # City 2 <- outer: 127; inner: 107
 # City 3 <- outer: 136; inner: 111
 
+# calculate the percentage of grid overlap for outer and inner paths
+# total grid numbers have been counted and don't include grids shared between inner and outer paths
 for (i in 1:nrow(myData)){
   if (myData$city[i] == "city1"){
     myData$percent_grid_overlap_outer[i] <- myData$grid_overlap_outer[i]/124
@@ -37,8 +40,6 @@ for (i in 1:nrow(myData)){
     myData$percent_grid_overlap_inner[i] <- myData$grid_overlap_inner[i]/111
   }
 }
-
-
 
 # add path type column
 
@@ -63,11 +64,226 @@ inner_df$incorrect_recreation_percent <-inner_df$percent_grid_overlap_outer
 
 myData <- rbind(outer_df, inner_df)
 
-ggplot(myData, aes(x = myData$subjectID, y = correct_recreation_percent)) +
+# make a dataset to graph more familiar and less familiar path correct percentage
+graphData <- subset(myData, trialname == "recreatePath1" | trialname == "recreatePath2")
+# make a column to label the more/less familiar path
+for (j in 1:nrow(graphData)){
+  if(graphData$moreFamiliarPath[j] == graphData$path_recreated[j]){
+    graphData$path_recreated_cat[j] <- "moreFamPath"
+  } else {graphData$path_recreated_cat[j] <- "lessFamPath"}
+}
+
+# make graph with more and less familiar path categories and correct percentage
+ggplot(graphData, aes(x = subjectID, y = correct_recreation_percent, color = path_recreated_cat)) +
+  geom_point(size = 3)
+
+# find the average for each person
+plot_graph <- graphData %>%
+  group_by(subjectID, path_recreated_cat) %>%
+  summarise(
+    avg_corr_recreate_percent = mean(correct_recreation_percent),
+    sd_corr_recreate_percent = sd(correct_recreation_percent),
+    avg_incorr_recreate_percent = mean(incorrect_recreation_percent),
+    sd_incorr_recreate_percent = sd(incorrect_recreation_percent)
+  )
+
+# gather corr and incorr categories together
+# name the columns you want to gather, the other columns will remain there
+gathered_columns <- c("avg_corr_recreate_percent", "avg_incorr_recreate_percent")
+
+# gather the data for grid numbers
+plot_graph <- gather(plot_graph, key = percent_cat, value = percentage, gathered_columns, factor_key = TRUE)
+
+# Graph for iNAV - make it fancy later
+ggplot(plot_graph, aes(x = path_recreated_cat, y = percentage, color = percent_cat)) +
   geom_boxplot()
 
-ggplot(myData, aes(x = myData$subjectID, y = incorrect_recreation_percent)) +
-  geom_boxplot()
+# graph of correct recreation percent
+ggplot(myData, aes(x = subjectID, y = correct_recreation_percent)) +
+  geom_boxplot(color = "blue", fill = "steelblue", alpha = 0.2) +
+  theme_classic()
+
+# graph of incorrect recreation percent
+ggplot(myData, aes(x = subjectID, y = incorrect_recreation_percent)) +
+  geom_boxplot(color = "red", fill = "lightpink", alpha = 0.2)
+
+# this graph is a little busy - shows correct and incorrect recreation percentage
+ggplot(myData, aes(x = subjectID)) +
+  geom_boxplot(aes(y = correct_recreation_percent, fill = "steelblue", alpha = 0.2)) +
+  geom_boxplot(aes(y = incorrect_recreation_percent, fill = "lightpink", alpha = 0.2))
+
+# do people remember at the end too?
+# make a dataset to graph more familiar and less familiar path correct percentage
+graphData2 <- subset(myData, trialname == "recreatePath3" | trialname == "recreatePath4")
+# make a column to label the more/less familiar path
+for (j in 1:nrow(graphData2)){
+  if(graphData2$moreFamiliarPath[j] == graphData2$path_recreated[j]){
+    graphData2$path_recreated_cat[j] <- "moreFamPath"
+  } else {graphData2$path_recreated_cat[j] <- "lessFamPath"}
+}
+
+# make graph with more and less familiar path categories and correct percentage
+ggplot(graphData2, aes(x = subjectID, y = correct_recreation_percent, color = path_recreated_cat)) +
+  geom_point(size = 3)
+
+# find the average for each person
+plot_graph2 <- graphData2 %>%
+  group_by(subjectID, path_recreated_cat) %>%
+  summarise(
+    avg_corr_recreate_percent = mean(correct_recreation_percent),
+    sd_corr_recreate_percent = sd(correct_recreation_percent),
+    avg_incorr_recreate_percent = mean(incorrect_recreation_percent),
+    sd_incorr_recreate_percent = sd(incorrect_recreation_percent)
+  )
+
+# gather corr and incorr categories together
+# name the columns you want to gather, the other columns will remain there
+gathered_columns <- c("avg_corr_recreate_percent", "avg_incorr_recreate_percent")
+
+# gather the data for grid numbers
+plot_graph2 <- gather(plot_graph2, key = percent_cat, value = percentage, gathered_columns, factor_key = TRUE)
+
+# Graph for iNAV
+tick_labels <- c("Less Familiar", "More Familiar")
+
+p <- ggplot(plot_graph2, aes(x = path_recreated_cat, y = percentage, fill = percent_cat)) + 
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  labs(x = "Path Type Recreated", y = "Avg Percent Overlap", fill = "Category") +
+  scale_x_discrete(labels = tick_labels) + 
+  scale_fill_discrete(name = "", labels = c("Correctly Recreated", "Incorrectly Recreated")) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/recreatedMoreLessFam.jpeg", width = 6.5, height = 5.75, units = 'in', res = 500)
+p
+#dev.off()
+
+
+
+
+
+
+
+# does the first recreated path correlate with the second recreated path
+
+outer_1st <- subset(graphData, path_recreated == "outer" & (trialname == "recreatePath1" | trialname == "recreatePath2"))
+inner_1st <- subset(graphData, path_recreated == "inner" & (trialname == "recreatePath1" | trialname == "recreatePath2"))
+
+outer_2nd <- subset(graphData2, path_recreated == "outer" & (trialname == "recreatePath3" | trialname == "recreatePath4"))
+inner_2nd <- subset(graphData2, path_recreated == "inner" & (trialname == "recreatePath3" | trialname == "recreatePath4"))
+
+set1 <- merge(inner_1st, outer_1st, by=c("subjectID", "city"))
+set2 <- merge(inner_2nd, outer_2nd, by=c("subjectID", "city"))
+mergeDataset <- merge(set1, set2, by=c("subjectID", "city"))
+
+names(mergeDataset) <- sub("\\.x\\.x$", ".i1", names(mergeDataset))
+names(mergeDataset) <- sub("\\.y\\.x$", ".o1", names(mergeDataset))
+names(mergeDataset) <- sub("\\.x\\.y$", ".i2", names(mergeDataset))
+names(mergeDataset) <- sub("\\.y\\.y$", ".o2", names(mergeDataset))
+
+# overall, the inner and outer routes are highly correlated and at the same level
+cor.test(mergeDataset$correct_recreation_percent.i1, mergeDataset$correct_recreation_percent.i2)
+cor.test(mergeDataset$correct_recreation_percent.o1, mergeDataset$correct_recreation_percent.o2)
+
+plot(mergeDataset$correct_recreation_percent.i1, mergeDataset$correct_recreation_percent.i2)
+plot(mergeDataset$correct_recreation_percent.o1, mergeDataset$correct_recreation_percent.o2)
+
+# now let's split this by familiar path to see if the more familiar path is more highly correlated than the less familiar path
+i1i2 <- mergeDataset[, c(1:19, 37:53)]
+o1o2 <- mergeDataset[, c(1:2, 20:36, 54:70)]
+
+moreFam_i1i2 <- subset(i1i2, path_recreated_cat.i1 == "moreFamPath")
+lessFam_i1i2 <- subset(i1i2, path_recreated_cat.i1 == "lessFamPath")
+
+moreFam_o1o2 <- subset(o1o2, path_recreated_cat.o1 == "moreFamPath")
+lessFam_o1o2 <- subset(o1o2, path_recreated_cat.o1 == "lessFamPath")
+
+cor.test(moreFam_o1o2$correct_recreation_percent.o1, moreFam_o1o2$correct_recreation_percent.o2)
+cor.test(lessFam_o1o2$correct_recreation_percent.o1, lessFam_o1o2$correct_recreation_percent.o2)
+cor.test(moreFam_i1i2$correct_recreation_percent.i1, moreFam_i1i2$correct_recreation_percent.i2)
+cor.test(lessFam_i1i2$correct_recreation_percent.i1, lessFam_i1i2$correct_recreation_percent.i2)
+
+plot(moreFam_o1o2$correct_recreation_percent.o1, moreFam_o1o2$correct_recreation_percent.o2)
+plot(lessFam_o1o2$correct_recreation_percent.o1, lessFam_o1o2$correct_recreation_percent.o2)
+plot(moreFam_i1i2$correct_recreation_percent.i1, moreFam_i1i2$correct_recreation_percent.i2)
+plot(lessFam_i1i2$correct_recreation_percent.i1, lessFam_i1i2$correct_recreation_percent.i2)
+
+names(moreFam_i1i2) <- sub("\\.i", ".", names(moreFam_i1i2))
+names(moreFam_o1o2) <- sub("\\.o", ".", names(moreFam_o1o2))
+
+names(lessFam_i1i2) <- sub("\\.i", ".", names(lessFam_i1i2))
+names(lessFam_o1o2) <- sub("\\.o", ".", names(lessFam_o1o2))
+
+moreFamRecreate <- rbind(moreFam_i1i2, moreFam_o1o2)
+lessFamRecreate <- rbind(lessFam_i1i2, lessFam_o1o2)
+
+cor.test(moreFamRecreate$correct_recreation_percent.1, moreFamRecreate$correct_recreation_percent.2)
+cor.test(lessFamRecreate$correct_recreation_percent.1, lessFamRecreate$correct_recreation_percent.2)
+
+plot(moreFamRecreate$correct_recreation_percent.1, moreFamRecreate$correct_recreation_percent.2)
+plot(lessFamRecreate$correct_recreation_percent.1, lessFamRecreate$correct_recreation_percent.2)
+
+# just do one correlation with first path correlating with second path
+names(moreFamRecreate) <- sub("\\.i", "", names(moreFamRecreate))
+names(lessFamRecreate) <- sub("\\.o", "", names(lessFamRecreate))
+
+bigMergeData <- rbind(moreFamRecreate, lessFamRecreate)
+
+cor.test(bigMergeData$correct_recreation_percent.1, bigMergeData$correct_recreation_percent.2)
+
+plot(bigMergeData$correct_recreation_percent.1, bigMergeData$correct_recreation_percent.2)
+
+# make a column of correct minus incorrect to get a measure of overall how they did
+bigMergeData$corMinusIncor1 <- bigMergeData$correct_recreation_percent.1 - bigMergeData$incorrect_recreation_percent.1
+bigMergeData$corMinusIncor2 <- bigMergeData$correct_recreation_percent.2 - bigMergeData$incorrect_recreation_percent.2
+
+cor.test(bigMergeData$corMinusIncor1, bigMergeData$corMinusIncor2)
+
+# graph for iNAV
+sp <- ggscatter(bigMergeData, x = "corMinusIncor1", y = "corMinusIncor2", 
+          add = "reg.line", 
+          add.params = list(color = "blue", fill = "lightgray"), 
+          conf.int = TRUE, 
+          xlab = "Initial Path Recreation Accuracy",
+          ylab = "End Path Recreation Accuracy") + 
+  stat_cor(method = "pearson", label.x = -.45, label.y = .85)
+
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/recreation1and2cor.jpeg", width = 6, height = 5, units = 'in', res = 500)
+sp
+#dev.off()
+
+
+
+# Write bigMergeData to a new csv file
+#write.csv(bigMergeData, "E:/Nav Stress Data/surveys/learningTrialsBigMergeData.csv", row.names = FALSE)
+
+
+
+navPlot <- ggplot(NO_nav_summary2, aes(x = grid_type, y = median_grid_number, fill = condition)) + 
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  labs(x = "Grid Type", y = "Median Grid Number", fill = "Condition") +
+  scale_x_discrete(labels = tick_labels) + 
+  scale_fill_discrete(name = "Condition", labels = c("Cold Pressor", "Control", "Fire Environment"), type = c("deep sky blue", "lime green", "salmon")) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/navMoreLessFam.jpeg", width = 9.5, height = 5.75, units = 'in', res = 500)
+navPlot
+#dev.off()
+
+
+
+
+
+
 
 moreFamOut <- subset(myData, moreFamiliarPath == "outer")
 moreFamIn <- subset(myData, moreFamiliarPath == "inner")
@@ -88,10 +304,10 @@ longGrid <- gather(myData, key = grid_type, value = grid_number, gathered_column
 grid_type_table <- longGrid %>% 
   group_by(subjectID, grid_type, path_recreated, moreFamiliarPath) %>%
   summarize(
-    mean_gridNum = mean(grid_number),
-    sd_gridNum = sd(grid_number),
-    median_gridNum = median(grid_number), 
-    IQR_gridNum = IQR(grid_number)
+    mean_gridNum = mean(grid_number, na.rm = TRUE),
+    sd_gridNum = sd(grid_number, na.rm = TRUE),
+    median_gridNum = median(grid_number, na.rm = TRUE), 
+    IQR_gridNum = IQR(grid_number, na.rm = TRUE)
   )
 
 # This graph for Kailee
@@ -99,19 +315,20 @@ wrap_labels <- c("Inner Path Recreated", "Outer Path Recreated")
 names(wrap_labels) <- c("inner", "outer")
 tick_labels <- c("Outer Path", "Inner Path", "Novel Grids")
 
-ggplot(grid_type_table, aes(x = grid_type, y = median_gridNum, fill = moreFamiliarPath)) +
+q <- ggplot(grid_type_table, aes(x = grid_type, y = median_gridNum, fill = moreFamiliarPath)) +
   geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
   facet_wrap(vars(path_recreated), labeller = labeller(path_recreated = wrap_labels)) +
   labs(x = "Grid Type Overlap", y = "Median Grid Number", fill = "More Familiar Path") +
   scale_x_discrete(labels = tick_labels) + scale_fill_discrete(name = "More Familiar Path", labels = c("Inner", "Outer"))
   
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/gridTypeOverlapLearning.jpeg", width = 8, height = 5.75, units = 'in', res = 500)
+q
+#dev.off()
+
+
 
 ####################
 
-bxp <- ggboxplot(
-  grid_type_table, x = "grid_type", y = "median_gridNum", fill = "moreFamiliarPath", bxp.errorbar = TRUE, 
-  add = "jitter", facet.by = "path_recreated")
-bxp
 
 # name the columns you want to gather, the other columns will remain there
 percent_gathered_columns <- c("percent_grid_overlap_outer", "percent_grid_overlap_inner")
@@ -122,30 +339,35 @@ longPercentGrid <- gather(myData, key = grid_type, value = grid_percent, percent
 # gather the correct and incorrect trials to plot them and do stats
 long_corr_incorr <- gather(myData, key = trial_type, value = recreation_percent, c(correct_recreation_percent, incorrect_recreation_percent))
 
-hist(longPercentGrid$grid_percent)
+hist(longPercentGrid$grid_percent) # bimodal distribution because of the more and less familiar paths
 hist(myData$correct_recreation_percent)
 hist(myData$incorrect_recreation_percent)
 
 means <- longPercentGrid %>% 
   group_by(path_recreated, grid_type) %>%
   summarize(
-    mean_gridPercent = mean(grid_percent),
-    sd_gridPercent = sd(grid_percent)
+    mean_gridPercent = mean(grid_percent, na.rm = TRUE),
+    sd_gridPercent = sd(grid_percent, na.rm = TRUE)
   )
 
 bxp <- ggboxplot(
   longPercentGrid, x = "path_recreated", y = "grid_percent", color = "grid_type"
 )
-
 bxp
-# identify outliers
-longPercentGrid %>%
+
+# identify outliers: this identifies outliers but if you 2.5 sd away from the mean, there really aren't outliers
+outliers <- longPercentGrid %>%
   group_by(path_recreated, grid_type) %>%
   identify_outliers(grid_percent)
-# get rid of outlier
-longPercentGrid_NO <- longPercentGrid %>%
-  filter(!subjectID == 2)
 
+meanGridPercent <- mean(longPercentGrid$grid_percent, na.rm = TRUE)
+sdGridPercent <- sd(longPercentGrid$grid_percent, na.rm = TRUE)
+
+# get rid of outliers - actually only got rid of the NAs
+longPercentGrid_NO <- longPercentGrid %>%
+  filter(grid_percent <= (meanGridPercent + (2.5*sdGridPercent)))
+
+# redo the plot even though it will be the same
 bxp <- ggboxplot(
   longPercentGrid_NO, x = "path_recreated", y = "grid_percent", color = "grid_type"
 )
@@ -159,11 +381,12 @@ longPercentGrid_NO %>%
 ggqqplot(longPercentGrid_NO, "grid_percent", ggtheme = theme_bw()) +
   facet_grid(path_recreated ~ grid_type, labeller = "label_both")
 
-res.aov <- anova_test(
-  data = longPercentGrid_NO, dv = grid_percent, wid = subjectID,
-  within = c(longPercentGrid_NO$grid_type, path_recreated)
-)
-get_anova_table(res.aov)
+# try ARTool analyses here
+
+m <- art(grid_percent ~ grid_type*moreFamiliarPath + Error(condition), data = longPercentGrid_NO)
+summary(m) # summary indicates that maybe I shouldn't use this analysis
+anova(m)
+
 
 # when Ss recreated the outer/inner path, they have more overlap with that path - good sanity check
 ggplot(longGrid, aes(x = path_recreated, y = grid_number, fill = grid_type)) +
@@ -214,7 +437,7 @@ ggplot(moreLessFam_outer, aes(x = moreFamiliarPath, y = median_percent_overlap_o
   geom_boxplot() +
   geom_jitter(width = .1)
 
-# test to see if the medians are different: p = .035, they are different
+# test to see if the medians are different: p = .02, they are different
 # the more familiar path was learned better for outer
 kruskal.test(median_percent_overlap_outer ~ moreFamiliarPath, data = moreLessFam_outer)
 
@@ -233,7 +456,7 @@ ggplot(moreLessFam_inner, aes(x = moreFamiliarPath, y = median_percent_overlap_i
   geom_boxplot() + 
   geom_jitter(width = .1)
 
-# now the test: p = 0.285, the medians are not different could indicate 
+# now the test: p = 0.214, the medians are not different could indicate 
 kruskal.test(median_percent_overlap_inner ~ moreFamiliarPath, data = moreLessFam_inner)
 
 # now testing recreated paths outer
@@ -421,6 +644,23 @@ nav_summary2 <- longNav %>%
 ggplot(nav_summary2, aes(x = grid_type, y = median_grid_number, fill = condition)) + 
   geom_boxplot(outliers = FALSE) +
   geom_jitter(position = position_jitterdodge())
+
+# graph that connects each person's data points
+nav_summary2 <- longNav %>%
+  group_by(subjectID, grid_type, condition) %>%
+  summarize(
+    count = n(),
+    mean_grid_number = mean(grid_number, na.rm = TRUE), 
+    sd_grid_number = sd(grid_number, na.rm = TRUE),
+    median_grid_number = median(grid_number, na.rm = TRUE),
+    IQR_grid_number = IQR(grid_number, na.rm = TRUE)
+  )
+
+ggplot(nav_summary2, aes(x = grid_type, y = median_grid_number, fill = condition)) + 
+  facet_wrap(vars(condition)) +
+  geom_boxplot(outliers = FALSE, coef = 0) +
+  geom_point() +
+  geom_line(aes(group = subjectID))
 
 # How often did participants have the optimal path
 wrong_excess <- which(no_lost_navTrials$excess_block_num < 0)
