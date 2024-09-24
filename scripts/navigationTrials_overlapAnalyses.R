@@ -13,6 +13,7 @@ library(ggpubr)
 library(rstatix)
 library(ARTool)
 library(openxlsx)
+library(dplyr)
 
 rm(list = ls())
 
@@ -26,6 +27,8 @@ originalData <- read.csv("combined_navTrialsLogData.csv") # keep a copy of origi
 navTrialsData <- originalData # work with this copy of the data
 
 sotData <- read.xlsx("SOT_data.xlsx") # read in the SOT data
+
+good_bad_nav_labels <- read.csv("good_bad_nav_labels.csv") # read in the bad, good, and great navigator labels
 
 # make the correct variables factors
 navTrialsData$subjectID <- as.factor(navTrialsData$subjectID)
@@ -41,6 +44,12 @@ navTrialsData$trial_type <- as.factor(navTrialsData$trial_type)
 # add new columns totaling outer and inner use
 navTrialsData$total_outer_use <- navTrialsData$grid_overlap_outer_seg1 + navTrialsData$grid_overlap_outer_seg2 + navTrialsData$grid_overlap_outer_seg3 + navTrialsData$grid_overlap_outer_seg4
 navTrialsData$total_inner_use <- navTrialsData$grid_overlap_inner_seg1 + navTrialsData$grid_overlap_inner_seg2 + navTrialsData$grid_overlap_inner_seg3 + navTrialsData$grid_overlap_inner_seg4
+
+# add columns for proportion of path that was inner, outer, and novel
+# use the grid count without the overlap
+navTrialsData$outer_proportion <- navTrialsData$total_outer_use/navTrialsData$grid_count
+navTrialsData$inner_proportion <- navTrialsData$total_inner_use/navTrialsData$grid_count
+navTrialsData$novel_proportion <- navTrialsData$novel_grids/navTrialsData$grid_count
 
 # add new column for log grid_count
 navTrialsData$log_grid_count <- log(navTrialsData$grid_count)
@@ -74,7 +83,7 @@ shapiro.test(log(no_lost_navTrials$grid_count)) # still skewed, doesn't pass sha
 
 # create dataset with only lost trials
 lost_trials <- which(navTrialsData$grid_count > mean_gridCount+(2.5*sd_gridCount))
-length(lost_trials) # 76 lost trials
+length(lost_trials) # 87 lost trials
 
 lost_Ss <- subset(navTrialsData, grid_count > mean_gridCount+(2.5*sd_gridCount))
 hist(lost_Ss$grid_count)
@@ -94,9 +103,7 @@ nav_summary <- longNav %>%
   summarize(
     count = n(),
     mean_grid_number = mean(grid_number, na.rm = TRUE), 
-    sd_grid_number = sd(grid_number, na.rm = TRUE),
-    median_grid_number = median(grid_number, na.rm = TRUE),
-    IQR_grid_number = IQR(grid_number, na.rm = TRUE)
+    sd_grid_number = sd(grid_number, na.rm = TRUE)
   )
 
 # check for outliers
@@ -150,6 +157,61 @@ navTrialsIQR <- ggplot(NO_nav_summary, aes(x = grid_type, y = IQR_grid_number, f
 #jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/navTrialsIQR.jpeg", width = 10, height = 5.75, units = 'in', res = 500)
 navTrialsIQR
 #dev.off()
+
+##### redo the graph above with good and bad navigators
+bad_navs <- NO_nav_summary %>%
+  filter(subjectID == 15 | subjectID == 16 | subjectID == 22 | subjectID == 23 | subjectID == 30)
+
+wrap_labels <- c("Inner More Familiar", "Outer More Familiar")
+names(wrap_labels) <- c("inner", "outer")
+tick_labels <- c("Novel Grids", "Outer Grids", "Inner Grids")
+
+navTrialsMedian <- ggplot(bad_navs, aes(x = grid_type, y = median_grid_number, fill = condition)) + 
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  labs(x = "Grid Type", y = "Median Grid Number", fill = "Condition") +
+  scale_x_discrete(labels = tick_labels) + 
+  scale_fill_discrete(name = "Condition", labels = c("Cold Pressor", "Control", "Fire Environment"), type = c("deep sky blue", "lime green", "salmon")) +
+  facet_wrap(vars(moreFamiliarPath), labeller = labeller(moreFamiliarPath = wrap_labels)) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/navTrialsMedian.jpeg", width = 10, height = 5.75, units = 'in', res = 500)
+navTrialsMedian
+#dev.off()
+
+# Participants to exclude
+participants_to_exclude <- c(15, 16, 22, 23, 30)
+
+# Exclude data from the specified participants
+good_navs <- NO_nav_summary %>%
+  filter(!subjectID %in% participants_to_exclude)
+
+# redot the graph with only good and great navigators
+wrap_labels <- c("Inner More Familiar", "Outer More Familiar")
+names(wrap_labels) <- c("inner", "outer")
+tick_labels <- c("Novel Grids", "Outer Grids", "Inner Grids")
+
+navTrialsMedian <- ggplot(good_navs, aes(x = grid_type, y = median_grid_number, fill = condition)) + 
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  labs(x = "Grid Type", y = "Median Grid Number", fill = "Condition") +
+  scale_x_discrete(labels = tick_labels) + 
+  scale_fill_discrete(name = "Condition", labels = c("Cold Pressor", "Control", "Fire Environment"), type = c("deep sky blue", "lime green", "salmon")) +
+  facet_wrap(vars(moreFamiliarPath), labeller = labeller(moreFamiliarPath = wrap_labels)) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Conferences/iNAV 2024/pics/navTrialsMedian.jpeg", width = 10, height = 5.75, units = 'in', res = 500)
+navTrialsMedian
+#dev.off()
+
 
 
 # check normality
@@ -266,7 +328,7 @@ navPlot
 hist(no_lost_navTrials$excess_block_num)
 
 optimal_trials <- which(no_lost_navTrials$excess_block_num <= 1)
-length(optimal_trials) # 728 optimal trials
+length(optimal_trials) # 879 optimal trials
 
 optimal_trials <- subset(no_lost_navTrials, excess_block_num <= 1)
 

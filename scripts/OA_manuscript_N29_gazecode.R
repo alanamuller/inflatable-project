@@ -3,9 +3,6 @@
 # amuller@arizona.edu
 # 2022-07-11
 
-# start fresh so we don't get weird errors
-rm(list = ls())
-
 # import library stuff
 library(readxl)
 library(ggplot2)
@@ -15,11 +12,14 @@ library(tidyverse)
 library(rstatix)
 library(car)
 
+# start fresh so we don't get weird errors
+rm(list = ls())
+
 # work computer uses E but laptop uses D, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data")
+setwd("E:/Nav_1stYr_project_data")
 
 # Read in data
-inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/manuscript_data_N29_gazecode_byTrial_badTrialsDeleted.xlsx")
+inputData <- read.csv("OA_dataByTrial_gazecode_manualAdds.csv")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -27,8 +27,9 @@ str(inputData) # check the structure of the data
 myData <- inputData
 
 # make all the rows their correct data type (numeric or factor)
-i <- c(1:59)
+i <- c(4:30)
 myData [i] <- lapply(myData[i], as.numeric)
+myData$group <- as.factor(myData$group)
 myData$subject <- as.factor(myData$subject)
 myData$trial <- as.factor(myData$trial)
 
@@ -37,6 +38,10 @@ myData$placement_error_cm_log <- log(myData$placement_error_cm+1)
 myData$abs_x_error_cm_log <- log(myData$abs_x_error_cm+1)
 myData$abs_y_error_cm_log <- log(myData$abs_y_error_cm+1)
 str(myData)
+
+# make a group for only older adults
+myData <- myData %>%
+  filter(group == "OA")
 
 # create columns to combine specific fixation columns
 myData$s.lm_obj_lm <- myData$s.lm_to_obj + myData$s.obj_to_lm
@@ -112,20 +117,6 @@ myData$r.objects_norm_log <- log(myData$r.objects_norm+1)
 subject_df <- myData %>%
   group_by(subject) %>%
   summarize(
-    s.landmarks = mean(s.landmarks, na.rm = TRUE),
-    s.same_object = mean(s.same_object, na.rm = TRUE),
-    s.DOSW = mean(s.DOSW, na.rm = TRUE),
-    s.wall = mean(s.wall, na.rm = TRUE),
-    s.DODW = mean(s.DODW, na.rm = TRUE),
-    s.cart = mean(s.cart, na.rm = TRUE),
-    s.other = mean(s.other, na.rm = TRUE),
-    s.obj_to_lm = mean(s.obj_to_lm, na.rm = TRUE),
-    s.lm_to_obj = mean(s.lm_to_obj, na.rm = TRUE),
-    s.obj_to_so = mean(s.obj_to_so, na.rm = TRUE),
-    s.obj_to_diffObj = mean(s.obj_to_diffObj, na.rm = TRUE),
-    s.lm_to_lm = mean(s.lm_to_lm, na.rm = TRUE),
-    s.lm_obj_lm = mean(s.lm_obj_lm, na.rm = TRUE),
-    s.objects = mean(s.objects, na.rm = TRUE),
     r.landmarks = mean(r.landmarks, na.rm = TRUE),
     r.same_object = mean(r.same_object, na.rm = TRUE),
     r.DOSW = mean(r.DOSW, na.rm = TRUE),
@@ -140,20 +131,6 @@ subject_df <- myData %>%
     r.lm_to_lm = mean(r.lm_to_lm, na.rm = TRUE),
     r.lm_obj_lm = mean(r.lm_obj_lm, na.rm = TRUE),
     r.objects = mean(r.objects, na.rm = TRUE),
-    s.landmarks_norm = mean(s.landmarks_norm, na.rm = TRUE),
-    s.same_object_norm = mean(s.same_object_norm, na.rm = TRUE),
-    s.DOSW_norm = mean(s.DOSW_norm, na.rm = TRUE),
-    s.wall_norm = mean(s.wall_norm, na.rm = TRUE), 
-    s.DODW_norm = mean(s.DODW_norm, na.rm = TRUE),
-    s.cart_norm = mean(s.cart_norm, na.rm = TRUE),
-    s.other_norm = mean(s.other_norm, na.rm = TRUE),
-    s.obj_to_lm_norm = mean(s.obj_to_lm_norm, na.rm = TRUE),
-    s.lm_to_obj_norm = mean(s.lm_to_obj_norm, na.rm = TRUE),
-    s.obj_to_so_norm = mean(s.obj_to_so_norm, na.rm = TRUE),
-    s.obj_to_diffObj_norm = mean(s.obj_to_diffObj_norm, na.rm = TRUE),
-    s.lm_to_lm_norm = mean(s.lm_to_lm_norm, na.rm = TRUE),
-    s.lm_obj_lm_norm = mean(s.lm_obj_lm_norm, na.rm = TRUE),
-    s.objects_norm = mean(s.objects_norm, na.rm = TRUE),
     r.landmarks_norm = mean(r.landmarks_norm, na.rm = TRUE),
     r.same_object_norm = mean(r.same_object_norm, na.rm = TRUE),
     r.DOSW_norm = mean(r.DOSW_norm, na.rm = TRUE),
@@ -168,20 +145,6 @@ subject_df <- myData %>%
     r.lm_to_lm_norm = mean(r.lm_to_lm_norm, na.rm = TRUE),
     r.lm_obj_lm_norm = mean(r.lm_obj_lm_norm, na.rm = TRUE),
     r.objects_norm = mean(r.objects_norm, na.rm = TRUE),
-    s.landmarks_norm_log = mean(s.landmarks_norm_log, na.rm = TRUE),
-    s.same_object_norm_log = mean(s.same_object_norm_log, na.rm = TRUE),
-    s.DOSW_norm_log = mean(s.DOSW_norm_log, na.rm = TRUE),
-    s.wall_norm_log = mean(s.wall_norm_log, na.rm = TRUE),
-    s.DODW_norm_log = mean(s.DODW_norm_log, na.rm = TRUE),
-    s.cart_norm_log = mean(s.cart_norm_log, na.rm = TRUE),
-    s.other_norm_log = mean(s.other_norm_log, na.rm = TRUE),
-    s.obj_to_lm_norm_log = mean(s.obj_to_lm_norm_log, na.rm = TRUE),
-    s.lm_to_obj_norm_log = mean(s.lm_to_obj_norm_log, na.rm = TRUE),
-    s.obj_to_so_norm_log = mean(s.obj_to_so_norm_log, na.rm = TRUE),
-    s.obj_to_diffObj_norm_log = mean(s.obj_to_diffObj_norm_log, na.rm = TRUE),
-    s.lm_to_lm_norm_log = mean(s.lm_to_lm_norm_log, na.rm = TRUE),
-    s.lm_obj_lm_norm_log = mean(s.lm_obj_lm_norm_log, na.rm = TRUE),
-    s.objects_norm_log = mean(s.objects_norm_log, na.rm = TRUE),    
     r.landmarks_norm_log = mean(r.landmarks_norm_log, na.rm = TRUE),
     r.same_object_norm_log = mean(r.same_object_norm_log, na.rm = TRUE),
     r.DOSW_norm_log = mean(r.DOSW_norm_log, na.rm = TRUE),
@@ -196,14 +159,12 @@ subject_df <- myData %>%
     r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE), 
     r.lm_obj_lm_norm_log = mean(r.lm_obj_lm_norm_log, na.rm = TRUE),
     r.objects_norm_log = mean(r.objects_norm_log, na.rm = TRUE),
-    placement_error_cm_log = mean(placement_error_cm_log),
-    abs_x_error_cm_log = mean(abs_x_error_cm_log),
-    abs_y_error_cm_log = mean(abs_y_error_cm_log),
-    Total_duration_of_fixations = mean(Total_duration_of_fixations),
-    Average_duration_of_fixations = mean(Average_duration_of_fixations),
-    Number_of_fixations = mean(Number_of_fixations), 
-    Peak_velocity_of_entry_saccade = mean(Peak_velocity_of_entry_saccade),
-    Peak_velocity_of_exit_saccade = mean(Peak_velocity_of_exit_saccade)
+    placement_error_cm_log = mean(placement_error_cm_log, na.rm = TRUE),
+    abs_x_error_cm_log = mean(abs_x_error_cm_log, na.rm = TRUE),
+    abs_y_error_cm_log = mean(abs_y_error_cm_log, na.rm = TRUE), 
+    fix_num = mean(fix_num, na.rm = TRUE), 
+    total_fix_dur_ms = mean(total_fix_dur_ms, na.rm = TRUE),
+    avg_fix_dur_ms = mean(avg_fix_dur_ms, na.rm = TRUE)
   )
 
 # create dataset for study normed and logged values by subject
@@ -243,7 +204,10 @@ study_subject_norm_df <- myData %>%
     s.objects_norm_log = mean(s.objects_norm_log, na.rm = TRUE),   
     placement_error_cm_log = mean(placement_error_cm_log),
     abs_x_error_cm_log = mean(abs_x_error_cm_log),
-    abs_y_error_cm_log = mean(abs_y_error_cm_log)
+    abs_y_error_cm_log = mean(abs_y_error_cm_log),
+    fix_num = mean(fix_num, na.rm = TRUE), 
+    total_fix_dur_ms = mean(total_fix_dur_ms, na.rm = TRUE),
+    avg_fix_dur_ms = mean(avg_fix_dur_ms, na.rm = TRUE)
   )
 
 # create dataset for retrieval normed and logged values by subject
@@ -264,9 +228,9 @@ retrieval_subject_norm_df <- myData %>%
     r.lm_to_lm_norm = mean(r.lm_to_lm_norm, na.rm = TRUE),
     r.lm_obj_lm_norm = mean(r.lm_obj_lm_norm, na.rm = TRUE),
     r.objects_norm = mean(r.objects_norm, na.rm = TRUE),
-    placement_error_cm = mean(placement_error_cm),
-    abs_x_error_cm = mean(abs_x_error_cm),
-    abs_y_error_cm = mean(abs_y_error_cm),
+    placement_error_cm = mean(placement_error_cm, na.rm = TRUE),
+    abs_x_error_cm = mean(abs_x_error_cm, na.rm = TRUE),
+    abs_y_error_cm = mean(abs_y_error_cm, na.rm = TRUE),
     r.landmarks_norm_log = mean(r.landmarks_norm_log, na.rm = TRUE),
     r.same_object_norm_log = mean(r.same_object_norm_log, na.rm = TRUE),
     r.DOSW_norm_log = mean(r.DOSW_norm_log, na.rm = TRUE),
@@ -281,9 +245,12 @@ retrieval_subject_norm_df <- myData %>%
     r.lm_to_lm_norm_log = mean(r.lm_to_lm_norm_log, na.rm = TRUE),
     r.lm_obj_lm_norm_log = mean(r.lm_obj_lm_norm_log, na.rm = TRUE),
     r.objects_norm_log = mean(r.objects_norm_log, na.rm = TRUE),
-    placement_error_cm_log = mean(placement_error_cm_log),
-    abs_x_error_cm_log = mean(abs_x_error_cm_log),
-    abs_y_error_cm_log = mean(abs_y_error_cm_log)
+    placement_error_cm_log = mean(placement_error_cm_log, na.rm = TRUE),
+    abs_x_error_cm_log = mean(abs_x_error_cm_log, na.rm = TRUE),
+    abs_y_error_cm_log = mean(abs_y_error_cm_log, na.rm = TRUE),
+    fix_num = mean(fix_num, na.rm = TRUE), 
+    total_fix_dur_ms = mean(total_fix_dur_ms, na.rm = TRUE),
+    avg_fix_dur_ms = mean(avg_fix_dur_ms, na.rm = TRUE)
   )
 
 # put the study subject grouped data in long format
@@ -306,48 +273,48 @@ retrieval_subject_norm_long <- retrieval_subject_norm_df %>%
 study_only_norm_long <- study_subject_norm_long[1:420, ]
 study_only_norm_log_long <- study_subject_norm_long[421:840, ]
 
-retrieval_only_norm_long <- retrieval_subject_norm_long[1:420, ]
-retreival_only_norm_log_long <- retrieval_subject_norm_long[421:840, ]
+retrieval_only_norm_long <- retrieval_subject_norm_long[1:448, ] # fixed for OAs
+retreival_only_norm_log_long <- retrieval_subject_norm_long[449:896, ] # fixed for OAs
 
 # make group for only LM, Wall, Other, and Objects categories during study and retrieval separately
 study_lm_wall_other <- study_subject_norm_long[c(1:30, 91:120, 181:210, 391:420), ]
 study_lm_wall_other_log <- study_subject_norm_long[c(421:450, 511:540, 601:630, 811:840), ]
 
-retrieval_lm_wall_other <- retrieval_subject_norm_long[c(1:30, 91:120, 181:210, 391:420), ]
-retrieval_lm_wall_other_log <- retrieval_subject_norm_long[c(421:450, 511:540, 601:630, 811:840), ]
+retrieval_lm_wall_other <- retrieval_subject_norm_long[c(1:32, 97:128, 193:224, 417:448), ] # fixed for OAs
+retrieval_lm_wall_other_log <- retrieval_subject_norm_long[c(449:480, 545:576, 641:672, 865:896), ] # fixed for OAs
 
 # make a group for successive fixations: lm_lm, obj_obj, lm_obj_lm,
 study_successive_fix <- study_subject_norm_long[301:390, ]
-retrieval_successive_fix <- retrieval_subject_norm_long[301:390, ]
+retrieval_successive_fix <- retrieval_subject_norm_long[321:416, ] # fixed for OAs
 
 ### check for skew - significant values noted, otherwise not significant
-shapiro.test(subject_df$s.landmarks_norm) # not sig but p = .06489
+shapiro.test(subject_df$s.landmarks_norm) 
 shapiro.test(subject_df$s.same_object_norm_log)
 shapiro.test(subject_df$s.DOSW_norm_log)
 shapiro.test(subject_df$s.wall_norm_log)
 shapiro.test(subject_df$s.DODW_norm_log)
-shapiro.test(subject_df$s.cart_norm_log) # p < .001
-shapiro.test(subject_df$s.other_norm_log) # p < .001
+shapiro.test(subject_df$s.cart_norm_log)
+shapiro.test(subject_df$s.other_norm_log) 
 shapiro.test(subject_df$s.obj_to_lm_norm_log)
-shapiro.test(subject_df$s.lm_to_obj_norm_log) # p = .02624
-shapiro.test(subject_df$s.obj_to_so_norm_log) # p = .002047
+shapiro.test(subject_df$s.lm_to_obj_norm_log) 
+shapiro.test(subject_df$s.obj_to_so_norm_log) 
 shapiro.test(subject_df$s.obj_to_diffObj_norm_log)
-shapiro.test(subject_df$s.lm_to_lm_norm_log) # p = .002967
+shapiro.test(subject_df$s.lm_to_lm_norm_log) 
 shapiro.test(subject_df$s.lm_obj_lm_norm_log)
 shapiro.test(subject_df$s.objects_norm_log)
 
-shapiro.test(subject_df$r.landmarks_norm) # p = .009755
-shapiro.test(subject_df$r.same_object_norm_log)
-shapiro.test(subject_df$r.DOSW_norm_log) # not sig but p = .07021
+shapiro.test(subject_df$r.landmarks_norm) # not sig but p = .0689
+shapiro.test(subject_df$r.same_object_norm_log) # not sig but p = .0897
+shapiro.test(subject_df$r.DOSW_norm_log)
 shapiro.test(subject_df$r.wall_norm_log)
-shapiro.test(subject_df$r.DODW_norm_log) # p = .01362
-shapiro.test(subject_df$r.cart_norm_log)
+shapiro.test(subject_df$r.DODW_norm_log) # p = .03957
+shapiro.test(subject_df$r.cart_norm_log) # p < .001
 shapiro.test(subject_df$r.other_norm_log)
 shapiro.test(subject_df$r.obj_to_lm_norm_log)
 shapiro.test(subject_df$r.lm_to_obj_norm_log)
 shapiro.test(subject_df$r.obj_to_so_norm_log)
-shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # not sig but p = .09054
-shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .002219
+shapiro.test(subject_df$r.obj_to_diffObj_norm_log)
+shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .03562
 shapiro.test(subject_df$r.lm_obj_lm_norm_log)
 shapiro.test(subject_df$r.objects_norm_log)
 
@@ -499,23 +466,21 @@ cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, meth
 cor.test(subject_df$r.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
-cor.test(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, p = .04168
-cor.test(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, p = .001042
-cor.test(subject_df$Number_of_fixations, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$Peak_velocity_of_entry_saccade, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log, method = "pearson") # sig pos cor, p = .02768
-plot(subject_df$Peak_velocity_of_exit_saccade, subject_df$placement_error_cm_log)
+cor.test(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$avg_fix_dur_ms, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$fix_num, subject_df$placement_error_cm_log, method = "pearson")
+
 
 
 plot(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log)
 
-plot(subject_df$Total_duration_of_fixations, subject_df$placement_error_cm_log) + stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
-plot(subject_df$Average_duration_of_fixations, subject_df$placement_error_cm_log)
+plot(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log) + stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
+plot(subject_df$avg_fix_dur_ms, subject_df$placement_error_cm_log)
 
 # uncomment this to save manuscript-quality pics to this folder
 setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
 
-x <- subject_df$Total_duration_of_fixations
+x <- subject_df$total_fix_dur_ms
 y<- subject_df$placement_error_cm_log
 
 ggplot( subject_df, aes( x=x, y=y ))+
@@ -523,17 +488,17 @@ ggplot( subject_df, aes( x=x, y=y ))+
   stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
 
 
-x <- subject_df$Average_duration_of_fixations
+x <- subject_df$avg_fix_dur_ms
 y<- subject_df$placement_error_cm_log
 
 # FIGURE FOR MANUSCRIPT
 
 avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point()+
-  stat_cor(method = "pearson", label.x = 600, label.y = 3.8) +
+  stat_cor(method = "pearson", label.x = 600, label.y = 4.5) +
   theme_classic() + xlab("Average duration of fixations (ms)") +
   ylab("Placement Error (log cm)") + 
-  geom_smooth(method = 'lm') + coord_cartesian(ylim = c(2.4, 4))
+  geom_smooth(method = 'lm')
 #jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
 avg_fix_dur
 #dev.off()
@@ -542,13 +507,39 @@ avg_fix_dur
 avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point(aes(size = 12), show.legend = FALSE)+
   stat_cor(method = "pearson", label.x = 440, label.y = 3.8, size = 12) +
-  theme_classic() + xlab("Avg duration of fixations (s)") +
+  theme_classic() + xlab("Avg duration of fixations (ms)") +
   ylab("Placement Error (log cm)") + 
   geom_smooth(method = 'lm', size = 2) + coord_cartesian(ylim = c(2.4, 4)) +
   theme(text = element_text(size = 44))
-jpeg("SFN_avg_fix_dur.jpeg", width = 9, height = 10, units = 'in', res = 700)
+#jpeg("SFN_avg_fix_dur.jpeg", width = 9, height = 10, units = 'in', res = 700)
 avg_fix_dur
-dev.off()
+#dev.off()
+
+x <- subject_df$total_fix_dur_ms
+y<- subject_df$placement_error_cm_log
+
+tot_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
+  geom_point()+
+  stat_cor(method = "pearson", label.x = 1200, label.y = 4.4) +
+  theme_classic() + xlab("Total duration of fixations (ms)") +
+  ylab("Placement Error (log cm)") + 
+  geom_smooth(method = 'lm')
+#jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
+tot_fix_dur
+#dev.off()
+
+x <- subject_df$fix_num
+y<- subject_df$placement_error_cm_log
+
+fix_num_plot <-ggplot(subject_df, aes( x=x, y=y ))+
+  geom_point()+
+  stat_cor(method = "pearson", label.x = 2, label.y = 4.4) +
+  theme_classic() + xlab("Average Number of Fixations") +
+  ylab("Placement Error (log cm)") + 
+  geom_smooth(method = 'lm')
+#jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
+fix_num_plot
+#dev.off()
 
 
 # big regression with all sig ones to see which explains more variance with time to first fixation

@@ -12,6 +12,8 @@ library(tidyverse)
 library(ggpubr)
 library(rstatix)
 library(ARTool)
+library(lme4)
+library(dplyr)
 
 rm(list = ls())
 
@@ -19,7 +21,7 @@ rm(list = ls())
 setwd("E:/Nav Stress Data/") # set working directory
 # setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Stress shortcuts") # for developing
 
-myData <- read.csv("combined_recreatePathsLogData_ManualCheck.csv") # read in file
+myData <- read.csv("combined_recreatePathsLogData.csv") # read in file
 
 # add column with percentages of how much of the path participants recreated (not including grids shared between inner and outer paths)
 # City 1 <- outer: 124; inner: 110
@@ -62,10 +64,10 @@ outer_df$incorrect_recreation_percent <-outer_df$percent_grid_overlap_inner
 inner_df$correct_recreation_percent <- inner_df$percent_grid_overlap_inner
 inner_df$incorrect_recreation_percent <-inner_df$percent_grid_overlap_outer
 
-myData <- rbind(outer_df, inner_df)
+combo_data <- rbind(outer_df, inner_df)
 
 # make a dataset to graph more familiar and less familiar path correct percentage
-graphData <- subset(myData, trialname == "recreatePath1" | trialname == "recreatePath2")
+graphData <- subset(combo_data, trialname == "recreatePath1" | trialname == "recreatePath2")
 # make a column to label the more/less familiar path
 for (j in 1:nrow(graphData)){
   if(graphData$moreFamiliarPath[j] == graphData$path_recreated[j]){
@@ -81,10 +83,10 @@ ggplot(graphData, aes(x = subjectID, y = correct_recreation_percent, color = pat
 plot_graph <- graphData %>%
   group_by(subjectID, path_recreated_cat) %>%
   summarise(
-    avg_corr_recreate_percent = mean(correct_recreation_percent),
-    sd_corr_recreate_percent = sd(correct_recreation_percent),
-    avg_incorr_recreate_percent = mean(incorrect_recreation_percent),
-    sd_incorr_recreate_percent = sd(incorrect_recreation_percent)
+    avg_corr_recreate_percent = mean(correct_recreation_percent, na.rm = TRUE),
+    sd_corr_recreate_percent = sd(correct_recreation_percent, na.rm = TRUE),
+    avg_incorr_recreate_percent = mean(incorrect_recreation_percent, na.rm = TRUE),
+    sd_incorr_recreate_percent = sd(incorrect_recreation_percent, na.rm = TRUE)
   )
 
 # gather corr and incorr categories together
@@ -94,27 +96,164 @@ gathered_columns <- c("avg_corr_recreate_percent", "avg_incorr_recreate_percent"
 # gather the data for grid numbers
 plot_graph <- gather(plot_graph, key = percent_cat, value = percentage, gathered_columns, factor_key = TRUE)
 
-# Graph for iNAV - make it fancy later
-ggplot(plot_graph, aes(x = path_recreated_cat, y = percentage, color = percent_cat)) +
-  geom_boxplot()
+# MANUSCRIPT PIC
+overlap_fam_plot <- ggplot(plot_graph, aes(x = path_recreated_cat, y = percentage, fill = percent_cat)) + 
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  theme_classic() +
+  labs(x = "Familiarity Level", y = "Average Grid Overlap Percent", fill = "Recreation Category") +
+  scale_x_discrete(labels = c("Less Familiar", "More Familiar")) + 
+  scale_fill_discrete(name = "Recreated Category", labels = c("Overlap with recreated path", "Overlap with nonrecreated path"), type = c("cyan3", "salmon")) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics/learning_fam_gridOverlap.jpeg", width = 8, height = 5.75, units = 'in', res = 500)
+overlap_fam_plot
+#dev.off()
+
+##### stats for the plot
+good <- plot_graph %>%
+  filter(percent_cat == "avg_corr_recreate_percent")
+hist(good$percentage)
+
+bad <- plot_graph %>%
+  filter(percent_cat == "avg_incorr_recreate_percent")
+hist(bad$percentage)
+
+##### 2-way repeated-measures ANOVA walk view or maybe linear mixed effects model
+# summary stats used in 2way rep ANOVA
+aov_means <- plot_graph %>%
+  group_by(path_recreated_cat, percent_cat) %>%
+  get_summary_stats(percentage, type = "mean_sd")
+
+# organize the data for the test
+aov_data <- plot_graph %>%
+  group_by(subjectID, path_recreated_cat, percent_cat) %>%
+  summarize(
+    mean_percent = mean(percentage, na.rm = TRUE),
+  )
+aov_data <- as_tibble(aov_data)
+
+# check for outliers - 3 but not extreme so they stay in
+outliers <- aov_data %>%
+  group_by(path_recreated_cat, percent_cat) %>%
+  identify_outliers(mean_percent)
+
+# check normality - they are all significant but not that bad
+normality <- aov_data %>%
+  group_by(path_recreated_cat, percent_cat) %>%
+  shapiro_test(mean_percent)
+
+# qq plot - not great but ok
+ggqqplot(aov_data, "mean_percent", ggtheme = theme_bw()) +
+  facet_grid(path_recreated_cat ~ percent_cat, labeller = "label_both")
+
+# test
+withinTest <- anova_test(data = aov_data, dv = mean_percent, wid = subjectID,
+                         within = c(path_recreated_cat, percent_cat))
+get_anova_table(withinTest) # everything is sig
+
+# post-hoc tests
+one.way <- aov_data %>%
+  group_by(path_recreated_cat) %>%
+  anova_test(dv = mean_percent, wid = subjectID, within = percent_cat) %>%
+  get_anova_table() %>%
+  adjust_pvalue(method = "bonferroni")
+one.way
+
+# have to take out 22 and 26 or pairwise won't work
+aov_data_22_26_gone <- aov_data %>%
+  filter(!(subjectID %in% c(22,26)))
+
+pwc <- aov_data_22_26_gone %>%
+  group_by(percent_cat) %>%
+  pairwise_t_test(
+    mean_percent ~ path_recreated_cat, paired = TRUE,
+    p.adjust.method = "bonferroni"
+  )
+pwc
 
 # graph of correct recreation percent
-ggplot(myData, aes(x = subjectID, y = correct_recreation_percent)) +
+ggplot(combo_data, aes(x = subjectID, y = correct_recreation_percent)) +
   geom_boxplot(color = "blue", fill = "steelblue", alpha = 0.2) +
   theme_classic()
 
 # graph of incorrect recreation percent
-ggplot(myData, aes(x = subjectID, y = incorrect_recreation_percent)) +
+ggplot(combo_data, aes(x = subjectID, y = incorrect_recreation_percent)) +
   geom_boxplot(color = "red", fill = "lightpink", alpha = 0.2)
 
+# MANUSCRIPT PIC
 # this graph is a little busy - shows correct and incorrect recreation percentage
-ggplot(myData, aes(x = subjectID)) +
-  geom_boxplot(aes(y = correct_recreation_percent, fill = "steelblue", alpha = 0.2)) +
-  geom_boxplot(aes(y = incorrect_recreation_percent, fill = "lightpink", alpha = 0.2))
+indiv_diffs_plot <- ggplot(combo_data, aes(x = subjectID)) +
+  geom_boxplot(aes(y = correct_recreation_percent, fill = "steelblue")) +
+  geom_boxplot(aes(y = incorrect_recreation_percent, fill = "lightpink")) +
+  labs(x = "Participant Number", y = "Average Grid Overlap Percent") +
+  scale_fill_discrete(name = "Recreated Category", labels = c("Overlap with nonrecreated path", "Overlap with recreated path")) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics/learning_indivDiffs.jpeg", width = 12, height = 6, units = 'in', res = 500)
+indiv_diffs_plot
+#dev.off()
+
+# Make the graph again with only the first two recreated paths
+first_recreation <- combo_data %>%
+  filter(trialname == "recreatePath1" | trialname == "recreatePath2")
+# only the first and second recreation 
+indiv_diffs_plot2 <- ggplot(first_recreation, aes(x = subjectID)) +
+  geom_boxplot(aes(y = correct_recreation_percent, fill = "steelblue")) +
+  geom_boxplot(aes(y = incorrect_recreation_percent, fill = "lightpink")) +
+  labs(x = "Participant Number", y = "Average Grid Overlap Percent") +
+  scale_fill_discrete(name = "Recreated Category", labels = c("Overlap with nonrecreated path", "Overlap with recreated path")) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+#jpeg("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics/learning_indivDiffs2.jpeg", width = 12, height = 6, units = 'in', res = 500)
+indiv_diffs_plot2
+#dev.off()
+
+##### Find the bad navigators
+# Bad navigators will be defined as less than 50% knowledge of the correct paths
+# Get each person's correct and incorrect percent
+good_bad_navs <- combo_data %>%
+  group_by(subjectID) %>%
+  summarize(
+    mean_correct_overlap = mean(correct_recreation_percent), 
+    mean_incorrect_overlap = mean(incorrect_recreation_percent)
+  )
+  
+# Add a label for each person as bad (0-50), med (50-75), and good (75-100)
+good_bad_navs <- good_bad_navs %>%
+  mutate(label = case_when(
+    mean_correct_overlap >= 0 & mean_correct_overlap <= 0.5 ~ "bad", 
+    mean_correct_overlap > 0.5 & mean_correct_overlap <= 0.75 ~ "good",
+    mean_correct_overlap >= 0.75 & mean_correct_overlap <= 1 ~ "great"
+  ))
+
+# Write to a csv
+#write.csv(good_bad_navs, "E:/Nav Stress Data/good_bad_nav_labels.csv", row.names = FALSE)
+
+plot_data <- good_bad_navs %>%
+  group_by(label) %>%
+  summarize(
+    count = n(), 
+    mean_correct = mean(mean_correct_overlap), 
+    mean_incorrect = mean(mean_incorrect_overlap)
+  )
+ggplot(plot_data, aes(x = label, y = mean_correct)) +
+  geom_boxplot()
 
 # do people remember at the end too?
 # make a dataset to graph more familiar and less familiar path correct percentage
-graphData2 <- subset(myData, trialname == "recreatePath3" | trialname == "recreatePath4")
+graphData2 <- subset(combo_data, trialname == "recreatePath3" | trialname == "recreatePath4")
 # make a column to label the more/less familiar path
 for (j in 1:nrow(graphData2)){
   if(graphData2$moreFamiliarPath[j] == graphData2$path_recreated[j]){
@@ -130,10 +269,10 @@ ggplot(graphData2, aes(x = subjectID, y = correct_recreation_percent, color = pa
 plot_graph2 <- graphData2 %>%
   group_by(subjectID, path_recreated_cat) %>%
   summarise(
-    avg_corr_recreate_percent = mean(correct_recreation_percent),
-    sd_corr_recreate_percent = sd(correct_recreation_percent),
-    avg_incorr_recreate_percent = mean(incorrect_recreation_percent),
-    sd_incorr_recreate_percent = sd(incorrect_recreation_percent)
+    avg_corr_recreate_percent = mean(correct_recreation_percent, na.rm = TRUE),
+    sd_corr_recreate_percent = sd(correct_recreation_percent, na.rm = TRUE),
+    avg_incorr_recreate_percent = mean(incorrect_recreation_percent, na.rm = TRUE),
+    sd_incorr_recreate_percent = sd(incorrect_recreation_percent, na.rm = TRUE)
   )
 
 # gather corr and incorr categories together
@@ -186,8 +325,8 @@ names(mergeDataset) <- sub("\\.x\\.y$", ".i2", names(mergeDataset))
 names(mergeDataset) <- sub("\\.y\\.y$", ".o2", names(mergeDataset))
 
 # overall, the inner and outer routes are highly correlated and at the same level
-cor.test(mergeDataset$correct_recreation_percent.i1, mergeDataset$correct_recreation_percent.i2)
-cor.test(mergeDataset$correct_recreation_percent.o1, mergeDataset$correct_recreation_percent.o2)
+cor.test(mergeDataset$correct_recreation_percent.i1, mergeDataset$correct_recreation_percent.i2) # 0.89
+cor.test(mergeDataset$correct_recreation_percent.o1, mergeDataset$correct_recreation_percent.o2) # 0.86
 
 plot(mergeDataset$correct_recreation_percent.i1, mergeDataset$correct_recreation_percent.i2)
 plot(mergeDataset$correct_recreation_percent.o1, mergeDataset$correct_recreation_percent.o2)
@@ -202,15 +341,15 @@ lessFam_i1i2 <- subset(i1i2, path_recreated_cat.i1 == "lessFamPath")
 moreFam_o1o2 <- subset(o1o2, path_recreated_cat.o1 == "moreFamPath")
 lessFam_o1o2 <- subset(o1o2, path_recreated_cat.o1 == "lessFamPath")
 
-cor.test(moreFam_o1o2$correct_recreation_percent.o1, moreFam_o1o2$correct_recreation_percent.o2)
-cor.test(lessFam_o1o2$correct_recreation_percent.o1, lessFam_o1o2$correct_recreation_percent.o2)
-cor.test(moreFam_i1i2$correct_recreation_percent.i1, moreFam_i1i2$correct_recreation_percent.i2)
-cor.test(lessFam_i1i2$correct_recreation_percent.i1, lessFam_i1i2$correct_recreation_percent.i2)
+cor.test(moreFam_o1o2$correct_recreation_percent.o1, moreFam_o1o2$correct_recreation_percent.o2) # 0.74
+cor.test(lessFam_o1o2$correct_recreation_percent.o1, lessFam_o1o2$correct_recreation_percent.o2) # 0.88
+cor.test(moreFam_i1i2$correct_recreation_percent.i1, moreFam_i1i2$correct_recreation_percent.i2) # 0.89
+cor.test(lessFam_i1i2$correct_recreation_percent.i1, lessFam_i1i2$correct_recreation_percent.i2) # 0.90
 
-plot(moreFam_o1o2$correct_recreation_percent.o1, moreFam_o1o2$correct_recreation_percent.o2)
-plot(lessFam_o1o2$correct_recreation_percent.o1, lessFam_o1o2$correct_recreation_percent.o2)
-plot(moreFam_i1i2$correct_recreation_percent.i1, moreFam_i1i2$correct_recreation_percent.i2)
-plot(lessFam_i1i2$correct_recreation_percent.i1, lessFam_i1i2$correct_recreation_percent.i2)
+plot(moreFam_o1o2$correct_recreation_percent.o1, moreFam_o1o2$correct_recreation_percent.o2, xlim = c(0,1), ylim = c(0,1))
+plot(lessFam_o1o2$correct_recreation_percent.o1, lessFam_o1o2$correct_recreation_percent.o2, xlim = c(0,1), ylim = c(0,1))
+plot(moreFam_i1i2$correct_recreation_percent.i1, moreFam_i1i2$correct_recreation_percent.i2, xlim = c(0,1), ylim = c(0,1))
+plot(lessFam_i1i2$correct_recreation_percent.i1, lessFam_i1i2$correct_recreation_percent.i2, xlim = c(0,1), ylim = c(0,1))
 
 names(moreFam_i1i2) <- sub("\\.i", ".", names(moreFam_i1i2))
 names(moreFam_o1o2) <- sub("\\.o", ".", names(moreFam_o1o2))
@@ -221,8 +360,8 @@ names(lessFam_o1o2) <- sub("\\.o", ".", names(lessFam_o1o2))
 moreFamRecreate <- rbind(moreFam_i1i2, moreFam_o1o2)
 lessFamRecreate <- rbind(lessFam_i1i2, lessFam_o1o2)
 
-cor.test(moreFamRecreate$correct_recreation_percent.1, moreFamRecreate$correct_recreation_percent.2)
-cor.test(lessFamRecreate$correct_recreation_percent.1, lessFamRecreate$correct_recreation_percent.2)
+cor.test(moreFamRecreate$correct_recreation_percent.1, moreFamRecreate$correct_recreation_percent.2) # 0.86
+cor.test(lessFamRecreate$correct_recreation_percent.1, lessFamRecreate$correct_recreation_percent.2) # 0.89
 
 plot(moreFamRecreate$correct_recreation_percent.1, moreFamRecreate$correct_recreation_percent.2)
 plot(lessFamRecreate$correct_recreation_percent.1, lessFamRecreate$correct_recreation_percent.2)

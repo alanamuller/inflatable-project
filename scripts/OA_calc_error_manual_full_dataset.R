@@ -39,16 +39,38 @@ myData$next_to_landmark <- as.factor(myData$next_to_landmark)
 myData$which_landmark <- as.factor(myData$which_landmark)
 myData$cart <- as.factor(myData$cart)
 myData$group <- as.factor(myData$group)
+myData$abs_x_error_cm <- as.numeric(myData$abs_x_error_cm)
+myData$abs_y_error_cm <- as.numeric(myData$abs_y_error_cm)
 
 ### Group of all data and subgroups of data
 
 myData <- unite(myData, move_view, c(walk_noWalk, same_diff), remove = FALSE)
 myData$move_view <- as.factor(myData$move_view)
 
+##### group by trial and output for gazecode analysis stuff #####
+dataByTrial <- myData %>%
+  group_by(subject, trial) %>%
+  summarize(
+    x_error = mean(x_error, na.rm = TRUE), 
+    y_error = mean(y_error, na.rm = TRUE), 
+    placement_error = mean(placement_error, na.rm = TRUE),
+    x_error_cm = mean(x_error_cm, na.rm = TRUE), 
+    y_error_cm = mean(y_error_cm, na.rm = TRUE), 
+    placement_error_cm = mean(placement_error_cm, na.rm = TRUE),
+    abs_x_error_cm = mean(abs_x_error_cm, na.rm = TRUE), 
+    abs_y_error_cm = mean(abs_y_error_cm, na.rm = TRUE),
+    fix_num = mean(fix_num, na.rm = TRUE), 
+    total_fix_dur_ms = mean(total_fix_dur_ms, na.rm = TRUE),
+    avg_fix_dur_ms = mean(avg_fix_dur_ms, na.rm = TRUE)
+  )
+
+# Save file
+write.csv(dataByTrial, "E:/Nav_1stYr_project_data/OA_dataByTrial_gazecode.csv", row.names = FALSE)
+
 ################ Log transform placement error_cm ##################### still not normal
 
 hist(myData$placement_error_cm)
-myData$placement_error_cm_log <- log(myData$placement_error_cm +1)
+myData$placement_error_cm_log <- log10(myData$placement_error_cm +1)
 hist(myData$placement_error_cm_log)
 
 ggqqplot(myData$placement_error_cm_log)
@@ -70,6 +92,13 @@ hist(data_log_NO$placement_error_cm_log)
 ggqqplot(data_log_NO$placement_error_cm_log)
 shapiro.test(data_log_NO$placement_error_cm_log)
 
+data_by_subj_NO <- data_log_NO %>%
+  group_by(group, number, walk_noWalk, same_diff) %>%
+  summarize(
+    mean = mean(placement_error_cm_log, na.rm = TRUE),
+  )
+data_by_subj_NO <- as_tibble(data_by_subj_NO)
+
 # YAs
 ya_mean_log <- mean(ya_data$placement_error_cm_log, na.rm = TRUE)
 ya_sd_log <- sd(ya_data$placement_error_cm_log, na.rm = TRUE)
@@ -85,11 +114,27 @@ oa_log_NO <- oa_data %>%
   filter(placement_error_cm_log < oa_mean_log+(oa_sd_log*3) & placement_error_cm_log > oa_mean_log-(oa_sd_log*3))
 
 #################### 2-way ANOVA with walk and view ################## no sig diff
-bxp <- ggboxplot(
-  data_log_NO, x = "walk_noWalk", y = "placement_error_cm_log", 
-  color = "same_diff", facet.by = "group"
-)
-bxp
+
+bxp_ya_oa <- ggboxplot(
+  data_by_subj_NO, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", facet.by = "group",
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same")) +
+  theme(axis.text.x = element_text(size = 15), 
+        axis.text.y = element_text(size = 15), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 15), 
+        strip.text = element_text(size = 15))
+
+#jpeg("movement_viewpoint_bxp.jpeg", width = 7, height = 6, units = 'in', res = 500)
+bxp_ya_oa
+#dev.off()
+
+
 
 ### quick t-test to see if YAs error was lower than OAs error
 t_test_table_OAYA <- data_log_NO %>%
