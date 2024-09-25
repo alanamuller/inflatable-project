@@ -16,7 +16,10 @@ rm(list = ls())
 setwd("E:/Nav Stress Data/surveys")
 
 # import the data
-myData <- read.csv("sbsod_perceivedStress.csv")
+originalData <- read.csv("sbsod_perceivedStress.csv")
+
+# make a copy to work with
+myData <- originalData
 
 # delete row 2 because we don't need it
 myData <- myData[-2,]
