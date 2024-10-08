@@ -14,6 +14,7 @@ library(rstatix)
 library(ARTool)
 library(openxlsx)
 library(dplyr)
+library(lme4)
 
 rm(list = ls())
 
@@ -495,7 +496,8 @@ trialType
 #dev.off()
 
 # stats for this figure
-aov_stats <- 
+nav_lm <- lmer(mean_grid_number ~ condition + (1 | subjectID), data = trial_type_summary)
+summary(nav_lm)
 
 # 2-way repeated ANOVA
 withinTest <- anova_test(data = trial_type_summary, dv = mean_grid_number, wid = subjectID,

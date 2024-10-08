@@ -303,33 +303,33 @@ shapiro.test(subject_df$s.lm_to_lm_norm_log)
 shapiro.test(subject_df$s.lm_obj_lm_norm_log)
 shapiro.test(subject_df$s.objects_norm_log)
 
-shapiro.test(subject_df$r.landmarks_norm) # not sig but p = .0689
-shapiro.test(subject_df$r.same_object_norm_log) # not sig but p = .0897
+shapiro.test(subject_df$r.landmarks_norm) # not sig but p = .07525
+shapiro.test(subject_df$r.same_object_norm_log)
 shapiro.test(subject_df$r.DOSW_norm_log)
 shapiro.test(subject_df$r.wall_norm_log)
-shapiro.test(subject_df$r.DODW_norm_log) # p = .03957
+shapiro.test(subject_df$r.DODW_norm_log) # p = .03332
 shapiro.test(subject_df$r.cart_norm_log) # p < .001
 shapiro.test(subject_df$r.other_norm_log)
 shapiro.test(subject_df$r.obj_to_lm_norm_log)
 shapiro.test(subject_df$r.lm_to_obj_norm_log)
 shapiro.test(subject_df$r.obj_to_so_norm_log)
 shapiro.test(subject_df$r.obj_to_diffObj_norm_log)
-shapiro.test(subject_df$r.lm_to_lm_norm_log) # p = .03562
+shapiro.test(subject_df$r.lm_to_lm_norm_log)
 shapiro.test(subject_df$r.lm_obj_lm_norm_log)
 shapiro.test(subject_df$r.objects_norm_log)
 
-### test study against test in each category # all sig expect when specified as not sig
+### test study against test in each category 
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.same_object_norm_log, subject_df$r.same_object_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.DOSW_norm_log , subject_df$r.DOSW_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.wall_norm_log , subject_df$r.wall_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.DODW_norm_log , subject_df$r.DODW_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.other_norm_log , subject_df$r.other_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .001593
+t.test(subject_df$s.other_norm_log , subject_df$r.other_norm_log , paired = TRUE, alternative = "two.sided") 
 t.test(subject_df$s.obj_to_lm_norm_log , subject_df$r.obj_to_lm_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.lm_to_obj_norm_log , subject_df$r.lm_to_obj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # sig at p = .03938
+t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") 
 t.test(subject_df$s.objects_norm_log , subject_df$r.objects_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.lm_obj_lm_norm_log , subject_df$r.lm_obj_lm_norm_log , paired = TRUE, alternative = "two.sided")
 
@@ -478,15 +478,7 @@ plot(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log) + stat_cor(
 plot(subject_df$avg_fix_dur_ms, subject_df$placement_error_cm_log)
 
 # uncomment this to save manuscript-quality pics to this folder
-setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/First-Year Project/Manuscript/Pics")
-
-x <- subject_df$total_fix_dur_ms
-y<- subject_df$placement_error_cm_log
-
-ggplot( subject_df, aes( x=x, y=y ))+
-  geom_point()+
-  stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
-
+setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics")
 
 x <- subject_df$avg_fix_dur_ms
 y<- subject_df$placement_error_cm_log
@@ -497,21 +489,9 @@ avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point()+
   stat_cor(method = "pearson", label.x = 600, label.y = 4.5) +
   theme_classic() + xlab("Average duration of fixations (ms)") +
-  ylab("Placement Error (log cm)") + 
+  ylab("Mean Placement Error (log cm)") + 
   geom_smooth(method = 'lm')
-#jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
-avg_fix_dur
-#dev.off()
-
-# FIGURE FOR SFN22
-avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
-  geom_point(aes(size = 12), show.legend = FALSE)+
-  stat_cor(method = "pearson", label.x = 440, label.y = 3.8, size = 12) +
-  theme_classic() + xlab("Avg duration of fixations (ms)") +
-  ylab("Placement Error (log cm)") + 
-  geom_smooth(method = 'lm', size = 2) + coord_cartesian(ylim = c(2.4, 4)) +
-  theme(text = element_text(size = 44))
-#jpeg("SFN_avg_fix_dur.jpeg", width = 9, height = 10, units = 'in', res = 700)
+#jpeg("OA_avg_fix_dur.jpeg", width = 5, height = 5, units = 'in', res = 500)
 avg_fix_dur
 #dev.off()
 
@@ -522,9 +502,9 @@ tot_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point()+
   stat_cor(method = "pearson", label.x = 1200, label.y = 4.4) +
   theme_classic() + xlab("Total duration of fixations (ms)") +
-  ylab("Placement Error (log cm)") + 
+  ylab("Mean Placement Error (log cm)") + 
   geom_smooth(method = 'lm')
-#jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
+#jpeg("OA_total_fix_dur.jpeg", width = 5, height = 5, units = 'in', res = 500)
 tot_fix_dur
 #dev.off()
 
@@ -535,9 +515,9 @@ fix_num_plot <-ggplot(subject_df, aes( x=x, y=y ))+
   geom_point()+
   stat_cor(method = "pearson", label.x = 2, label.y = 4.4) +
   theme_classic() + xlab("Average Number of Fixations") +
-  ylab("Placement Error (log cm)") + 
+  ylab("Mean Placement Error (log cm)") + 
   geom_smooth(method = 'lm')
-#jpeg("avg_fix_dur.jpeg", width = 7, height = 5, units = 'in', res = 500)
+#jpeg("OA_avg_fix_num.jpeg", width = 5, height = 5, units = 'in', res = 500)
 fix_num_plot
 #dev.off()
 
@@ -819,5 +799,16 @@ sd(duration_data$r.mean, na.rm = TRUE) # sd = 19.614
 
 max(duration_data$r.mean, na.rm = TRUE)
 
-
+############## Old SFN stuff
+# FIGURE FOR SFN22
+avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
+  geom_point(aes(size = 12), show.legend = FALSE)+
+  stat_cor(method = "pearson", label.x = 440, label.y = 3.8, size = 12) +
+  theme_classic() + xlab("Avg duration of fixations (ms)") +
+  ylab("Placement Error (log cm)") + 
+  geom_smooth(method = 'lm', size = 2) + coord_cartesian(ylim = c(2.4, 4)) +
+  theme(text = element_text(size = 44))
+#jpeg("SFN_avg_fix_dur.jpeg", width = 9, height = 10, units = 'in', res = 700)
+avg_fix_dur
+#dev.off()
 
