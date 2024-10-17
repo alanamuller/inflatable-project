@@ -377,7 +377,7 @@ get_anova_table(willItBlendSD)
 ### exclude trials when people took the cart AND put back in the same order and halfs
 ### all other trials can stay, just don't want people retracing their steps
 
-cart <- myData_NO %>%
+cart <- oayaData %>%
   group_by(subject,trial,cart..took.left.half.,objects_put_back_order..same.not_same.) %>%
   summarize(
     count = n(),
@@ -386,36 +386,36 @@ cart <- myData_NO %>%
   )
 
 # make groups of each pair of conditions to see how many of each there are
-cart_took_same <- myData_NO %>%
+cart_took_same <- oayaData %>%
   filter(cart..took.left.half.== "took" & objects_put_back_order..same.not_same. == "same") # truly retracing their steps
 
-cart_took_notSame <- myData_NO %>%
+cart_took_notSame <- oayaData %>%
   filter(cart..took.left.half.== "took" & objects_put_back_order..same.not_same. == "not_same") # keep in analysis
 
-cart_left_same <- myData_NO %>%
+cart_left_same <- oayaData %>%
   filter(cart..took.left.half.== "left" & objects_put_back_order..same.not_same. == "same") # still could be retracing their steps by reviewing what they saw at encoding
 
-cart_left_notSame <- myData_NO %>%
+cart_left_notSame <- oayaData %>%
   filter(cart..took.left.half.== "left" & objects_put_back_order..same.not_same. == "not_same") # keep in analysis
 
-cart_half_same <- myData_NO %>%
+cart_half_same <- oayaData %>%
   filter(cart..took.left.half.== "half" & objects_put_back_order..same.not_same. == "same") # still retracing their steps
 
-cart_half_notSame <- myData_NO %>%
+cart_half_notSame <- oayaData %>%
   filter(cart..took.left.half.== "half" & objects_put_back_order..same.not_same. == "not_same") # keep in analysis 
 
 # put the data together that I want (took, not same; left, not same; half, not same)
-cart_data <- myData_NO %>%
+cart_data <- oayaData %>%
   filter(cart..took.left.half.== "took" & objects_put_back_order..same.not_same. == "not_same" |
          cart..took.left.half.== "left" & objects_put_back_order..same.not_same. == "not_same" |
          cart..took.left.half.== "half" & objects_put_back_order..same.not_same. == "not_same")
 
 ##### only include people that left the cart
-left_cart <- myData_NO %>%
+left_cart <- oayaData %>%
   filter(cart..took.left.half. == "left")
 
 aov_cart_data <- left_cart %>%
-  group_by(subject, walk_noWalk, same_diff) %>%
+  group_by(subject, walk_noWalk, same_diff, group) %>%
   summarize(
     mean = mean(placement_error_cm_log, na.rm = TRUE),
     sd = sd(placement_error_cm_log, na.rm = TRUE)
@@ -428,12 +428,21 @@ bxp <- ggboxplot(
   xlab = "Movement Condition", ylab = "Placement Error (log cm)",
   legend = "right", legend.title = "Viewpoint") + 
   scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
-  scale_color_discrete(labels = c("Different", "Same"))
+  scale_color_discrete(labels = c("Different", "Same")) +
+  stat_summary(aes(group = same_diff), fun = mean, geom = "point", shape = 18, size = 3, color = "black", position = position_dodge(0.75)) +
+  facet_wrap(~group, labeller = as_labeller(c("OA" = "Older Adult", "YA" = "Younger Adult"))) + 
+  theme(
+    strip.text = element_text(size = 12),   # Change facet label font size
+    axis.text = element_text(size = 12),    # Change axis text size
+    axis.title = element_text(size = 14),   # Change axis title size
+    legend.text = element_text(size = 12),   # Change legend text size
+    panel.border = element_rect(color = "black", fill = NA, size = .75) # Add border around each facet
+  )
 bxp
 
 ##### # 2x2 repeated measures ANOVA cart for mean
 withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
-                         within = c(walk_noWalk, same_diff))
+                         within = c(walk_noWalk, same_diff), between = group)
 get_anova_table(withinTest) # viewpoint is sig, diff is less error
 
 # Bayes factor for this ANOVA
@@ -441,6 +450,10 @@ aov_data <- as.data.frame(aov_cart_data)
 bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
 bayes_rm
 plot(bayes_rm)
+
+##### mixed repeated ANOVA
+
+
 
 ##### # 2x2 repeated measures ANOVA cart for sd
 withinTest <- anova_test(data = aov_cart_data, dv = sd, wid = subject,
