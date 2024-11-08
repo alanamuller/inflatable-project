@@ -4,7 +4,7 @@
 rm(list = ls())
 
 ##### Read in file with subject, condition, and city data
-setwd("E:/000Alana Muller/gazecode_outputs") # set working directory
+setwd("D:/000Alana Muller/gazecode_outputs") # set working directory
 
 # Define a function
 convert_to_min_sec <- function(seconds) {
@@ -16,8 +16,8 @@ convert_to_min_sec <- function(seconds) {
 # Import raw data
 
 ##### CHANGE THE FILE NAME
-subj_num <- 32
-recording_num <- 2
+subj_num <- 1
+recording_num <- 3
 
 # This will import the data based on the subj_num and recording_num you input
 file_name <- paste0("oa", subj_num, "_", recording_num, ".xls")
@@ -123,5 +123,5 @@ for (i in seq_along(big_list)){
 print(combo_table) # print table to console so you can check the numbers
 
 # Write fixation table to a new csv file
-write.csv(combo_table, paste0("E:/000Alana Muller/gazecode_outputs/OA_processed_study_fixations/OA", subj_num, "_", recording_num,".csv"), row.names = FALSE)
+write.csv(combo_table, paste0("D:/000Alana Muller/gazecode_outputs/OA_processed_study_fixations/OA", subj_num, "_", recording_num,".csv"), row.names = FALSE)
 
