@@ -15,6 +15,7 @@ library(officer)
 rm(list = ls())
 
 setwd("E:/Nav_1stYr_project_data")
+# Had to manually paste in the young adult data
 
 # Read in data
 inputData <- read_csv("E:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
@@ -30,6 +31,7 @@ myData$wall_side <- as.factor(myData$wall_side)
 myData$object <- as.factor(myData$object)
 myData$object_size <- as.factor(myData$object_size)
 myData$object_material <- as.factor(myData$object_material)
+myData$object_aliveORnot <- as.factor(myData$object_aliveORnot)
 myData$walk_noWalk <- as.factor(myData$walk_noWalk)
 myData$same_diff <- as.factor(myData$same_diff)
 myData$start_wall <- as.factor(myData$start_wall)
@@ -39,6 +41,14 @@ myData$next_to_landmark <- as.factor(myData$next_to_landmark)
 myData$which_landmark <- as.factor(myData$which_landmark)
 myData$cart <- as.factor(myData$cart)
 myData$group <- as.factor(myData$group)
+myData$`objects_put_back_order (same/not_same)` <- as.factor(myData$`objects_put_back_order (same/not_same)`)
+myData$replace_strategy <- as.factor(myData$replace_strategy)
+myData$`cart (took/left/half)`<- as.factor(myData$`cart (took/left/half)`)
+myData$Gender <- as.factor(myData$Gender)
+myData$Video_game_exp <- as.factor(myData$Video_game_exp)
+myData$Fixated_or_not <- as.factor(myData$Fixated_or_not)
+myData$number <- as.factor(myData$number)
+
 myData$abs_x_error_cm <- as.numeric(myData$abs_x_error_cm)
 myData$abs_y_error_cm <- as.numeric(myData$abs_y_error_cm)
 

@@ -9,7 +9,7 @@ rm(list = ls())
 setwd("E:/Nav_1stYr_project_data/GazeCode data/OA_sheets/study_retrieval_coding")
 
 # subject number
-subjnum <- 32
+subjnum <- 11
 
 data_part1 <- paste0("oa", subjnum, "_part1.xls")
 data_part2 <- paste0("oa", subjnum, "_part2.xls")
@@ -19,28 +19,28 @@ data_part4 <- paste0("oa", subjnum, "_part4.xls")
 ##### add in the start and end times for study and retrieval, td = times data
 
 study_td <- data.frame(
-  col1 <- c(317,
-            746,
-            1134,
-            1565,
-            1910,
-            60,
-            443,
-            864,
-            1215,
-            1573
+  col1 <- c(149,
+            611,
+            53,
+            444,
+            875,
+            1322,
+            1730,
+            2171,
+            2541,
+            48
             
   ),
-  col2 <- c(353,
-            784,
-            1172,
-            1601,
-            1946,
-            95,
-            478,
-            899,
-            1250,
-            1608
+  col2 <- c(186,
+            646,
+            88,
+            476,
+            910,
+            1355,
+            1765,
+            2207,
+            2575,
+            81
             
   )
 )
@@ -68,28 +68,28 @@ study_end10 <- study_td[10, 2]
 
 
 retrieval_td <- data.frame(
-  col1 <- c(476,
-            873,
-            1294,
-            1696,
-            2037,
-            175,
-            583,
-            991,
-            1343,
-            1689
+  col1 <- c(291,
+            780,
+            192,
+            580,
+            1016,
+            1452,
+            1873,
+            2296,
+            2686,
+            162
             
   ),
-  col2 <- c(543,
-            939,
-            1419,
-            1752,
-            2115,
-            259,
-            706,
-            1060,
-            1430,
-            1812
+  col2 <- c(456,
+            800,
+            294,
+            703,
+            1125,
+            1571,
+            2010,
+            2379,
+            2816,
+            254
             
   )
 )
@@ -230,23 +230,6 @@ trial_2_study <- newTable
 category_counts(subjnum,2,"retrieval",retrieval_start2	,retrieval_end2)
 trial_2_retrieval <- newTable
 
-category_counts(subjnum,3,"study",study_start3,	study_end3)
-trial_3_study <- newTable
-
-category_counts(subjnum,3,"retrieval",retrieval_start3,	retrieval_end3)
-trial_3_retrieval <- newTable
-
-category_counts(subjnum,4,"study",study_start4,	study_end4)
-trial_4_study <- newTable
-
-category_counts(subjnum,4,"retrieval",retrieval_start4,	retrieval_end4)
-trial_4_retrieval <- newTable
-
-category_counts(subjnum,5,"study",study_start5,	study_end5)
-trial_5_study <- newTable
-
-category_counts(subjnum,5,"retrieval",retrieval_start5,	retrieval_end5)
-trial_5_retrieval <- newTable
 
 
 ############### ############### ############### ############### ###############
@@ -272,6 +255,23 @@ hist_part2
 
 ############### data part 2 retrieval trials processed below ###############
 
+category_counts(subjnum,3,"study",study_start3,	study_end3)
+trial_3_study <- newTable
+
+category_counts(subjnum,3,"retrieval",retrieval_start3,	retrieval_end3)
+trial_3_retrieval <- newTable
+
+category_counts(subjnum,4,"study",study_start4,	study_end4)
+trial_4_study <- newTable
+
+category_counts(subjnum,4,"retrieval",retrieval_start4,	retrieval_end4)
+trial_4_retrieval <- newTable
+
+category_counts(subjnum,5,"study",study_start5,	study_end5)
+trial_5_study <- newTable
+
+category_counts(subjnum,5,"retrieval",retrieval_start5,	retrieval_end5)
+trial_5_retrieval <- newTable
 
 category_counts(subjnum,6,"study",study_start6	,study_end6)
 trial_6_study <- newTable
@@ -297,11 +297,7 @@ trial_9_study <- newTable
 category_counts(subjnum,9,"retrieval",retrieval_start9,	retrieval_end9)
 trial_9_retrieval <- newTable
 
-category_counts(subjnum,10,"study",study_start10,	study_end10)
-trial_10_study <- newTable
 
-category_counts(subjnum,10,"retrieval",retrieval_start10,	retrieval_end10)
-trial_10_retrieval <- newTable
 
 
 
@@ -310,33 +306,6 @@ trial_10_retrieval <- newTable
 ############### ############### ############### ############### ############### 
 
 
-subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
-                       trial_3_study,trial_3_retrieval,trial_4_study,trial_4_retrieval,
-                       trial_5_study,trial_5_retrieval,trial_6_study,trial_6_retrieval,
-                       trial_7_study,trial_7_retrieval,trial_8_study,trial_8_retrieval,
-                       trial_9_study,trial_9_retrieval,trial_10_study,trial_10_retrieval)
-
-subject_table_wide <- reshape(subject_table, direction = "wide",
-                              idvar = c("subject", "trial"),
-                              timevar = "trialType",
-                              v.names = c("landmarks", "same_object", "DOSW", "wall", "DODW","cart", "other", "obj_to_lm", "lm_to_obj",
-                                           "obj_to_so", "obj_to_diffObj", "lm_to_lm", "timeStart", "timeEnd", "duration"),
-                              varying = c("s.landmarks", "s.same_object", "s.DOSW", "s.wall", "s.DODW","s.cart", "s.other", "s.obj_to_lm", "s.lm_to_obj", 
-                                          "s.obj_to_so", "s.obj_to_diffObj", "s.lm_to_lm", "s.timeStart", "s.timeEnd", "s.duration",
-                                          "r.landmarks", "r.same_object", "r.DOSW", "r.wall", "r.DODW","r.cart", "r.other", "r.obj_to_lm", "r.lm_to_obj",
-                                           "r.obj_to_so", "r.obj_to_diffObj", "r.lm_to_lm", "r.timeStart", "r.timeEnd", "r.duration")
-)
-
-# E is the drive on my work PC, D is the drive on my laptop, change accordingly
-setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
-
-sink(paste0("OA", subjnum, "_gazeCodeCounts.csv"))
-write.csv(subject_table, row.names = FALSE)
-cat("\n")
-cat("\n")
-cat("\n")
-write.csv(subject_table_wide, row.names = FALSE)
-sink()
 
 
 
@@ -370,7 +339,40 @@ hist_part3
 ############### data part 3 retrieval trials processed below ###############
 
 
+category_counts(subjnum,10,"study",study_start10,	study_end10)
+trial_10_study <- newTable
 
+category_counts(subjnum,10,"retrieval",retrieval_start10,	retrieval_end10)
+trial_10_retrieval <- newTable
+
+
+subject_table <- rbind(trial_1_study,trial_1_retrieval,trial_2_study,trial_2_retrieval,
+                       trial_3_study,trial_3_retrieval,trial_4_study,trial_4_retrieval,
+                       trial_5_study,trial_5_retrieval,trial_6_study,trial_6_retrieval,
+                       trial_7_study,trial_7_retrieval,trial_8_study,trial_8_retrieval,
+                       trial_9_study,trial_9_retrieval,trial_10_study,trial_10_retrieval)
+
+subject_table_wide <- reshape(subject_table, direction = "wide",
+                              idvar = c("subject", "trial"),
+                              timevar = "trialType",
+                              v.names = c("landmarks", "same_object", "DOSW", "wall", "DODW","cart", "other", "obj_to_lm", "lm_to_obj",
+                                          "obj_to_so", "obj_to_diffObj", "lm_to_lm", "timeStart", "timeEnd", "duration"),
+                              varying = c("s.landmarks", "s.same_object", "s.DOSW", "s.wall", "s.DODW","s.cart", "s.other", "s.obj_to_lm", "s.lm_to_obj", 
+                                          "s.obj_to_so", "s.obj_to_diffObj", "s.lm_to_lm", "s.timeStart", "s.timeEnd", "s.duration",
+                                          "r.landmarks", "r.same_object", "r.DOSW", "r.wall", "r.DODW","r.cart", "r.other", "r.obj_to_lm", "r.lm_to_obj",
+                                          "r.obj_to_so", "r.obj_to_diffObj", "r.lm_to_lm", "r.timeStart", "r.timeEnd", "r.duration")
+)
+
+# E is the drive on my work PC, D is the drive on my laptop, change accordingly
+setwd("E:/Nav_1stYr_project_data/GazeCode data/R_outputs")
+
+sink(paste0("OA", subjnum, "_gazeCodeCounts.csv"))
+write.csv(subject_table, row.names = FALSE)
+cat("\n")
+cat("\n")
+cat("\n")
+write.csv(subject_table_wide, row.names = FALSE)
+sink()
 
 
 
