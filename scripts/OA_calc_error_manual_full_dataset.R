@@ -75,7 +75,7 @@ dataByTrial <- myData %>%
   )
 
 # Save file
-write.csv(dataByTrial, "E:/Nav_1stYr_project_data/OA_dataByTrial_gazecode.csv", row.names = FALSE)
+#write.csv(dataByTrial, "E:/Nav_1stYr_project_data/OA_dataByTrial_gazecode.csv", row.names = FALSE)
 
 ################ Log transform placement error_cm ##################### still not normal
 
@@ -169,18 +169,6 @@ friedman_move_view_table <- data_NO %>%
     placement_error_cm = median(placement_error_cm, na.rm = TRUE),
   )
 
-ya_bxp <- ggboxplot(
-  ya_log_NO, x = "walk_noWalk", y = "placement_error_cm_log", 
-  color = "same_diff"
-)
-ya_bxp
-
-oa_bxp <- ggboxplot(
-  ya_log_NO, x = "walk_noWalk", y = "placement_error_cm_log", 
-  color = "same_diff"
-)
-oa_bxp
-
 ##### Is age correlated with error? Turns out yes, yes it is
 age_error_table <- data_log_NO %>%
   group_by(subject) %>%
@@ -190,7 +178,7 @@ age_error_table <- data_log_NO %>%
   )
 
 plot(age_error_table$age, age_error_table$placement_error_cm_log)
-cor(age_error_table$age, age_error_table$placement_error_cm_log, use = "complete.obs")
+cor.test(age_error_table$age, age_error_table$placement_error_cm_log, use = "complete.obs")
 
 ##### oa error cor with fixation time and number
 oa_fixated <- oa_data %>%
@@ -205,23 +193,9 @@ oa_fix_table <- oa_fixated %>%
     avg_fix_dur_ms = median(avg_fix_dur_ms)
   )
 
-# graphs and stats
-ggscatter(oa_fixated, x = "total_fix_dur_ms", y = "placement_error_cm", add = "reg.line", conf.int = TRUE,
-          cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 4000, label.sep = "\n"), 
-          xlab = "Total duration of fixations", ylab = "Placement Error (cm)", size = .65) # not sig
-
-ggscatter(oa_fixated, x = "fix_num", y = "placement_error_cm", add = "reg.line", conf.int = TRUE,
-          cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 15, label.sep = "\n"), 
-          xlab = "Number of Fixations", ylab = "Placement Error (cm)", size = .65) # not sig
-
-ggscatter(oa_fixated, x = "avg_fix_dur_ms", y = "placement_error_cm", add = "reg.line", conf.int = TRUE,
-          cor.coef = TRUE, cor.coeff.args = list(method = "spearman", label.x = 1500, label.sep = "\n"), 
-          xlab = "Average Fixation Duration (ms)", ylab = "Placement Error (cm)", size = .65) # not sig
-
 ##### Do older adults fixate on less object?
 not_fix_data <- data_log_NO %>%
   filter(fix_num == 0)
-
 
 aov_smallData <- na.omit(data_log_NO)
 

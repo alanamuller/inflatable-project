@@ -19,7 +19,7 @@ library(car)
 setwd("E:/Nav_1stYr_project_data/GazeCode data")
 
 # Read in data
-inputData <- read_excel("E:/Nav_1stYr_project_data/GazeCode data/R_outputs/oa_manuscript_prelim.xlsx")
+inputData <- read.csv("E:/Nav_1stYr_project_data/OA_dataByTrial_gazecode_manualCheck_nov8.csv")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
