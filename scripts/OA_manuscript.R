@@ -25,10 +25,10 @@ library(lme4)
 rm(list = ls())
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("E:/Nav_1stYr_project_data")
+setwd("D:/Nav_1stYr_project_data")
 
 # Read in data
-inputData <- read.csv("E:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
+inputData <- read.csv("D:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -217,9 +217,6 @@ myData_NO_y <- myData %>%
 
 ################### Parametric Analyses ###################  
 
-# uncomment this to save manuscript-quality pics to this folder
-setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics")
-
 ##### set up for 2-way repeated-measures ANOVA walk view
 aov_data <- myData_NO %>%
   group_by(subject, walk_noWalk, same_diff) %>%
@@ -341,7 +338,7 @@ bxp <- ggboxplot(
     legend.text = element_text(size = 12),   # Change legend text size
     panel.border = element_rect(color = "black", fill = NA, size = .75) # Add border around each facet
   )
-#jpeg("movement_viewpoint_bxp_OAYA_mean.jpeg", width = 8, height = 6, units = 'in', res = 500)
+#jpeg("D:/Nav Stress Data/dissertation/pics/movement_viewpoint_bxp_OAYA_mean.jpeg", width = 8, height = 6, units = 'in', res = 500)
 bxp
 #dev.off() 
 
@@ -413,7 +410,15 @@ cart_data <- oayaData %>%
 ##### only include people that left the cart
 left_cart <- oayaData %>%
   filter(cart..took.left.half. == "left")
+took_cart <- oayaData %>%
+  filter(cart..took.left.half. == "took")
+group_took <- took_cart %>%
+  group_by(subject) %>%
+  summarize (
+    count = n()
+  )
 
+# without the took cart group
 aov_cart_data <- left_cart %>%
   group_by(subject, walk_noWalk, same_diff, group) %>%
   summarize(
@@ -440,14 +445,54 @@ bxp <- ggboxplot(
   )
 bxp
 
+# only the took cart group
+aov_cart_data_took <- took_cart %>%
+  group_by(subject, walk_noWalk, same_diff, group) %>%
+  summarize(
+    mean = mean(placement_error_cm_log, na.rm = TRUE),
+    sd = sd(placement_error_cm_log, na.rm = TRUE)
+  )
+aov_cart_data_took <- as_tibble(aov_cart_data_took)
+
+bxp <- ggboxplot(
+  aov_cart_data_took, x = "walk_noWalk", y = "mean", 
+  color = "same_diff", add = "jitter", 
+  xlab = "Movement Condition", ylab = "Placement Error (log cm)",
+  legend = "right", legend.title = "Viewpoint") + 
+  scale_x_discrete(breaks=c("no walk", "walk"), labels=c("Stationary", "Walk")) +
+  scale_color_discrete(labels = c("Different", "Same")) +
+  stat_summary(aes(group = same_diff), fun = mean, geom = "point", shape = 18, size = 3, color = "black", position = position_dodge(0.75)) +
+  facet_wrap(~group, labeller = as_labeller(c("OA" = "Older Adult", "YA" = "Younger Adult"))) + 
+  theme(
+    strip.text = element_text(size = 12),   # Change facet label font size
+    axis.text = element_text(size = 12),    # Change axis text size
+    axis.title = element_text(size = 14),   # Change axis title size
+    legend.text = element_text(size = 12),   # Change legend text size
+    panel.border = element_rect(color = "black", fill = NA, size = .75) # Add border around each facet
+  )
+bxp
+
 ##### # 2x2 repeated measures ANOVA cart for mean
+# without the took cart group
 withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff), between = group)
-get_anova_table(withinTest) # viewpoint is sig, diff is less error
+get_anova_table(withinTest) # no change, group still sig
+
+# only the took cart group
+withinTest <- anova_test(data = aov_cart_data_took, dv = mean, wid = subject,
+                         within = c(walk_noWalk, same_diff), between = group)
+get_anova_table(withinTest) # no change, group still sig
 
 # Bayes factor for this ANOVA
+# without the took cart group
 aov_data <- as.data.frame(aov_cart_data)
 bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
+bayes_rm
+plot(bayes_rm)
+
+# only the took cart group
+aov_data_took <- as.data.frame(aov_cart_data_took)
+bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data_took, whichRandom = "subject")
 bayes_rm
 plot(bayes_rm)
 
@@ -638,10 +683,6 @@ landmark_ttest <- landmark_data %>%
 testpic <- ggplot(landmark_ttest, aes(x = next_to_landmark, y = mean)) + geom_violin(draw_quantiles = c(0.25, 0.50, 0.75)) + 
   theme_classic() + stat_summary(fun = "mean", geom = "crossbar", color = "red")
 testpic
-
-# uncomment this to save manuscript-quality pics to this folder
-#setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics")
-
 
 # FIGURE FOR MANUSCRIPT
 # for mean

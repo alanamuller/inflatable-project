@@ -14,11 +14,11 @@ library(officer)
 
 rm(list = ls())
 
-setwd("E:/Nav_1stYr_project_data")
+setwd("D:/Nav_1stYr_project_data")
 # Had to manually paste in the young adult data
 
 # Read in data
-inputData <- read_csv("E:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
+inputData <- read_csv("D:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
 
 myData <- inputData
 str(myData)
@@ -75,7 +75,7 @@ dataByTrial <- myData %>%
   )
 
 # Save file
-#write.csv(dataByTrial, "E:/Nav_1stYr_project_data/OA_dataByTrial_gazecode.csv", row.names = FALSE)
+#write.csv(dataByTrial, "D:/Nav_1stYr_project_data/OA_dataByTrial_gazecode.csv", row.names = FALSE)
 
 ################ Log transform placement error_cm ##################### still not normal
 
