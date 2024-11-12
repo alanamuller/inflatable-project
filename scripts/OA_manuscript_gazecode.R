@@ -888,17 +888,15 @@ get_anova_table(fixfix.aov) # everything is sig
 
 # figuring out average duration for encoding and retrieval
 duration_data <- myData %>%
-  dplyr::select("group","subject", "trial", "s.duration", "r.duration") %>%
+  dplyr::select("group","subject", "trial", "s.duration", "r.duration", "fix_num", "total_fix_dur_ms", "avg_fix_dur_ms") %>%
   group_by(group, subject) %>%
   summarize(
     s.mean = mean(s.duration, na.rm = TRUE),
-    r.mean = mean(r.duration, na.rm = TRUE)
+    r.mean = mean(r.duration, na.rm = TRUE),
+    avg_fix_num = mean(fix_num, na.rm = TRUE),
+    total_fix_dur = mean(total_fix_dur_ms, na.rm = TRUE),
+    avg_fix_dur = mean(avg_fix_dur_ms, na.rm = TRUE)
   )
-
-oa_dur <- duration_data %>%
-  filter(group == "OA")
-ya_dur <- duration_data %>%
-  filter(group == "YA")
 
 duration_means <- duration_data %>%
   group_by(group) %>%
@@ -907,7 +905,13 @@ duration_means <- duration_data %>%
     mean_study_dur = mean(s.mean, na.rm = TRUE),
     sd_study_dur = sd(s.mean, na.rm = TRUE),
     mean_retrieval_dur = mean(r.mean, na.rm = TRUE), 
-    sd_retrieval_dur = sd(r.mean, na.rm = TRUE)
+    sd_retrieval_dur = sd(r.mean, na.rm = TRUE),
+    mean_fix_num = mean(avg_fix_num, na.rm = TRUE), 
+    sd_fix_num = sd(avg_fix_num, na.rm = TRUE),
+    mean_total_fix_dur = mean(total_fix_dur, na.rm = TRUE), 
+    sd_total_fix_dur = sd(total_fix_dur, na.rm = TRUE),
+    mean_avg_fix_dur = mean(avg_fix_dur, na.rm = TRUE), 
+    sd_avg_fix_dur = sd(avg_fix_dur, na.rm = TRUE),
   )
 
 # Tests that show both groups had the same study and retrieval times
