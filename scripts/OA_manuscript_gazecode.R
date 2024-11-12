@@ -454,19 +454,23 @@ retrieval_log_bxp <- ggboxplot(retreival_only_norm_log_long, x = "trial", y = "n
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
 retrieval_log_bxp
 
-
-# big ANOVAs for study and retrieval
-
+# make plots for OAs and YAs
 
 
-study_norm_aov <- anova_test(data = study_only_norm_long, dv = norm_fixation_mean, wid = group_subj, within = trial)
-get_anova_table(study_norm_aov) # sig
+# big ANOVAs for study and retrieval - fix these later
+study_only_norm_long$group_subj <- paste0(study_only_norm_long$group, study_only_norm_long$subject)
+study_only_norm_long <- as.data.frame(study_only_norm_long)
+study_only_norm_log_long$group_subj <- paste0(study_only_norm_log_long$group, study_only_norm_log_long$subject)
+study_only_norm_log_long <- as.data.frame(study_only_norm_log_long)
+
+study_norm_aov <- anova_test(data = study_only_norm_long, dv = norm_fixation_mean, wid = group_subj, within = trial, between = group)
+get_anova_table(study_norm_aov) # won't work
 
 study_norm_pwc <- pairwise.t.test(study_only_norm_long$norm_fixation_mean, study_only_norm_long$trial, p.adj = "bonferroni", paired = TRUE)
 study_norm_pwc
 
 study_norm_log_aov <- anova_test(data = study_only_norm_log_long, dv = norm_fixation_mean, wid = group_subj, within = trial)
-get_anova_table(study_norm_log_aov) # sig
+get_anova_table(study_norm_log_aov) # won't work
 
 study_norm_log_pwc <- pairwise.t.test(study_only_norm_log_long$norm_fixation_mean, study_only_norm_log_long$trial, p.adj = "bonferroni", paired = TRUE)
 study_norm_log_pwc
@@ -483,58 +487,132 @@ get_anova_table(retrieval_norm_log_aov) # sig
 retrieval_norm_log_pwc <- pairwise.t.test(retreival_only_norm_log_long$norm_fixation_mean, retreival_only_norm_log_long$trial, p.adj = "bonferroni", paired = TRUE)
 retrieval_norm_log_pwc
 
+# make separated data frames for the two groups
+oa_data <- subject_df %>%
+  filter(group == "OA")
 
-# correlations with performance
-cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor
-plot(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log)
-cor.test(subject_df$s.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+ya_data <- subject_df %>%
+  filter(group == "YA")
+
+# oa correlations with performance - literally nothing is sig
+cor.test(oa_data$s.landmarks_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.same_object_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.DOSW_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.wall_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.DODW_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.cart_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.other_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.obj_to_lm_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.lm_to_obj_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.obj_to_so_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.obj_to_diffObj_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.lm_to_lm_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.lm_obj_lm_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$s.objects_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+
+cor.test(oa_data$r.same_object_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.DOSW_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.wall_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.DODW_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.other_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.obj_to_lm_norm_log, oa_data$placement_error_cm_log, method = "pearson") 
+cor.test(oa_data$r.lm_to_obj_norm_log, oa_data$placement_error_cm_log, method = "pearson") 
+cor.test(oa_data$r.obj_to_so_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.obj_to_diffObj_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.lm_to_lm_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.lm_obj_lm_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$r.objects_norm_log, oa_data$placement_error_cm_log, method = "pearson")
+
+cor.test(oa_data$total_fix_dur_ms, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$avg_fix_dur_ms, oa_data$placement_error_cm_log, method = "pearson")
+cor.test(oa_data$fix_num, oa_data$placement_error_cm_log, method = "pearson")
+
+# ya correlations with performance
+cor.test(ya_data$s.landmarks_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.same_object_norm_log, ya_data$placement_error_cm_log, method = "pearson") # sig
+cor.test(ya_data$s.DOSW_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.wall_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.DODW_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.cart_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.other_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.obj_to_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.lm_to_obj_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.obj_to_so_norm_log, ya_data$placement_error_cm_log, method = "pearson") # sig
+cor.test(ya_data$s.obj_to_diffObj_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.lm_to_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.lm_obj_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$s.objects_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+
+cor.test(ya_data$r.same_object_norm_log, ya_data$placement_error_cm_log, method = "pearson") # sig
+cor.test(ya_data$r.DOSW_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.wall_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.DODW_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.other_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.obj_to_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson") 
+cor.test(ya_data$r.lm_to_obj_norm_log, ya_data$placement_error_cm_log, method = "pearson") 
+cor.test(ya_data$r.obj_to_so_norm_log, ya_data$placement_error_cm_log, method = "pearson") # sig
+cor.test(ya_data$r.obj_to_diffObj_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.lm_to_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.lm_obj_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson")
+cor.test(ya_data$r.objects_norm_log, ya_data$placement_error_cm_log, method = "pearson") # sig
+
+cor.test(ya_data$total_fix_dur_ms, ya_data$placement_error_cm_log, method = "pearson") # marginal
+cor.test(ya_data$avg_fix_dur_ms, ya_data$placement_error_cm_log, method = "pearson") # sig
+cor.test(ya_data$fix_num, ya_data$placement_error_cm_log, method = "pearson") # not sig
+
+# all together correlations with performance 
+cor.test(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$s.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$s.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
 cor.test(subject_df$s.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.cart_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.cart_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
 cor.test(subject_df$s.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$s.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig neg cor, almost .05
-plot(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log)
-cor.test(subject_df$s.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$s.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$s.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
 cor.test(subject_df$s.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$s.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$s.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
 
 cor.test(subject_df$r.same_object_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 cor.test(subject_df$r.DOSW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.other_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
-cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson") 
+cor.test(subject_df$r.wall_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$r.DODW_norm_log, subject_df$placement_error_cm_log, method = "pearson") # barely just sig
+cor.test(subject_df$r.other_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$r.obj_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$r.lm_to_obj_norm_log, subject_df$placement_error_cm_log, method = "pearson")  # sig
 cor.test(subject_df$r.obj_to_so_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$r.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$r.obj_to_diffObj_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$r.lm_to_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson") # sig
+cor.test(subject_df$r.lm_obj_lm_norm_log, subject_df$placement_error_cm_log, method = "pearson")# sig
 cor.test(subject_df$r.objects_norm_log, subject_df$placement_error_cm_log, method = "pearson")
 
-cor.test(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log, method = "pearson") # sig
 cor.test(subject_df$avg_fix_dur_ms, subject_df$placement_error_cm_log, method = "pearson")
-cor.test(subject_df$fix_num, subject_df$placement_error_cm_log, method = "pearson")
+cor.test(subject_df$fix_num, subject_df$placement_error_cm_log, method = "pearson") # sig
 
+plot(subject_df$fix_num, subject_df$placement_error_cm_log)
 
+subject_df <- as.data.frame(subject_df)
 
-plot(subject_df$s.landmarks_norm_log, subject_df$placement_error_cm_log)
+plot(oa_data$fix_num, oa_data$placement_error_cm_log)
+plot(ya_data$fix_num, ya_data$placement_error_cm_log)
 
 plot(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log) + stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
 plot(subject_df$avg_fix_dur_ms, subject_df$placement_error_cm_log)
 
-# uncomment this to save manuscript-quality pics to this folder
-setwd("C:/Users/amuller/Desktop/Alana/UA/HSCL/Dissertation/pics")
 
-x <- subject_df$avg_fix_dur_ms
-y<- subject_df$placement_error_cm_log
+x1 <- oa_data$avg_fix_dur_ms
+y1 <- oa_data$placement_error_cm_log
+
+x2 <- ya_data$avg_fix_dur_ms
+y2 <- ya_data$placement_error_cm_log
 
 # FIGURE FOR MANUSCRIPT
 
-avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
+avg_fix_dur <-ggplot(oa_data, aes( x=x1, y=y1 )) +
   geom_point()+
   stat_cor(method = "pearson", label.x = 600, label.y = 4.5) +
   theme_classic() + xlab("Average duration of fixations (ms)") +
@@ -544,10 +622,10 @@ avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
 avg_fix_dur
 #dev.off()
 
-x <- subject_df$total_fix_dur_ms
-y<- subject_df$placement_error_cm_log
+x <- oa_data$total_fix_dur_ms
+y<- oa_data$placement_error_cm_log
 
-tot_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
+tot_fix_dur <-ggplot(oa_data, aes( x=x, y=y ))+
   geom_point()+
   stat_cor(method = "pearson", label.x = 1200, label.y = 4.4) +
   theme_classic() + xlab("Total duration of fixations (ms)") +
@@ -557,10 +635,10 @@ tot_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
 tot_fix_dur
 #dev.off()
 
-x <- subject_df$fix_num
-y<- subject_df$placement_error_cm_log
+x <- oa_data$fix_num
+y<- oa_data$placement_error_cm_log
 
-fix_num_plot <-ggplot(subject_df, aes( x=x, y=y ))+
+fix_num_plot <-ggplot(oa_data, aes( x=x, y=y ))+
   geom_point()+
   stat_cor(method = "pearson", label.x = 2, label.y = 4.4) +
   theme_classic() + xlab("Average Number of Fixations") +
@@ -573,22 +651,22 @@ fix_num_plot
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
 
-big_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.objects_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
+big_reg_norm <- lm(formula = placement_error_cm_log ~ group + s.landmarks_norm_log + s.objects_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
                 s.other_norm_log + s.lm_obj_lm_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
                 r.landmarks_norm_log + r.objects_norm_log + r.DOSW_norm_log + r.wall_norm_log + r.DODW_norm_log + r.other_norm_log +
                 r.lm_obj_lm_norm_log + r.obj_to_so_norm_log + r.obj_to_diffObj_norm_log + r.lm_to_lm_norm_log +
-                Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
-summary(big_reg_norm) # overall not sig but there is one sig term
+                fix_num + total_fix_dur_ms + avg_fix_dur_ms, data = subject_df)
+summary(big_reg_norm) # sig terms: r.landmarks_norm_log, r.lm_obj_lm, r.lm_to_lm
 
-s_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.objects_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
+s_reg_norm <- lm(formula = placement_error_cm_log ~ group + s.landmarks_norm_log + s.objects_norm_log + s.DOSW_norm_log + s.wall_norm_log + s.DODW_norm_log +
                      s.other_norm_log + s.lm_obj_lm_norm_log + s.obj_to_so_norm_log + s.obj_to_diffObj_norm_log + s.lm_to_lm_norm_log +
-                     Total_duration_of_fixations + Average_duration_of_fixations + Number_of_fixations, data = subject_df)
-summary(s_reg_norm) # overall not sig and no sig terms, but multicollinearity problems
+                     fix_num + total_fix_dur_ms + avg_fix_dur_ms, data = subject_df)
+summary(s_reg_norm) # overall sig but only intercept is sig
 
 big_reg_terms <- subject_df %>%
   dplyr::select("s.landmarks_norm_log", "s.objects_norm_log", "s.DOSW_norm_log", "s.DODW_norm_log",
                 "s.lm_obj_lm_norm_log", "s.obj_to_so_norm_log", "s.obj_to_diffObj_norm_log", "s.lm_to_lm_norm_log",
-                "Total_duration_of_fixations", "Average_duration_of_fixations", "Number_of_fixations")
+                "fix_num", "total_fix_dur_ms", "avg_fix_dur_ms")
 ### more regressions with less terms
 # first, take out all retrieval terms
 # then, take out the terms that don't really matter (wall, other, etc.)
@@ -598,24 +676,26 @@ cor(big_reg_terms, use = "complete.obs")
 pairs(big_reg_terms)
 
 small_reg_terms <- subject_df %>%
-  dplyr::select("s.landmarks_norm_log", "s.DOSW_norm_log", "s.DODW_norm_log", "Average_duration_of_fixations")
+  dplyr::select("s.landmarks_norm_log", "s.DOSW_norm_log", "s.DODW_norm_log", "avg_fix_dur_ms")
 
 cor(small_reg_terms, use = "complete.obs")
 pairs(small_reg_terms)
 
 # this is the correct regression
-small_reg_norm <- lm(formula = placement_error_cm_log ~ s.landmarks_norm_log + s.DOSW_norm_log + s.DODW_norm_log + Average_duration_of_fixations, data = subject_df)
-summary(small_reg_norm) # overall sig and only average duration of fixations is sig (marginal s.DOSW)
-# but using Total duration of fixations instead of average duration of fixations makes S.DOSW sig but why? What does that mean?
+small_reg_norm <- lm(formula = placement_error_cm_log ~ group + s.landmarks_norm_log + s.DOSW_norm_log + s.DODW_norm_log + avg_fix_dur_ms, data = subject_df)
+summary(small_reg_norm) # overall sig and only group is sig
 
 ### conceptual ANOVAs and t-tests and figures
 
-# ANOVA for LM, wall, objects, and other for study and retrieval separately
-study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = subject, within = trial)
-get_anova_table(study_lmWallOther_aov) # sig
+# ANOVA for LM, wall, objects, and other for study and retrieval separately - get working later
+study_lm_wall_other_log$group_subj <- paste0(study_lm_wall_other_log$group, study_lm_wall_other_log$subject)
+retrieval_lm_wall_other_log$group_subj <- paste0(retrieval_lm_wall_other_log$group, retrieval_lm_wall_other_log$subject)
+
+study_lmWallOther_aov <- anova_test(data = study_lm_wall_other_log, dv = norm_fixation_mean, wid = group_subj, within = trial, between = group)
+get_anova_table(study_lmWallOther_aov) 
 
 study_lmWallOther_pwc <- pairwise.t.test(study_lm_wall_other_log$norm_fixation_mean, study_lm_wall_other_log$trial, p.adj = "bonferroni", paired = TRUE)
-study_lmWallOther_pwc # all sig diff from each other
+study_lmWallOther_pwc 
 
 pair <- study_lm_wall_other_log %>%
   pairwise_t_test(norm_fixation_mean~trial, paired = TRUE, p.adjust.method = "bonferroni", paired = TRUE)
@@ -646,40 +726,43 @@ study_lm_wall_other_log$trial_type <- "Encoding"
 retrieval_lm_wall_other_log$trial_type <- "Retrieval"
 singlefixData <- rbind(study_lm_wall_other_log, retrieval_lm_wall_other_log)
 
-# FIGURE FOR MANUSCRIPT
-
+# FIGURE FOR MANUSCRIPT - Graph OA and YA object, landmark, wall, and other
+# Ensure levels are in the order I want
 singlefixData$trial <- factor(singlefixData$trial, levels = c("objects_norm_log", "landmarks_norm_log", "wall_norm_log", "other_norm_log"))
-bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25, 
-                     add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
-  xlab("") +
-  ylab("Mean Log Normalized Fixations") +
-  theme(legend.position = "none")+
+
+oaya_lm_obj_wall_oth_plot <- ggplot(singlefixData, aes(x = trial, y = norm_fixation_mean, fill = group)) +
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  stat_summary(aes(group = group), fun = mean, geom = "point", shape = 18, size = 3, color = "red", position = position_dodge(0.75)) +
+  labs(x = "", y = "Mean Log Norm Fixations", fill = "Group") +
   scale_x_discrete(breaks=c("landmarks_norm_log", "wall_norm_log", "other_norm_log", "objects_norm_log"),
                    labels=c("Landmarks", "Wall", "Other", "Object")) +
-  theme(plot.title = element_text(hjust = 0.5))
-#jpeg("lmWallObject_anova.jpeg", width = 7, height = 5, units = 'in', res = 500)
-bxp_singlefix
+  scale_fill_discrete(name = "Group", labels = c("Older Adult", "Younger Adult"), type = c("#619CFF", "#00BA38")) +
+  theme_classic() +
+  facet_wrap(vars(trial_type)) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13),
+        panel.border = element_rect(color = "black", fill = NA, linewidth = 1))
+
+#jpeg("D:/Nav Stress Data/dissertation/pics/oaya_lm_obj_wall_oth_plot.jpeg", width = 10, height = 6, units = 'in', res = 500)
+oaya_lm_obj_wall_oth_plot
 #dev.off()
 
-# FIGURE FOR SFN22
-bxp_singlefix <- ggboxplot(singlefixData, x = "trial", y = "norm_fixation_mean", 
-  group = "subject", color = "black", size = 2, 
-  add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
-  xlab("") + ylab("Mean Log Norm Fixations") +
-  theme(legend.position = "none") +
-  scale_x_discrete(breaks=c("landmarks_norm_log", "wall_norm_log", "other_norm_log", "objects_norm_log"),
-                   labels=c("Landmarks", "Wall", "Other", "Object")) +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text = element_text(size = 40)) +
-  rotate_x_text(45)
-jpeg("SFN_lmWallObject_anova.jpeg", width = 13, height = 11, units = 'in', res = 700)
-bxp_singlefix
-dev.off()
+# ANOVA
+singlefixData <- as.data.frame(singlefixData)
+singlefixData$group_subj <- paste0(singlefixData$group, singlefixData$subject)
 
+res.aov <- anova_test(data = singlefixData, dv = norm_fixation_mean, wid = group_subj, 
+                      within = c(trial, trial_type), between = group)
+get_anova_table(res.aov) # everything is sig
 
 # make smaller dataframe for t-test graph
-dosw_dodw_study <- study_subject_norm_long[c(481:510,541:570),]
-dosw_dodw_retrieval <- retrieval_subject_norm_long[c(481:510,541:570),]
+dosw_dodw_study <- study_subject_norm_long[c(1009:1071,1135:1197),]
+dosw_dodw_retrieval <- retrieval_subject_norm_long[c(1009:1071,1135:1197),]
 
 # need to make trial a character, not a factor or the renaming won't work
 dosw_dodw_study$trial <- as.character(dosw_dodw_study$trial)
@@ -694,68 +777,42 @@ dosw_dodw_study$trial_type <- "Encoding"
 dosw_dodw_retrieval$trial_type <- "Retrieval"
 dosw_dodw_data <- rbind(dosw_dodw_study, dosw_dodw_retrieval)
 
+
+
 # FIGURE FOR MANUSCRIPT
-bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", 
-                           group = "subject", color = "black", size = 0.25, 
-  add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
-  xlab("") +
-  ylab("Mean Log Normalized Fixations") +
-  theme(legend.position = "none") +
-  scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
-                   labels=c("Same Wall", "Different Wall")) +
-  theme(plot.title = element_text(hjust = 0.5))
-#jpeg("dosw_dodw_bxp.jpeg", width = 7, height = 5, units = 'in', res = 500)
-bxp_dosw_dodw
+# Ensure 'Same Wall' is on the left and 'Different Wall' on the right
+dosw_dodw_data$trial <- factor(dosw_dodw_data$trial, levels = c("DOSW_norm_log", "DODW_norm_log"))
+
+dosw_dodw_plot <- ggplot(dosw_dodw_data, aes(x = trial, y = norm_fixation_mean, fill = group)) +
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  stat_summary(aes(group = group), fun = mean, geom = "point", shape = 18, size = 3, color = "red", position = position_dodge(0.75)) +
+  labs(x = "", y = "Mean Log Norm Fixations", fill = "Group") +
+  scale_x_discrete(breaks = c("DOSW_norm_log", "DODW_norm_log"),
+                   labels = c("Same Wall", "Different Wall")) +
+  scale_fill_discrete(name = "Group", labels = c("Older Adult", "Younger Adult"), type = c("#619CFF", "#00BA38")) +
+  theme_classic() +
+  facet_wrap(vars(trial_type)) +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13),
+        panel.border = element_rect(color = "black", fill = NA, linewidth = 1))
+
+
+#jpeg("D:/Nav Stress Data/dissertation/pics/dosw_dodw_plot.jpeg", width = 10, height = 6, units = 'in', res = 500)
+dosw_dodw_plot
 #dev.off()
 
-# FIGURE FOR SFN22
-bxp_dosw_dodw <- ggboxplot(dosw_dodw_data, x = "trial", y = "norm_fixation_mean", 
-  group = "subject", color = "black", size = 2, 
-  add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
-  xlab("") +
-  ylab("Mean Log Norm Fixations") +
-  theme(legend.position = "none") +
-  scale_x_discrete(breaks=c("DOSW_norm_log", "DODW_norm_log"),
-                   labels=c("Same \n Wall", "Diff \n Wall")) +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text = element_text(size = 50))
-jpeg("SFN_dosw_dodw_bxp.jpeg", width = 13, height = 11, units = 'in', res = 700)
-bxp_dosw_dodw
-dev.off()
+# ANOVA
+dosw_dodw_data <- as.data.frame(dosw_dodw_data)
+dosw_dodw_data$group_subj <- paste0(dosw_dodw_data$group, dosw_dodw_data$subject)
 
-# t-test for DOSW and DODW (both of these are not skewed so don't use the log transformed values)
-t.test(subject_df$s.DOSW_norm , subject_df$s.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
-ggpaired(subject_df, cond1 = "s.DOSW_norm", cond2 = "s.DODW_norm", ylab = "Fixations per Second") +
-  ggtitle("Normalized Fixations During Study") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks=c("s.DOSW_norm", "s.DODW_norm"),
-                   labels=c("Same Wall", "Different Wall"))
-
-
-t.test(subject_df$r.DOSW_norm , subject_df$r.DODW_norm , paired = TRUE, alternative = "two.sided") # sig < .001
-ggpaired(subject_df, cond1 = "r.DOSW_norm", cond2 = "r.DODW_norm", ylab = "Fixations per Second") +
-  ggtitle("Normalized Fixations During Retrieval") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(breaks=c("r.DOSW_norm", "r.DODW_norm"),
-                   labels=c("Same Wall", "Different Wall"))
-
-# ANOVA for successive fixations
-
-#Old boxplot code - but I don't want to just delete it. What if I need it later?
-#bxp_study_fixfix <- ggboxplot(study_successive_fix, x = "trial", y = "norm_fixation_mean", add = "point", 
-#                                   title = "Log Normalized Fixation Number per Category during Study", 
-#                                   xlab = "", ylab = "Mean of Log Normalized Fixations") +
-#  scale_x_discrete(breaks=c("s.lm_obj_lm_norm", "s.lm_to_lm_norm", "s.obj_to_diffObj_norm"),
-#                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
-
-# boxplot for study alone
-#bxp_study_fixfix <- ggline(study_successive_fix, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", 
-#                           title = "Log Normalized Fixation Number per Category during Study", add = "boxplot") +
-#  xlab("") +
-#  ylab("Mean of Log Normalized Fixations") +
-#  theme(legend.position = "none") +
-#  scale_x_discrete(breaks=c("s.lm_obj_lm_norm", "s.lm_to_lm_norm", "s.obj_to_diffObj_norm"),
-#                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
-
-#bxp_study_fixfix
+wall.aov <- anova_test(data = dosw_dodw_data, dv = norm_fixation_mean, wid = group_subj, 
+                      within = c(trial, trial_type), between = group)
+get_anova_table(wall.aov) # everything is sig
 
 
 study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -768,15 +825,7 @@ t.test(subject_df$s.lm_to_lm_norm , subject_df$s.lm_obj_lm_norm , paired = TRUE,
 t.test(subject_df$s.obj_to_diffObj_norm , subject_df$s.lm_obj_lm_norm , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm , subject_df$s.lm_to_lm_norm , paired = TRUE, alternative = "two.sided")
 
-# boxplot for retrieval only
-#bxp_retrieval_fixfix <- ggline(retrieval_successive_fix, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", 
-#                           title = "Log Normalized Fixation Number per Category during Retrieval", add = "boxplot") +
-#  xlab("") +
-#  ylab("Mean of Log Normalized Fixations") +
-#  theme(legend.position = "none") +
-#  scale_x_discrete(breaks=c("r.lm_obj_lm_norm", "r.lm_to_lm_norm", "r.obj_to_diffObj_norm"),
-#                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object"))
-#bxp_retrieval_fixfix
+
 
 retrieval_fixfix_aov <- anova_test(data = retrieval_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
 get_anova_table(retrieval_fixfix_aov) # sig
@@ -805,59 +854,64 @@ fixfixData <- rbind(study_successive_fix, retrieval_successive_fix)
 
 # FIGURE FOR MANUSCRIPT
 fixfixData$trial <- factor(fixfixData$trial, levels = c("obj_to_diffObj_norm", "lm_obj_lm_norm", "lm_to_lm_norm"))
-bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", group = "subject", color = "black", size = 0.25,
-                     add = "jitter", facet.by = "trial_type", add.params = list(size = 1.5)) +
-  xlab("") +
-  ylab("Mean Log Normalized Fixations") +
-  theme(legend.position = "none")+
-  scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
-                   labels=c("Landmark to Object", "Landmark to Landmark", "Object to Object")) +
-  theme(axis.text.x = element_text(angle = 20, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5))
-#jpeg("fixfix_anova.jpeg", width = 7, height = 6, units = 'in', res = 500)
-bxp_fixfix
+
+successive_fix_plot <- ggplot(fixfixData, aes(x = trial, y = norm_fixation_mean, fill = group)) +
+  geom_boxplot(outliers = FALSE) + geom_jitter(position = position_jitterdodge()) +
+  stat_summary(aes(group = group), fun = mean, geom = "point", shape = 18, size = 3, color = "red", position = position_dodge(0.75)) +
+  labs(x = "", y = "Mean Log Norm Fixations", fill = "Group") +
+  scale_x_discrete(breaks = c("obj_to_diffObj_norm", "lm_obj_lm_norm", "lm_to_lm_norm"),
+                   labels = c("Object to Object", "Landmark to Object", "Landmark to Landmark")) +
+  scale_fill_discrete(name = "Group", labels = c("Older Adult", "Younger Adult"), type = c("#619CFF", "#00BA38")) +
+  theme_classic() +
+  facet_wrap(vars(trial_type)) +
+  theme(axis.text.x = element_text(size = 13, angle = 15, vjust = 1, hjust = 1), 
+        axis.text.y = element_text(size = 17), 
+        axis.title.x = element_text(size = 17),
+        axis.title.y = element_text(size = 17),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13), 
+        strip.text = element_text(size = 13),
+        panel.border = element_rect(color = "black", fill = NA, linewidth = 1))
+
+
+#jpeg("D:/Nav Stress Data/dissertation/pics/successive_fix_plot.jpeg", width = 10, height = 6, units = 'in', res = 500)
+successive_fix_plot
 #dev.off()
 
-# FIGURE FOR SFN22
-bxp_fixfix <- ggboxplot(fixfixData, x = "trial", y = "norm_fixation_mean", 
-  group = "subject", color = "black", size = 2,
-  add = "jitter", facet.by = "trial_type", add.params = list(size = 4)) +
-  xlab("") +
-  ylab("Mean Log Norm Fixations") +
-  theme(legend.position = "none")+
-  scale_x_discrete(breaks=c("lm_obj_lm_norm", "lm_to_lm_norm", "obj_to_diffObj_norm"),
-  labels=c("Lmk-Obj", "Lmk-Lmk", "Obj-Obj")) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), plot.title = element_text(hjust = 0.5)) +
-  theme(text = element_text(size = 44))
-jpeg("SFN_fixfix_anova.jpeg", width = 13, height = 11, units = 'in', res = 700)
-bxp_fixfix
-dev.off()
+# another ANOVA
+fixfixData <- as.data.frame(fixfixData)
+fixfixData$group_subj <- paste0(fixfixData$group, fixfixData$subject)
+
+fixfix.aov <- anova_test(data = fixfixData, dv = norm_fixation_mean, wid = group_subj, 
+                       within = c(trial, trial_type), between = group)
+get_anova_table(fixfix.aov) # everything is sig
 
 # figuring out average duration for encoding and retrieval
 duration_data <- myData %>%
-  dplyr::select("subject", "trial", "s.duration", "r.duration") %>%
-  group_by(subject) %>%
+  dplyr::select("group","subject", "trial", "s.duration", "r.duration") %>%
+  group_by(group, subject) %>%
   summarize(
     s.mean = mean(s.duration, na.rm = TRUE),
     r.mean = mean(r.duration, na.rm = TRUE)
   )
 
-mean(duration_data$s.mean, na.rm = TRUE) # encoding time: 34.38 seconds
-sd(duration_data$s.mean, na.rm = TRUE) # sd = 2.397
-mean(duration_data$r.mean, na.rm = TRUE) # retrieval time: 113.60 seconds
-sd(duration_data$r.mean, na.rm = TRUE) # sd = 19.614
+oa_dur <- duration_data %>%
+  filter(group == "OA")
+ya_dur <- duration_data %>%
+  filter(group == "YA")
 
-max(duration_data$r.mean, na.rm = TRUE)
+duration_means <- duration_data %>%
+  group_by(group) %>%
+  summarize(
+    count = n(),
+    mean_study_dur = mean(s.mean, na.rm = TRUE),
+    sd_study_dur = sd(s.mean, na.rm = TRUE),
+    mean_retrieval_dur = mean(r.mean, na.rm = TRUE), 
+    sd_retrieval_dur = sd(r.mean, na.rm = TRUE)
+  )
 
-############## Old SFN stuff
-# FIGURE FOR SFN22
-avg_fix_dur <-ggplot(subject_df, aes( x=x, y=y ))+
-  geom_point(aes(size = 12), show.legend = FALSE)+
-  stat_cor(method = "pearson", label.x = 440, label.y = 3.8, size = 12) +
-  theme_classic() + xlab("Avg duration of fixations (ms)") +
-  ylab("Placement Error (log cm)") + 
-  geom_smooth(method = 'lm', size = 2) + coord_cartesian(ylim = c(2.4, 4)) +
-  theme(text = element_text(size = 44))
-#jpeg("SFN_avg_fix_dur.jpeg", width = 9, height = 10, units = 'in', res = 700)
-avg_fix_dur
-#dev.off()
+# Tests that show both groups had the same study and retrieval times
+t.test(s.mean ~ group, data = duration_data) # not sig
+t.test(r.mean ~ group, data = duration_data) # not sig
+
 

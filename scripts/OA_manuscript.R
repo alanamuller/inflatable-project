@@ -781,10 +781,20 @@ landmark_oaya_plot <- ggboxplot(landmark_oaya_stats, x = "next_to_landmark", y =
   theme(legend.position = "none") +
   scale_x_discrete(breaks=c("y", "n"), labels=c("Next to Landmark", "Not Next to Landmark")) +
   theme(plot.title = element_text(hjust = 0.5))  +
-  stat_summary(fun = mean, geom = "point", shape = 18, size = 3, color = "red", position = position_dodge(0.75))
-#jpeg("landmark_near_OAmean.jpeg", width = 7, height = 6, units = 'in', res = 500)
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 3, color = "red", position = position_dodge(0.75)) +
+  facet_wrap(~group, labeller = as_labeller(c("OA" = "Older Adult", "YA" = "Younger Adult"))) +
+  theme(
+    strip.text = element_text(size = 12),   # Change facet label font size
+    axis.text = element_text(size = 12),    # Change axis text size
+    axis.title = element_text(size = 14),   # Change axis title size
+    legend.text = element_text(size = 12),   # Change legend text size
+    panel.border = element_rect(color = "black", fill = NA, size = .75) # Add border around each facet
+  )
+jpeg("D:/Nav Stress Data/dissertation/pics/landmark_oaya_plot.jpeg", width = 8, height = 6, units = 'in', res = 500)
 landmark_oaya_plot
-#dev.off()
+dev.off()
+
+
 landmark_oaya_stats <- as.tibble(landmark_oaya_stats)
 
 landmarks_aov <- anova_test(data = landmark_oaya_stats, dv = mean, wid = subject,
