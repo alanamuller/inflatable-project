@@ -106,15 +106,15 @@ yaData_NO <- yaData %>%
   filter(placement_error_cm_log < mean_ya_error_log + (3*sd_ya_error_log) |
            placement_error_cm_log - (3*sd_ya_error_log))
 
-
-hist(myData_NO$placement_error_cm, breaks = 25)
-resp_less_5 <- myData_NO %>%
+# Do these counts before log transforming
+hist(myData$placement_error_cm, breaks = 25)
+resp_less_5 <- myData %>%
   filter(placement_error_cm <= 5) # 81 observations
-resp_less_10 <- myData_NO %>%
+resp_less_10 <- myData %>%
   filter(placement_error_cm <= 10) # 254 observations
-resp_less_20 <- myData_NO %>%
+resp_less_20 <- myData %>%
   filter(placement_error_cm <= 20) # 708 observations
-resp_less_30 <- myData_NO %>%
+resp_less_30 <- myData %>%
   filter(placement_error_cm <= 30) # 1119 observations
 resp_20_50 <- myData_NO %>%
   filter(placement_error_cm > 20 & placement_error_cm <= 50) # 994 observations
@@ -166,10 +166,10 @@ subj_cm_data <- subj_trial_cm_data %>%
 # plot error by subject
 plot(x = subj_cm_data$subject, y = subj_cm_data$placement_error_cm_mean)
 
-subj_mean <- mean(subj_cm_data$placement_error_cm_mean)
-subj_sd <- sd(subj_cm_data$placement_error_cm_mean)
-min(subj_cm_data$placement_error_cm_mean)
-max(subj_cm_data$placement_error_cm_mean)
+subj_mean <- mean(subj_cm_data$placement_error_cm_mean) # 48.7 cm
+subj_sd <- sd(subj_cm_data$placement_error_cm_mean) # 19.5 cm
+min(subj_cm_data$placement_error_cm_mean) # 24.4
+max(subj_cm_data$placement_error_cm_mean) # 113.7
 
 # take out participant 16 because it's an outlier
 subj_cm_data_NO <- subj_cm_data %>%
@@ -233,7 +233,7 @@ aov_means <- myData_NO %>%
   group_by(walk_noWalk, same_diff) %>%
   get_summary_stats(placement_error_cm_log, type = "mean_sd")
 
-# FIGURE FOR MANUSCRIPT
+# Plot with only older adults
 
 bxp <- ggboxplot(
   aov_data, x = "walk_noWalk", y = "mean", 
@@ -365,7 +365,13 @@ bxp
 # try a 2x2x2 ANOVA
 willItBlend <- anova_test(data = aov_data2, dv = mean, wid = subject, 
                        within = c(walk_noWalk, same_diff), between = group)
-get_anova_table(willItBlend)
+get_anova_table(willItBlend) # main effect of group - for manuscript
+
+# Bayes factor for this ANOVA
+aov_data2 <- as.data.frame(aov_data2)
+#bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff*group + subject, data = aov_data2, whichRandom = "subject")
+bayes_rm
+plot(bayes_rm)
 
 willItBlendSD <- anova_test(data = aov_data2, dv = sd, wid = subject, 
                           within = c(walk_noWalk, same_diff), between = group)
@@ -478,6 +484,12 @@ withinTest <- anova_test(data = aov_cart_data, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff), between = group)
 get_anova_table(withinTest) # no change, group still sig
 
+# Bayes factor for this ANOVA
+aov_cart_data <- as.data.frame(aov_cart_data)
+#bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff*group + subject, data = aov_cart_data, whichRandom = "subject")
+bayes_rm
+plot(bayes_rm)
+
 # only the took cart group
 withinTest <- anova_test(data = aov_cart_data_took, dv = mean, wid = subject,
                          within = c(walk_noWalk, same_diff), between = group)
@@ -486,7 +498,7 @@ get_anova_table(withinTest) # no change, group still sig
 # Bayes factor for this ANOVA
 # without the took cart group
 aov_data <- as.data.frame(aov_cart_data)
-bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
+#bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
 bayes_rm
 plot(bayes_rm)
 
@@ -684,7 +696,6 @@ testpic <- ggplot(landmark_ttest, aes(x = next_to_landmark, y = mean)) + geom_vi
   theme_classic() + stat_summary(fun = "mean", geom = "crossbar", color = "red")
 testpic
 
-# FIGURE FOR MANUSCRIPT
 # for mean
 landmark_ttest$next_to_landmark <- factor(landmark_ttest$next_to_landmark, levels = c("y", "n"))
 landmark_near <- ggboxplot(landmark_ttest, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
@@ -749,19 +760,6 @@ plot(pd, type = "profile") + theme_classic() + ylab("Mean Error (log cm)") +
   theme(axis.text = element_text(size = 10, color = 'black')) 
 #dev.off()
 
-mean(landmark_ttest_long$y) # 1.26
-sd(landmark_ttest_long$y) # 0.20
-
-mean(landmark_ttest_long$n) # 1.33
-sd(landmark_ttest_long$n) # 0.13
-
-# untransformed
-(10^mean(landmark_ttest_long$y)) # 18.27
-(10^sd(landmark_ttest_long$y)) # 1.57
-
-(10^mean(landmark_ttest_long$n)) # 21.54
-(10^sd(landmark_ttest_long$n)) # 1.36
-
 ##### Landmarks with YAs and OAs on the same plot
 landmark_oaya <- oayaData %>%
   dplyr::select(c("subject", "next_to_landmark", "placement_error_cm_log", "group"))
@@ -773,6 +771,7 @@ landmark_oaya_stats <- landmark_oaya %>%
     sd = sd(placement_error_cm_log, na.rm = TRUE)
   )
 
+# FIGURE FOR MANUSCRIPT
 landmark_oaya_stats$next_to_landmark <- factor(landmark_oaya_stats$next_to_landmark, levels = c("y", "n"))
 landmark_oaya_plot <- ggboxplot(landmark_oaya_stats, x = "next_to_landmark", y = "mean", group = "subject", color = "black", size = 0.25,
                            add = "jitter", facet.by = "group") +
@@ -790,9 +789,9 @@ landmark_oaya_plot <- ggboxplot(landmark_oaya_stats, x = "next_to_landmark", y =
     legend.text = element_text(size = 12),   # Change legend text size
     panel.border = element_rect(color = "black", fill = NA, size = .75) # Add border around each facet
   )
-jpeg("D:/Nav Stress Data/dissertation/pics/landmark_oaya_plot.jpeg", width = 8, height = 6, units = 'in', res = 500)
+#jpeg("D:/Nav Stress Data/dissertation/pics/landmark_oaya_plot.jpeg", width = 8, height = 6, units = 'in', res = 500)
 landmark_oaya_plot
-dev.off()
+#dev.off()
 
 
 landmark_oaya_stats <- as.tibble(landmark_oaya_stats)
@@ -801,6 +800,14 @@ landmarks_aov <- anova_test(data = landmark_oaya_stats, dv = mean, wid = subject
                              within = next_to_landmark, between = group)
 get_anova_table(landmarks_aov) # they're all sig
 
+# Bayes factor for this ANOVA
+landmark_oaya_stats <- as.data.frame(landmark_oaya_stats)
+bayes_rm <- anovaBF(mean ~ next_to_landmark*group + subject, data = landmark_oaya_stats, whichRandom = "subject")
+bayes_rm
+plot(bayes_rm)
+
+
+TukeyHSD(landmarks_aov, which = "next_to_landmark")
 # post-hoc tests
 # simple main effect of group
 one.way_group <- landmark_oaya_stats %>%

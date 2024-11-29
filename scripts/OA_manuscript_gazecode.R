@@ -14,12 +14,14 @@ library(dplyr)
 library(tidyverse)
 library(rstatix)
 library(car)
+library(BayesFactor)
 
 # work computer uses E but laptop uses D, change accordingly
 setwd("D:/Nav_1stYr_project_data")
 
 # Read in data
-inputData <- read.csv("OA_dataByTrial_gazecode_manualCheck_nov8.csv")
+#inputData <- read.csv("OA_dataByTrial_gazecode_manualCheck_nov8.csv")
+inputData <- read.csv("OA_dataByTrial_gazecode_manualCheck_added_yaManuscriptFixes.csv")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -330,37 +332,37 @@ study_successive_fix <- study_only_norm_long[631:819, ]
 retrieval_successive_fix <- retrieval_only_norm_long[631:819, ] # fixed for OAs
 
 ### check for skew - significant values noted, otherwise not significant
-shapiro.test(subject_df$s.landmarks_norm) 
+shapiro.test(subject_df$s.landmarks_norm) # sig
 shapiro.test(subject_df$s.same_object_norm_log)
 shapiro.test(subject_df$s.DOSW_norm_log)
 shapiro.test(subject_df$s.wall_norm_log)
-shapiro.test(subject_df$s.DODW_norm_log)
-shapiro.test(subject_df$s.cart_norm_log)
-shapiro.test(subject_df$s.other_norm_log) 
+shapiro.test(subject_df$s.DODW_norm_log) # sig
+shapiro.test(subject_df$s.cart_norm_log) # sig
+shapiro.test(subject_df$s.other_norm_log) # sig
 shapiro.test(subject_df$s.obj_to_lm_norm_log)
-shapiro.test(subject_df$s.lm_to_obj_norm_log) 
-shapiro.test(subject_df$s.obj_to_so_norm_log) 
+shapiro.test(subject_df$s.lm_to_obj_norm_log) # sig
+shapiro.test(subject_df$s.obj_to_so_norm_log) # sig
 shapiro.test(subject_df$s.obj_to_diffObj_norm_log)
-shapiro.test(subject_df$s.lm_to_lm_norm_log) 
+shapiro.test(subject_df$s.lm_to_lm_norm_log) # sig
 shapiro.test(subject_df$s.lm_obj_lm_norm_log)
 shapiro.test(subject_df$s.objects_norm_log)
 
 shapiro.test(subject_df$r.landmarks_norm)
 shapiro.test(subject_df$r.same_object_norm_log)
-shapiro.test(subject_df$r.DOSW_norm_log)
+shapiro.test(subject_df$r.DOSW_norm_log) # sig
 shapiro.test(subject_df$r.wall_norm_log)
-shapiro.test(subject_df$r.DODW_norm_log)
-shapiro.test(subject_df$r.cart_norm_log)
-shapiro.test(subject_df$r.other_norm_log)
+shapiro.test(subject_df$r.DODW_norm_log) # sig
+shapiro.test(subject_df$r.cart_norm_log) # sig
+shapiro.test(subject_df$r.other_norm_log) 
 shapiro.test(subject_df$r.obj_to_lm_norm_log)
 shapiro.test(subject_df$r.lm_to_obj_norm_log)
 shapiro.test(subject_df$r.obj_to_so_norm_log)
-shapiro.test(subject_df$r.obj_to_diffObj_norm_log)
-shapiro.test(subject_df$r.lm_to_lm_norm_log)
+shapiro.test(subject_df$r.obj_to_diffObj_norm_log) # sig
+shapiro.test(subject_df$r.lm_to_lm_norm_log) # sig
 shapiro.test(subject_df$r.lm_obj_lm_norm_log)
 shapiro.test(subject_df$r.objects_norm_log)
 
-### test study against test in each category 
+### test study against test in each category for all participants
 t.test(subject_df$s.landmarks_norm_log, subject_df$r.landmarks_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.same_object_norm_log, subject_df$r.same_object_norm_log, paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.DOSW_norm_log , subject_df$r.DOSW_norm_log , paired = TRUE, alternative = "two.sided")
@@ -371,7 +373,7 @@ t.test(subject_df$s.obj_to_lm_norm_log , subject_df$r.obj_to_lm_norm_log , paire
 t.test(subject_df$s.lm_to_obj_norm_log , subject_df$r.lm_to_obj_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_so_norm_log , subject_df$r.obj_to_so_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.obj_to_diffObj_norm_log , subject_df$r.obj_to_diffObj_norm_log , paired = TRUE, alternative = "two.sided")
-t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") 
+t.test(subject_df$s.lm_to_lm_norm_log , subject_df$r.lm_to_lm_norm_log , paired = TRUE, alternative = "two.sided") # not sig
 t.test(subject_df$s.objects_norm_log , subject_df$r.objects_norm_log , paired = TRUE, alternative = "two.sided")
 t.test(subject_df$s.lm_obj_lm_norm_log , subject_df$r.lm_obj_lm_norm_log , paired = TRUE, alternative = "two.sided")
 
@@ -556,7 +558,7 @@ cor.test(ya_data$r.lm_to_lm_norm_log, ya_data$placement_error_cm_log, method = "
 cor.test(ya_data$r.lm_obj_lm_norm_log, ya_data$placement_error_cm_log, method = "pearson")
 cor.test(ya_data$r.objects_norm_log, ya_data$placement_error_cm_log, method = "pearson") # sig
 
-cor.test(ya_data$total_fix_dur_ms, ya_data$placement_error_cm_log, method = "pearson") # marginal
+cor.test(ya_data$total_fix_dur_ms, ya_data$placement_error_cm_log, method = "pearson") # sig
 cor.test(ya_data$avg_fix_dur_ms, ya_data$placement_error_cm_log, method = "pearson") # sig
 cor.test(ya_data$fix_num, ya_data$placement_error_cm_log, method = "pearson") # not sig
 
@@ -603,51 +605,122 @@ plot(ya_data$fix_num, ya_data$placement_error_cm_log)
 plot(subject_df$total_fix_dur_ms, subject_df$placement_error_cm_log) + stat_cor(method = "pearson", label.x = 600, label.y = 3.8)
 plot(subject_df$avg_fix_dur_ms, subject_df$placement_error_cm_log)
 
-
-x1 <- oa_data$avg_fix_dur_ms
-y1 <- oa_data$placement_error_cm_log
-
-x2 <- ya_data$avg_fix_dur_ms
-y2 <- ya_data$placement_error_cm_log
-
 # FIGURE FOR MANUSCRIPT
+# Graph for average fixation by older and younger adult
+avg_fix_dur <- ggplot(subject_df, aes(x = avg_fix_dur_ms, y = placement_error_cm_log, color = group)) +
+  geom_point() +
+  stat_cor(
+    data = subset(subject_df, group == "YA"),
+    method = "pearson",
+    label.x = 300, label.y = 4.3, 
+    show.legend = FALSE) +
+  stat_cor(
+    data = subset(subject_df, group == "OA"),
+    method = "pearson",
+    label.x = 300, label.y = 4.5,
+    show.legend = FALSE) +
+  theme_classic() +
+  xlab("Average Duration of Fixations (ms)") +
+  ylab("Mean Placement Error (log cm)") +
+  geom_smooth(method = 'lm') +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13)) +
+  labs(color = "Group") +
+  scale_color_manual(
+    values = c("OA" = "#619CFF","YA" = "#00BA38"),  # Keep the same colors
+    labels = c("Older Adults", "Younger Adults") # Change legend text
+  )
 
-avg_fix_dur <-ggplot(oa_data, aes( x=x1, y=y1 )) +
-  geom_point()+
-  stat_cor(method = "pearson", label.x = 600, label.y = 4.5) +
-  theme_classic() + xlab("Average duration of fixations (ms)") +
-  ylab("Mean Placement Error (log cm)") + 
-  geom_smooth(method = 'lm')
-#jpeg("OA_avg_fix_dur.jpeg", width = 5, height = 5, units = 'in', res = 500)
+#jpeg("D:/Nav Stress Data/dissertation/pics/OAYA_avg_fix_dur.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
 avg_fix_dur
 #dev.off()
 
-x <- oa_data$total_fix_dur_ms
-y<- oa_data$placement_error_cm_log
+# Graph for total fixation by older and younger adult
+tot_fix_dur <- ggplot(subject_df, aes(x = total_fix_dur_ms, y = placement_error_cm_log, color = group)) +
+  geom_point() +
+  stat_cor(
+    data = subset(subject_df, group == "YA"),
+    method = "pearson",
+    label.x = 300, label.y = 4.3, 
+    show.legend = FALSE) +
+  stat_cor(
+    data = subset(subject_df, group == "OA"),
+    method = "pearson",
+    label.x = 300, label.y = 4.5,
+    show.legend = FALSE) +
+  theme_classic() +
+  xlab("Total Duration of Fixations (ms)") +
+  ylab("Mean Placement Error (log cm)") +
+  geom_smooth(method = 'lm') +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13)) +
+  labs(color = "Group") +
+  scale_color_manual(
+    values = c("OA" = "#619CFF","YA" = "#00BA38"),  # Keep the same colors
+    labels = c("Older Adults", "Younger Adults") # Change legend text
+  )
 
-tot_fix_dur <-ggplot(oa_data, aes( x=x, y=y ))+
-  geom_point()+
-  stat_cor(method = "pearson", label.x = 1200, label.y = 4.4) +
-  theme_classic() + xlab("Total duration of fixations (ms)") +
-  ylab("Mean Placement Error (log cm)") + 
-  geom_smooth(method = 'lm')
-#jpeg("OA_total_fix_dur.jpeg", width = 5, height = 5, units = 'in', res = 500)
+#jpeg("D:/Nav Stress Data/dissertation/pics/OAYA_total_fix_dur.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
 tot_fix_dur
 #dev.off()
 
-x <- oa_data$fix_num
-y<- oa_data$placement_error_cm_log
+# Graph for total fixation by older and younger adult
+num_fix <- ggplot(subject_df, aes(x = fix_num, y = placement_error_cm_log, color = group)) +
+  geom_point() +
+  stat_cor(
+    data = subset(subject_df, group == "YA"),
+    method = "pearson",
+    label.x = 1, label.y = 4.3, 
+    show.legend = FALSE) +
+  stat_cor(
+    data = subset(subject_df, group == "OA"),
+    method = "pearson",
+    label.x = 1, label.y = 4.5,
+    show.legend = FALSE) +
+  theme_classic() +
+  xlab("Average Number of Fixations") +
+  ylab("Mean Placement Error (log cm)") +
+  geom_smooth(method = 'lm') +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13)) +
+  labs(color = "Group") +
+  scale_color_manual(
+    values = c("OA" = "#619CFF","YA" = "#00BA38"),  # Keep the same colors
+    labels = c("Older Adults", "Younger Adults") # Change legend text
+  )
 
-fix_num_plot <-ggplot(oa_data, aes( x=x, y=y ))+
-  geom_point()+
-  stat_cor(method = "pearson", label.x = 2, label.y = 4.4) +
-  theme_classic() + xlab("Average Number of Fixations") +
-  ylab("Mean Placement Error (log cm)") + 
-  geom_smooth(method = 'lm')
-#jpeg("OA_avg_fix_num.jpeg", width = 5, height = 5, units = 'in', res = 500)
-fix_num_plot
+#jpeg("D:/Nav Stress Data/dissertation/pics/OAYA_num_fix.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+num_fix
 #dev.off()
 
+### Dummy coded regression to see if the slopes are different
+
+# Make a dummy variable with YA = 0 and OA = 1
+subject_df$dummy_age <- ifelse(subject_df$group == "YA", 0, 1)
+
+# total duration of fixations
+model_tot <- lm(placement_error_cm_log ~ total_fix_dur_ms*dummy_age, data = subject_df)
+summary(model_tot)
+
+# average duration of fixations
+model_avg <- lm(placement_error_cm_log ~ avg_fix_dur_ms*dummy_age, data = subject_df)
+summary(model_avg)
+
+# number of fixations
+model_num <- lm(placement_error_cm_log ~ fix_num*dummy_age, data = subject_df)
+summary(model_num)
 
 # big regression with all sig ones to see which explains more variance with time to first fixation
 
@@ -755,10 +828,64 @@ oaya_lm_obj_wall_oth_plot
 # ANOVA
 singlefixData <- as.data.frame(singlefixData)
 singlefixData$group_subj <- paste0(singlefixData$group, singlefixData$subject)
+singlefixData$group_subj <- as.factor(singlefixData$group_subj)
+singlefixData$trial_type <- as.factor(singlefixData$trial_type)
 
 res.aov <- anova_test(data = singlefixData, dv = norm_fixation_mean, wid = group_subj, 
                       within = c(trial, trial_type), between = group)
 get_anova_table(res.aov) # everything is sig
+
+# Bayes factor for this ANOVA
+# omit rows with NaN
+singlefixData_completes <- na.omit(singlefixData)
+
+bayes_rm <- anovaBF(norm_fixation_mean ~ trial*trial_type*group + group_subj, data = singlefixData_completes, whichRandom = "group_subj")
+bayes_rm
+plot(bayes_rm)
+
+# two way interactions at level of age group
+two.way.fixAge <- singlefixData %>%
+  group_by(group) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = c(trial, trial_type))
+get_anova_table(two.way.fixAge) # both two way interactions are sig
+
+# simple simple main effect of trial_type (encoding, retrieval)
+trial_type.effect.fix <- singlefixData %>%
+  group_by(group, trial) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial_type) %>%
+  get_anova_table()
+trial_type.effect.fix
+
+# simple simple main effect of trial
+trial.effect.fix <- singlefixData %>%
+  group_by(group, trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial) %>%
+  get_anova_table()
+trial.effect.fix
+# pairwise comparisons
+pwc.fix <- singlefixData %>%
+  group_by(group, trial_type) %>%
+  pairwise_t_test(
+    norm_fixation_mean ~ trial, paired = TRUE,
+    p.adjust.method = "bonferroni")
+pwc.fix
+# write to csv
+#write.csv(pwc.fix, "D:/Nav_1stYr_project_data/dissertation_pwcTableSingleFix.csv", row.names = FALSE)
+
+# two way interactions at level of trial_type (encoding, retrieval)
+two.way.trialTypefix <- singlefixData %>%
+  group_by(trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial, between = group)
+two.way.trialTypefix # both two way interactions are sig
+get_anova_table(two.way.trialTypefix)
+
+# simple simple main effect of trial_type (encoding, retrieval)
+group.effectfix <- singlefixData %>%
+  group_by(trial, trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, between = group) %>%
+  get_anova_table()
+group.effectfix
+write.csv(group.effectfix, "D:/Nav_1stYr_project_data/dissertation_group.effectFix.csv", row.names = FALSE)
 
 # make smaller dataframe for t-test graph
 dosw_dodw_study <- study_subject_norm_long[c(1009:1071,1135:1197),]
@@ -813,6 +940,42 @@ dosw_dodw_data$group_subj <- paste0(dosw_dodw_data$group, dosw_dodw_data$subject
 wall.aov <- anova_test(data = dosw_dodw_data, dv = norm_fixation_mean, wid = group_subj, 
                       within = c(trial, trial_type), between = group)
 get_anova_table(wall.aov) # everything is sig
+
+# two way interactions at level of age group
+two.way.age <- dosw_dodw_data %>%
+  group_by(group) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = c(trial, trial_type))
+two.way.age # both two way interactions are sig
+
+# simple simple main effect of trial_type (encoding, retrieval)
+trial_type.effect <- dosw_dodw_data %>%
+  group_by(group, trial) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial_type) %>%
+  get_anova_table()
+trial_type.effect
+
+# simple simple main effect of trial (same wall, diff wall)
+trial.effect <- dosw_dodw_data %>%
+  group_by(group, trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial) %>%
+  get_anova_table()
+trial.effect
+
+# two way interactions at level of trial_type (encoding, retrieval)
+two.way.trialType <- dosw_dodw_data %>%
+  group_by(trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial, between = group)
+two.way.trialType # both two way interactions are sig
+
+# simple simple main effect of trial_type (encoding, retrieval)
+group.effect <- dosw_dodw_data %>%
+  group_by(trial, trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, between = group) %>%
+  get_anova_table()
+group.effect
+
+
+
 
 
 study_fixfix_aov <- anova_test(data = study_successive_fix, dv = norm_fixation_mean, wid = subject, within = trial)
@@ -885,6 +1048,48 @@ fixfixData$group_subj <- paste0(fixfixData$group, fixfixData$subject)
 fixfix.aov <- anova_test(data = fixfixData, dv = norm_fixation_mean, wid = group_subj, 
                        within = c(trial, trial_type), between = group)
 get_anova_table(fixfix.aov) # everything is sig
+
+# two way interactions at level of age group
+two.way.fixfixAge <- fixfixData %>%
+  group_by(group) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = c(trial, trial_type))
+get_anova_table(two.way.fixfixAge) # both two way interactions are sig
+
+# simple simple main effect of trial_type (encoding, retrieval)
+trial_type.effect.fixfix <- fixfixData %>%
+  group_by(group, trial) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial_type) %>%
+  get_anova_table()
+trial_type.effect.fixfix
+
+# simple simple main effect of trial (obj-obj, lndmk-obj, lndmk-lndmk)
+trial.effect.fixfix <- fixfixData %>%
+  group_by(group, trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial) %>%
+  get_anova_table()
+trial.effect.fixfix
+# pairwise comparisons
+pwc <- fixfixData %>%
+  group_by(group, trial_type) %>%
+  pairwise_t_test(
+    norm_fixation_mean ~ trial, paired = TRUE,
+    p.adjust.method = "bonferroni")
+pwc
+
+# two way interactions at level of trial_type (encoding, retrieval)
+two.way.trialTypefixfix <- fixfixData %>%
+  group_by(trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, within = trial, between = group)
+two.way.trialTypefixfix # both two way interactions are sig
+get_anova_table(two.way.trialTypefixfix)
+
+# simple simple main effect of trial_type (encoding, retrieval)
+group.effectfixfix <- fixfixData %>%
+  group_by(trial, trial_type) %>%
+  anova_test(dv = norm_fixation_mean, wid = group_subj, between = group) %>%
+  get_anova_table()
+group.effectfixfix
+
 
 # figuring out average duration for encoding and retrieval
 duration_data <- myData %>%
