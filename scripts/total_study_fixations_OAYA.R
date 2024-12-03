@@ -8,6 +8,7 @@ setwd("D:/Nav_1stYr_project_data/GazeCode data")
 library(readxl)
 library(dplyr)
 library(tidyverse)
+library(rstatix)
 
 # read in data
 oaya_fixation_data <- read_excel("total_OA_YA_fixations_study.xlsx", sheet = 1)
@@ -89,12 +90,106 @@ summary_table <- num_fix_cleaned_table %>%
 
 ##### t tests
 
-plot(avg_total_fix_num_per_trial ~ group, data = summary_table)
+avg_total_fix_num <- ggplot(summary_table, aes(x = group, y = avg_total_fix_num_per_trial)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_point(position = position_jitter()) +
+  labs( x = "Group", y = "Average Total Fixation Number per Trial") +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+jpeg("E:/OAYA_avg_total_fix_num.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+avg_total_fix_num
+dev.off()
+
+avg_total_fix_num_norm <- ggplot(summary_table, aes(x = group, y = avg_total_fix_num_per_trial_norm)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_point(position = position_jitter()) +
+  labs( x = "Group", y = "Average Total Fixation Number per Trial") +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+jpeg("E:/OAYA_avg_total_fix_num_norm.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+avg_total_fix_num_norm
+dev.off()
+
+avg_total_fix_dur <- ggplot(summary_table, aes(x = group, y = avg_total_fix_dur_per_trial)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_point(position = position_jitter()) +
+  labs( x = "Group", y = "Average Total Fixation Number per Trial") +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+jpeg("E:/OAYA_avg_total_fix_dur.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+avg_total_fix_dur
+dev.off()
+
+avg_total_fix_dur_norm <- ggplot(summary_table, aes(x = group, y = avg_total_fix_dur_per_trial_norm)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_point(position = position_jitter()) +
+  labs( x = "Group", y = "Average Total Fixation Number per Trial") +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+jpeg("E:/OAYA_avg_total_fix_dur_norm.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+avg_total_fix_dur_norm
+dev.off()
+
+avg_avg_fix_dur <- ggplot(summary_table, aes(x = group, y = avg_avg_fix_dur_per_trial)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_point(position = position_jitter()) +
+  labs( x = "Group", y = "Average Total Fixation Number per Trial") +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+jpeg("E:/OAYA_avg_avg_fix_dur.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+avg_avg_fix_dur
+dev.off()
+
+avg_avg_fix_dur_norm <- ggplot(summary_table, aes(x = group, y = avg_avg_fix_dur_per_trial_norm)) +
+  geom_boxplot(outliers = FALSE) + 
+  geom_point(position = position_jitter()) +
+  labs( x = "Group", y = "Average Total Fixation Number per Trial") +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 13), 
+        axis.text.y = element_text(size = 13), 
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13))
+jpeg("E:/OAYA_avg_avg_fix_dur_norm.jpeg", width = 6.5, height = 5, units = 'in', res = 500)
+avg_avg_fix_dur_norm
+dev.off()
+
 
 summary_stats <- summary_table %>%
   group_by(group) %>%
   get_summary_stats()
 
-t.test(avg_total_fix_num_per_trial ~ group, data = summary_table) # not sig
-t.test(avg_avg_fix_dur_per_trial ~ group, data = summary_table) # not sig
+t.test(avg_total_fix_num_per_trial_norm ~ group, data = summary_table) # sig
+t.test(avg_total_fix_dur_per_trial_norm ~ group, data = summary_table) # not sig
 t.test(avg_avg_fix_dur_per_trial_norm ~ group, data = summary_table) # not sig
+t.test(avg_total_study_time_s ~ group , data = summary_table) # sig
+
+summary_table$avg_avg_fix_dur_per_trial_norm
+
+
