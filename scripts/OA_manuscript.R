@@ -25,10 +25,10 @@ library(lme4)
 rm(list = ls())
 
 # work computer uses E but laptop uses D, change accordingly
-setwd("D:/Nav_1stYr_project_data")
+setwd("E:/Nav_1stYr_project_data")
 
 # Read in data
-inputData <- read.csv("D:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
+inputData <- read.csv("E:/Nav_1stYr_project_data/manuscript_data_OA_preprocessed.csv")
 inputData <- as.data.frame(inputData)
 str(inputData) # check the structure of the data
 
@@ -256,7 +256,8 @@ get_anova_table(withinTest) # nothing is sig
 aov_data <- as.data.frame(aov_data)
 bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_data, whichRandom = "subject")
 bayes_rm
-plot(bayes_rm)
+# interaction
+bayes_rm[4] / bayes_rm[3]
 
 # graph for sd aka precision
 bxp <- ggboxplot(
@@ -280,7 +281,8 @@ get_anova_table(withinTest) # walk is sig
 aov_data <- as.data.frame(aov_data)
 bayes_rm <- anovaBF(sd ~ walk_noWalk*same_diff + subject, data = aov_data, whichRandom = "subject")
 bayes_rm
-plot(bayes_rm)
+# interaction
+bayes_rm[4] / bayes_rm[3]
 
 
 # connecting lines - NOT USED but saved for example of how to do it so I don't forget
@@ -369,9 +371,13 @@ get_anova_table(willItBlend) # main effect of group - for manuscript
 
 # Bayes factor for this ANOVA
 aov_data2 <- as.data.frame(aov_data2)
-#bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff*group + subject, data = aov_data2, whichRandom = "subject")
+bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff*group + subject, data = aov_data2, whichRandom = "subject")
 bayes_rm
-plot(bayes_rm)
+# interactions
+bayes_rm[10] / bayes_rm[6] # group:walk_noWalk
+bayes_rm[13] / bayes_rm[7] # group:same_diff
+bayes_rm[4] / bayes_rm[3] # walk_noWalk:same_diff
+bayes_rm[18] / bayes_rm[17] # group:walk_noWalk:same_diff
 
 willItBlendSD <- anova_test(data = aov_data2, dv = sd, wid = subject, 
                           within = c(walk_noWalk, same_diff), between = group)
@@ -486,9 +492,13 @@ get_anova_table(withinTest) # no change, group still sig
 
 # Bayes factor for this ANOVA
 aov_cart_data <- as.data.frame(aov_cart_data)
-#bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff*group + subject, data = aov_cart_data, whichRandom = "subject")
+bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff*group + subject, data = aov_cart_data, whichRandom = "subject")
 bayes_rm
-plot(bayes_rm)
+# interactions
+bayes_rm[10] / bayes_rm[6] # group:walk_noWalk
+bayes_rm[13] / bayes_rm[7] # group:same_diff
+bayes_rm[4] / bayes_rm[3] # walk_noWalk:same_diff
+bayes_rm[18] / bayes_rm[17] # group:walk_noWalk:same_diff
 
 # only the took cart group
 withinTest <- anova_test(data = aov_cart_data_took, dv = mean, wid = subject,
@@ -498,7 +508,7 @@ get_anova_table(withinTest) # no change, group still sig
 # Bayes factor for this ANOVA
 # without the took cart group
 aov_data <- as.data.frame(aov_cart_data)
-#bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
+bayes_rm <- anovaBF(mean ~ walk_noWalk*same_diff + subject, data = aov_cart_data, whichRandom = "subject")
 bayes_rm
 plot(bayes_rm)
 
@@ -804,7 +814,8 @@ get_anova_table(landmarks_aov) # they're all sig
 landmark_oaya_stats <- as.data.frame(landmark_oaya_stats)
 bayes_rm <- anovaBF(mean ~ next_to_landmark*group + subject, data = landmark_oaya_stats, whichRandom = "subject")
 bayes_rm
-plot(bayes_rm)
+# interaction
+bayes_rm[4] / bayes_rm[3]
 
 
 TukeyHSD(landmarks_aov, which = "next_to_landmark")
